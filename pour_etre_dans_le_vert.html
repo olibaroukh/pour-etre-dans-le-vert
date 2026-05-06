@@ -2210,20 +2210,65 @@ const audNoms=new Set(auds.map(a=>a.nom.toLowerCase().trim()));
 const optsOpt=opts.filter(r=>!audNoms.has(r.nom.toLowerCase().trim()));
 const prios=[];
 const jL=joursRest<=1?'dernier jour':joursRest+' jours restants';
-const moy_nb=optsOpt.length?optsOpt.reduce((s,r)=>s+r.nb,0)/optsOpt.length:0;
-const moy_pm=optsOpt.length?optsOpt.reduce((s,r)=>s+r.pm,0)/optsOpt.length:0;
-const moy_sop=optsOpt.length?optsOpt.reduce((s,r)=>s+r.sop,0)/optsOpt.length:0;
-const moy_mdc=optsOpt.length?optsOpt.reduce((s,r)=>s+r.mdc,0)/optsOpt.length:0;
-const moy_luk=optsOpt.length?optsOpt.reduce((s,r)=>s+r.luk,0)/optsOpt.length:0;
+const n=optsOpt.length||1;
 
+// Moyennes magasin
+const moy_nb  =optsOpt.reduce((s,r)=>s+r.nb,0)/n;
+const moy_pm  =optsOpt.reduce((s,r)=>s+r.pm,0)/n;
+const moy_sop =optsOpt.reduce((s,r)=>s+r.sop,0)/n;
+const moy_mdc =optsOpt.reduce((s,r)=>s+r.mdc,0)/n;
+const moy_luk =optsOpt.reduce((s,r)=>s+r.luk,0)/n;
+const moy_pmpc=optsOpt.filter(r=>r.pmpc>0).length?optsOpt.filter(r=>r.pmpc>0).reduce((s,r)=>s+r.pmpc,0)/optsOpt.filter(r=>r.pmpc>0).length:0;
+
+// ── Fonction générique d'action adaptative ──────────────────────────────
+function actionAdaptive(label, valeurs, objVal, pBase, nomsFn, unitFn) {
+  if(!objVal||!valeurs.length) return null;
+  const tous0    = valeurs.every(v=>v.val===0);
+  const moy      = valeurs.reduce((s,v)=>s+v.val,0)/valeurs.length;
+  const seuil70  = objVal*0.7;
+  const moyBasse = moy < seuil70;
+
+  let candidats, titre, detail, prio;
+
+  if(tous0) {
+    // Option C : tout le monde à 0
+    candidats = valeurs;
+    const noms = candidats.slice(0,4).map(v=>v.nom.split(' ')[0]).join(', ');
+    titre = label+' - '+candidats.length+' vendeur'+(candidats.length>1?'s':'')+' à 0%';
+    detail = noms+(candidats.length>4?' et autres':'')+(unitFn?' '+unitFn:'')
+      +'. Obj. '+objVal+(unitFn||'%')+'. '+nomsFn;
+    prio = pBase;
+  } else if(moyBasse) {
+    // Option D : sous 70% objectif (zone critique)
+    candidats = valeurs.filter(v=>v.val<seuil70);
+    if(!candidats.length) return null;
+    const noms = candidats.slice(0,4).map(v=>v.nom.split(' ')[0]+' '+Math.round(v.val)+(unitFn||'%')).join(' - ');
+    titre = label+' - '+candidats.length+' vendeur'+(candidats.length>1?'s':'')+' en zone critique (< '+Math.round(seuil70)+(unitFn||'%')+')';
+    detail = noms+'. Obj. '+objVal+(unitFn||'%')+' - Moy. magasin '+Math.round(moy)+(unitFn||'%')+'. '+nomsFn;
+    prio = pBase;
+  } else {
+    // Option B : sous la moyenne magasin
+    candidats = valeurs.filter(v=>v.val<moy*0.85);
+    if(candidats.length<2) return null;
+    const noms = candidats.slice(0,4).map(v=>v.nom.split(' ')[0]+' '+Math.round(v.val)+(unitFn||'%')).join(' - ');
+    titre = label+' - '+candidats.length+' vendeur'+(candidats.length>1?'s':'')+' sous la moyenne magasin '+Math.round(moy)+(unitFn||'%');
+    detail = noms+'. Obj. '+objVal+(unitFn||'%')+' - Moy. magasin '+Math.round(moy)+(unitFn||'%')+'. '+nomsFn;
+    prio = Math.min(3, pBase+1);
+  }
+  return candidats.length>0 ? {p:prio,titre,detail} : null;
+}
+
+// ── Anomalies CA ──────────────────────────────────────────────────────────
 anoms.forEach(r=>{
   if(prios.length<9) prios.push({p:PRIO.nb,titre:'Anomalie CA - '+r.nom,detail:'CA negatif detecte ('+r.ca.toFixed(0)+CUR+'). Avoirs ou retours non compenses - a regulariser avant cloture mensuelle.'});
 });
 
+// ── Magasins en retard ────────────────────────────────────────────────────
 magasins.filter(m=>m.pos<85).sort((a,b)=>a.pos-b.pos).forEach(m=>{
   if(prios.length<9) prios.push({p:PRIO.nb,titre:cap(m.nom)+' - '+m.pos.toFixed(1)+"% de l'objectif ("+m.obj+'k'+CUR+')',detail:'RAF/jour : '+m.raf.toFixed(1)+'k'+CUR+' sur '+jL+". Zone critique - mobiliser toute l'equipe et faire un point animateur en urgence."});
 });
 
+// ── Retard ventes optique ─────────────────────────────────────────────────
 const ventesManquantes=optsOpt.filter(r=>{
   var t=TAUX[r.nom]!==undefined?TAUX[r.nom]:100;
   var objNb=Math.round(OBJ.nb*t/100);
@@ -2231,52 +2276,39 @@ const ventesManquantes=optsOpt.filter(r=>{
 }).sort((a,b)=>a.nb-b.nb);
 if(ventesManquantes.length>0&&prios.length<9){
   const noms=ventesManquantes.slice(0,3).map(r=>r.nom.split(' ')[0]+' ('+r.nb+' ventes)').join(', ');
-  prios.push({p:PRIO.nb,titre:'Retard ventes optique - '+ventesManquantes.length+' vendeur'+(ventesManquantes.length>1?'s':'')+' sous 50% objectif',detail:noms+'. Obj. proratise : '+OBJ.nb+' ventes. Identifier les blocages et maximiser les ventes sur '+jL+'.'});
+  const objNbEx=Math.round(OBJ.nb*(TAUX[ventesManquantes[0].nom]||100)/100);
+  prios.push({p:PRIO.nb,titre:'Retard ventes optique - '+ventesManquantes.length+' vendeur'+(ventesManquantes.length>1?'s':'')+' sous 50% objectif',detail:noms+'. Obj. proratise : '+objNbEx+' ventes. Identifier les blocages et maximiser les ventes sur '+jL+'.'});
 }
 
+// ── Magasin RAF élevé ─────────────────────────────────────────────────────
 const magRafMax=[...magasins].filter(m=>m.raf>5&&m.pos<100).sort((a,b)=>b.raf-a.raf)[0];
 if(magRafMax&&prios.length<9&&!prios.find(p=>p.titre.includes(cap(magRafMax.nom)))){
   prios.push({p:PRIO.nb,titre:cap(magRafMax.nom)+' - '+magRafMax.raf.toFixed(1)+'k'+CUR+'/jour a generer',detail:'Positionnement '+magRafMax.pos.toFixed(1)+'% (obj. '+magRafMax.obj+'k'+CUR+'). Prioriser les ventes a forte valeur et relancer les devis en attente sur '+jL+'.'});
 }
 
+// ── CA collaborateur ──────────────────────────────────────────────────────
 const caBad=optsOpt.filter(r=>r.ca>0&&(r.ca/1000)<OBJ_CA*(TAUX[r.nom]||100)/100*0.85).sort((a,b)=>a.ca-b.ca);
 if(caBad.length>0&&prios.length<9){
   const noms=caBad.slice(0,3).map(r=>r.nom.split(' ')[0]+' ('+(r.ca/1000).toFixed(1)+'k'+CUR+')').join(', ');
   prios.push({p:PRIO.obj_ca,titre:'CA collaborateur - '+caBad.length+' vendeur'+(caBad.length>1?'s':'')+' sous '+(OBJ_CA*0.85).toFixed(0)+'k'+CUR,detail:noms+'. Obj. '+OBJ_CA+'k'+CUR+' par collaborateur. Identifier les freins et maximiser les ventes sur '+jL+'.'});
 }
 
-const sopBad=optsOpt.filter(r=>r.sop<Math.min(OBJ.sop,moy_sop)-5).sort((a,b)=>a.sop-b.sop);
-if(sopBad.length>0&&prios.length<9){
-  const noms=sopBad.slice(0,4).map(r=>r.nom.split(' ')[0]+' '+r.sop.toFixed(0)+'%').join(' - ');
-  prios.push({p:PRIO.sop,titre:'% SOP - '+sopBad.length+' vendeur'+(sopBad.length>1?'s':'')+' sous '+(Math.min(OBJ.sop,moy_sop)-5).toFixed(0)+'%',detail:noms+'. Obj. '+OBJ.sop+'% - Moy. magasin '+moy_sop.toFixed(0)+'%. Systematiser la presentation de la garantie a chaque vente.'});
-}
+// ── Indicateurs adaptatifs ────────────────────────────────────────────────
+const indicateurs = [
+  { label:'% SOP',  vals:optsOpt.map(r=>({nom:r.nom,val:r.sop})),  obj:OBJ.sop,  p:PRIO.sop,  conseil:"Systematiser la presentation de la garantie a chaque vente." },
+  { label:'Panier moyen', vals:optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), obj:OBJ.pm, p:PRIO.pm, conseil:"Valoriser les montures premium et les verres progressifs a chaque vente.", unite:'€' },
+  { label:'PM Pack Confort', vals:optsOpt.filter(r=>r.pmpc>0).map(r=>({nom:r.nom,val:r.pmpc})), obj:OBJ.pmpc, p:PRIO.pmpc, conseil:"Proposer systematiquement le pack confort a chaque vente de verres progressifs.", unite:'€' },
+  { label:'% MdC',  vals:optsOpt.map(r=>({nom:r.nom,val:r.mdc})),  obj:OBJ.mdc,  p:PRIO.mdc,  conseil:"Proposer systematiquement les marques exclusives et intemporelles a chaque vente." },
+  { label:'% LUKKAS', vals:optsOpt.map(r=>({nom:r.nom,val:r.luk})), obj:OBJ.luk, p:PRIO.luk, conseil:"Rappeler le programme LUKKAS et fixer un objectif individuel." },
+];
 
-const pmBad=optsOpt.filter(r=>r.pm>0&&r.pm<OBJ.pm*0.9).sort((a,b)=>a.pm-b.pm);
-if(pmBad.length>0&&prios.length<9){
-  const noms=pmBad.slice(0,4).map(r=>r.nom.split(' ')[0]+' '+Math.round(r.pm)+CUR).join(' - ');
-  prios.push({p:PRIO.pm,titre:'Panier moyen - '+pmBad.length+' vendeur'+(pmBad.length>1?'s':'')+' sous '+(OBJ.pm*0.9).toFixed(0)+CUR,detail:noms+'. Obj. '+OBJ.pm+CUR+' - Moy. magasin '+Math.round(moy_pm)+CUR+'. Valoriser les montures premium et les verres progressifs a chaque vente.'});
-}
+indicateurs.forEach(ind=>{
+  if(prios.length>=9||!ind.vals.length) return;
+  const res=actionAdaptive(ind.label,ind.vals,ind.obj,ind.p,ind.conseil,ind.unite||null);
+  if(res) prios.push(res);
+});
 
-const pmpcBad=optsOpt.filter(r=>r.pmpc>0&&r.pmpc<OBJ.pmpc*0.9).sort((a,b)=>a.pmpc-b.pmpc);
-if(pmpcBad.length>0&&prios.length<9){
-  const noms=pmpcBad.slice(0,4).map(r=>r.nom.split(' ')[0]+' '+Math.round(r.pmpc)+CUR).join(' - ');
-  prios.push({p:PRIO.pmpc,titre:'PM Pack Confort - '+pmpcBad.length+' vendeur'+(pmpcBad.length>1?'s':'')+' sous '+(OBJ.pmpc*0.9).toFixed(0)+CUR,detail:noms+'. Obj. '+OBJ.pmpc+CUR+' - Proposer systematiquement le pack confort a chaque vente de verres progressifs.'});
-}
-
-const mdcBad=optsOpt.filter(r=>r.mdc<OBJ.mdc&&r.mdc<moy_mdc-5).sort((a,b)=>a.mdc-b.mdc);
-if(mdcBad.length>0&&prios.length<9){
-  const noms=mdcBad.slice(0,4).map(r=>r.nom.split(' ')[0]+' '+r.mdc.toFixed(0)+'%').join(' - ');
-  prios.push({p:PRIO.mdc,titre:'% MdC - '+mdcBad.length+' vendeur'+(mdcBad.length>1?'s':'')+' sous moy. magasin '+moy_mdc.toFixed(0)+'%',detail:noms+'. Obj. '+OBJ.mdc+'%. Proposer systematiquement les marques exclusives et intemporelles a chaque vente.'});
-}
-
-const lukBad=optsOpt.filter(r=>r.luk<OBJ.luk);
-const lukPct=Math.round((lukBad.length/optsOpt.length)*100);
-if(lukPct>=60&&prios.length<9){
-  const luk0=lukBad.filter(r=>r.luk===0);
-  const det=luk0.length>0?luk0.map(r=>r.nom.split(' ')[0]).join(', ')+' a 0%. Rappeler le programme LUKKAS.':lukBad.slice(0,4).map(r=>r.nom.split(' ')[0]+' '+r.luk.toFixed(0)+'%').join(' - ')+'. Obj. '+OBJ.luk+'%.';
-  prios.push({p:PRIO.luk,titre:'LUKKAS - '+lukPct+'% du magasin sous objectif '+OBJ.luk+'%',detail:det});
-}
-
+// ── Test auditif ──────────────────────────────────────────────────────────
 const avgTa=auds.length?auds.reduce((s,a)=>s+a.ta,0)/auds.length:0;
 if(avgTa<OBJ.ta-10&&prios.length<9){
   const ta0=auds.filter(a=>a.ta===0);
@@ -2286,24 +2318,28 @@ if(avgTa<OBJ.ta-10&&prios.length<9){
   prios.push({p:PRIO.ta,titre:'Test auditif - '+Math.round(avgTa)+'% magasin vs obj. '+OBJ.ta+'%',detail:det});
 }
 
+// ── Prothèses audio ───────────────────────────────────────────────────────
 const audProthBad=auds.filter(a=>a.proth<OBJ.proth*0.85).sort((a,b)=>a.proth-b.proth);
 if(audProthBad.length>0&&prios.length<9){
   const noms=audProthBad.map(a=>a.nom.split(' ')[0]+' ('+a.proth+'/'+OBJ.proth+')').join(', ');
   prios.push({p:PRIO.proth,titre:'Protheses - '+audProthBad.length+' audioprothesiste'+(audProthBad.length>1?'s':'')+' en retard',detail:noms+'. Analyser concretisation et reussite essai pour identifier les leviers.'});
 }
 
+// ── Tx réussite audio ─────────────────────────────────────────────────────
 const audTxeBad=auds.filter(a=>a.txe<OBJ.txe&&a.txe>0).sort((a,b)=>a.txe-b.txe);
 if(audTxeBad.length>0&&prios.length<9){
   const noms=audTxeBad.map(a=>a.nom.split(' ')[0]+' '+a.txe.toFixed(0)+'%').join(', ');
   prios.push({p:PRIO.txe,titre:'Taux reussite essai audio - sous objectif '+OBJ.txe+'%',detail:noms+". Soigner le suivi et les relances avant fin de periode d'essai."});
 }
 
+// ── Assurance audio ───────────────────────────────────────────────────────
 const audAssurBad=auds.filter(a=>a.assur<OBJ.assur*0.5);
 if(audAssurBad.length>0&&prios.length<9){
   const noms=audAssurBad.map(a=>a.nom.split(' ')[0]+(a.assur===0?' (0%)':' '+a.assur.toFixed(0)+'%')).join(', ');
   prios.push({p:PRIO.assur,titre:"Assurance audio - "+audAssurBad.length+' audioprothesiste'+(audAssurBad.length>1?'s':'')+' tres en deca obj. '+OBJ.assur+'%',detail:noms+". Systematiser la presentation d'AudioPrev a chaque adaptation prothetique."});
 }
 
+// ── Magasins entre 85 et 95% ──────────────────────────────────────────────
 magasins.filter(m=>m.pos>=85&&m.pos<95).sort((a,b)=>a.pos-b.pos).forEach(m=>{
   if(prios.length<9&&!prios.find(p=>p.titre.includes(cap(m.nom))))
     prios.push({p:PRIO.nb,titre:cap(m.nom)+' - '+m.pos.toFixed(1)+'% - a surveiller',detail:'RAF/jour '+m.raf.toFixed(1)+'k'+CUR+' sur '+jL+". A la frontiere de l'objectif - maintenir la dynamique en fin de mois."});
