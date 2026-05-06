@@ -1700,6 +1700,7 @@ function buildReportHTML(d) {
   #wrapper{
     width:1122px;
     max-width:100%;
+    overflow:hidden;
     background:#fff;
     padding:8px 14px 50px;
     font-family:'Inter',-apple-system,sans-serif;
@@ -1724,6 +1725,9 @@ function buildReportHTML(d) {
   .col-divider{background:#D3D1C7;width:0.5px}
   .sec-label{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#5F5E5A;margin-bottom:4px}
   table{width:100%;border-collapse:collapse;font-size:9px}
+  #collab-table{table-layout:fixed;font-size:8px;word-break:break-word}
+  #collab-table thead th{font-size:7.5px;padding:2px 2px;white-space:normal;line-height:1.1}
+  #collab-table tbody td{padding:1.5px 2px;font-size:8px}
   thead th{font-size:8.5px;font-weight:500;color:#5F5E5A;background:#F1EFE8;padding:2px 4px;border:0.5px solid #D3D1C7;text-align:center;line-height:1.25;white-space:nowrap}
   thead th:first-child{text-align:left}
   tbody td{padding:1.5px 4px;border:0.5px solid #D3D1C7;text-align:center;color:#2C2C2A;line-height:1.25}
@@ -2016,7 +2020,7 @@ function buildReportHTML(d) {
   <div class="col-divider"></div>
   <div>
     <div class="sec-label">Collaborateurs</div>
-    <table>
+    <table id="collab-table">
       <thead><tr>${collabHeader}</tr></thead>
       <tbody>${collabRows}</tbody>
     </table>
