@@ -489,6 +489,10 @@
     <div id="taux-panel">
       <h3>⏱ Temps de travail des collaborateurs</h3>
       <p>Vérifiez et ajustez le taux pour chaque collaborateur actif ce mois. Les objectifs de volume (ventes, CA, prothèses) seront proratisés en conséquence.</p>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:#888780;display:block;margin-bottom:5px">📝 Note contextuelle (optionnel)</label>
+        <textarea id="rapport-note" placeholder="Ex: Semaine de formation le 12/05, fermeture le 15/05..." style="width:100%;background:#2C2C2A;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#D3D1C7;font-size:11px;padding:8px 10px;resize:vertical;min-height:48px;font-family:inherit;box-sizing:border-box"></textarea>
+      </div>
       <div class="taux-grid" id="taux-grid"></div>
       <button class="btn-generate" onclick="generateReport()" style="margin-top:0">
         Générer le rapport
@@ -894,6 +898,10 @@ function showTauxPanel() {
     })
     grid.appendChild(row)
   })
+  // Restaurer la note sauvegardée
+  const savedNote = savedTaux['__note__'] || ''
+  const noteEl = document.getElementById('rapport-note')
+  if (noteEl) noteEl.value = savedNote
   document.getElementById('btn-generate').style.display = 'none'
   document.getElementById('taux-panel').style.display = 'block'
 }
@@ -948,8 +956,13 @@ function getTauxMap() {
     saved['__incl_'+nom] = chk.checked
     if (!chk.checked) excluded.add(nom)
   })
+  // Sauvegarder la note
+  const noteEl = document.getElementById('rapport-note')
+  const note = noteEl ? noteEl.value.trim() : (saved['__note__'] || '')
+  if (note) saved['__note__'] = note
+  else delete saved['__note__']
   localStorage.setItem('oc_taux', JSON.stringify(saved))
-  return { map, excluded }
+  return { map, excluded, note }
 }
 
 function setStatus(msg, cls='') {
@@ -986,7 +999,7 @@ function toNum(v) {
 
 // ── Génération rapport ────────────────────────────────────────────────────────
 function generateReport() {
-  const { map: tauxMap, excluded: excludedCollabs } = getTauxMap()
+  const { map: tauxMap, excluded: excludedCollabs, note } = getTauxMap()
   setStatus('Analyse des données…')
   try {
     const nomMagasin   = document.getElementById('nom-magasin').value.trim() || 'Optical Center'
@@ -1132,9 +1145,17 @@ function generateReport() {
     const avgTxe   = auds.length ? (auds.reduce((s, r) => s + r.txe, 0) / auds.length).toFixed(0) : 0
 
     // ── Mois et date ───────────────────────────────────────────────────────
-    const now = new Date()
-    const moisLabel = now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-    const dateLabel = extractDate  // date d'extraction du CSV
+    // Date du rapport : depuis la ligne 1 du fichier stats_opt (période couverte)
+    const line1Opt = (state.raw['stats_opt'].split('\n')[1] || '').trim()
+    const line1Pos = (state.raw['pos'].split('\n')[1] || '').trim()
+    const allDatesInLine = (line1Opt || line1Pos).match(/(\d{2})\/(\d{2})\/(\d{4})/g) || []
+    const lastDateStr = allDatesInLine[allDatesInLine.length - 1] || extractDate
+    const lastDateParts = lastDateStr.split('/')
+    const extractDateObj = lastDateParts.length === 3
+      ? new Date(parseInt(lastDateParts[2]), parseInt(lastDateParts[1])-1, parseInt(lastDateParts[0]))
+      : new Date()
+    const moisLabel = extractDateObj.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+    const dateLabel = extractDate
 
     // ── Build HTML ─────────────────────────────────────────────────────────
     const html = buildReportHTML({
@@ -1147,6 +1168,8 @@ function generateReport() {
       obj_ca: _s.obj_ca,
       tauxMap: tauxMap,
       excluded: [...excludedCollabs],
+      note: note,
+      extractDateObj: extractDateObj,
       tvaTot: tvaTotalRow ? toNum(tvaTotalRow['% Vente Additionnelle']) : null,
       taTot: taTotalRow ? toNum(taTotalRow['% Test auditif']) : null,
       cols_opt: _s.cols_opt || DEFAULTS.cols_opt,
@@ -1181,6 +1204,7 @@ function buildReportHTML(d) {
   const nomMagasin = d.nomMagasin || 'Optical Center'
   const { OBJ, magasins, anoms } = d
   const OBJ_CA = d.obj_ca || 20
+  const extractDateObj = d.extractDateObj || new Date()
   const excludedSet = new Set(d.excluded || [])
   const opts = d.opts.filter(r => !excludedSet.has(r.nom))
   const auds = d.auds.filter(a => !excludedSet.has(a.nom))
@@ -1662,6 +1686,17 @@ function buildReportHTML(d) {
     ? [allScores[1], allScores[0], allScores[2]]
     : allScores
 
+  // Historique podium : sauvegarder et récupérer
+  const podiumKey = 'oc_podium_' + extractDateObj.getFullYear() + '_' + (extractDateObj.getMonth()+1)
+  const prevKey   = 'oc_podium_' + (extractDateObj.getMonth()===0 ? extractDateObj.getFullYear()-1 : extractDateObj.getFullYear()) + '_' + (extractDateObj.getMonth()===0 ? 12 : extractDateObj.getMonth())
+  // Sauvegarder scores du mois courant
+  const podiumSave = {}
+  allScores.forEach(s => { podiumSave[s.nom] = s.score })
+  try { localStorage.setItem(podiumKey, JSON.stringify(podiumSave)) } catch(e) {}
+  // Récupérer scores du mois précédent
+  let prevScores = {}
+  try { prevScores = JSON.parse(localStorage.getItem(prevKey) || '{}') } catch(e) {}
+
   let podiumHTML = ''
   if (allScores.length >= 2) {
     podiumOrder.forEach((collab, vi) => {
@@ -1674,11 +1709,17 @@ function buildReportHTML(d) {
         '<span class="podium-tag v">'+h+'</span>'
       ).join('')
       const badge = collab.isAud ? '<span class="podium-tag" style="background:rgba(24,95,165,0.3);color:#7AADCF">Audio</span>' : ''
+      const prevScore = prevScores[collab.nom]
+      const delta = prevScore !== undefined ? collab.score - prevScore : null
+      const deltaHtml = delta === null ? ''
+        : delta > 0 ? '<span style="color:#8DC85A;font-size:8px;font-weight:600"> ↑'+delta+'</span>'
+        : delta < 0 ? '<span style="color:#FF8888;font-size:8px;font-weight:600"> ↓'+Math.abs(delta)+'</span>'
+        : '<span style="color:#888780;font-size:8px"> =</span>'
       podiumHTML += '<div class="podium-card '+cls+'">'
         + '<div class="podium-medal">'+medal+'</div>'
         + '<div class="podium-prenom">'+prenom+'</div>'
         + '<div class="podium-nom">'+nom+'</div>'
-        + '<div class="podium-score-wrap"><span class="podium-score">'+collab.score+'</span><span class="podium-pct">%</span></div>'
+        + '<div class="podium-score-wrap"><span class="podium-score">'+collab.score+'</span><span class="podium-pct">%</span>'+deltaHtml+'</div>'
         + '<div class="podium-bar-wrap"><div class="podium-bar" style="width:'+collab.score+'%"></div></div>'
         + '<div class="podium-tags">'+tags+badge+'</div>'
         + '</div>'
@@ -2024,6 +2065,7 @@ function buildReportHTML(d) {
       <thead><tr>${collabHeader}</tr></thead>
       <tbody>${collabRows}</tbody>
     </table>
+    ${d.note ? `<div style="margin-top:5px;padding:5px 8px;background:#2C2C2A;border-radius:5px;border-left:2px solid #CC1719;font-size:8px;color:#888780"><span style="color:#D3D1C7;font-weight:500">📝 Note : </span>${d.note}</div>` : ''}
     <div class="legend" style="margin-top:4px">
       <div class="leg-item"><div class="leg-dot" style="background:#EAF3DE;border:0.5px solid #3B6D11"></div><span>≥ 100% obj.</span></div>
       <div class="leg-sep"></div>
