@@ -500,7 +500,7 @@
     </div>
 
     <!-- GENERATE -->
-    <button class="btn-generate" id="btn-generate" disabled onclick="showTauxPanel()">
+    <button class="btn-generate" id="btn-generate" disabled onclick="showTauxOrGenerate()">
       Configurer &amp; Générer →
     </button>
     <div class="status" id="status"></div>
@@ -879,6 +879,19 @@ function checkReady() {
   if (allLoaded) setStatus('5 fichiers chargés — cliquez pour configurer et générer', 'ok')
 }
 
+function showTauxOrGenerate() {
+  // En mode réseau (pas de lignes par collaborateur), générer directement
+  const optRaw = state.raw['stats_opt'] || ''
+  const firstDataLine = optRaw.split('\n')[4] || ''
+  const headers = (optRaw.split('\n')[2] || '').split(';')
+  const networkMode = headers[0] === 'Code Magasin'
+  if (networkMode) {
+    generateReport()
+  } else {
+    showTauxPanel()
+  }
+}
+
 function showTauxPanel() {
   // Détecter collaborateurs actifs depuis les fichiers chargés
   const collabs = getActiveCollabs()
@@ -1056,32 +1069,67 @@ function generateReport() {
     const rafTotal = magasins.reduce((s, r) => s + r.raf, 0)
     const avgPos   = (magasins.reduce((s, r) => s + r.pos, 0) / magasins.length).toFixed(1)
 
+    // ── Détection mode réseau vs mode magasin ────────────────────────────
+    // Mode réseau : stats_opt a "Code Magasin" en première colonne (pas "Nom Vendeur")
+    const firstOptRow = parseCSV(state.raw['stats_opt'])
+    const isNetworkMode = firstOptRow.length > 0 &&
+      (Object.keys(firstOptRow[0])[0] === 'Code Magasin' ||
+       Object.keys(firstOptRow[0]).includes('Code Magasin'))
+    console.log('Mode réseau:', isNetworkMode)
+
     // ── Stats Opt ─────────────────────────────────────────────────────────
-    const optRows = parseCSV(state.raw['stats_opt'])
+    const optRows = firstOptRow
 
     // ── PM 1ère paire ──────────────────────────────────────────────────────
     // Fichier par matricule : col 2 = Matricule Vendeur, col 3 = Prix de vente moyen
     const pm1Rows = parseCSV(state.raw['pm1'])
-    const pm1Map = {}  // matricule → pm1 valeur
+    const pm1Map = {}  // matricule (collab) ou nom magasin (réseau) → pm1
     pm1Rows.forEach(r => {
-      const mat = String(r['Matricule Vendeur'] || '').trim()
       const val = toNum(r['Prix de vente moyen'])
-      if (mat && mat !== 'null' && val > 0) pm1Map[mat] = val
+      if (val <= 0) return
+      if (isNetworkMode) {
+        // En mode réseau : clé = cap(Libelle Magasin)
+        const lib = cap(String(r['Libelle Magasin'] || '').trim())
+        if (lib) pm1Map[lib] = val
+      } else {
+        // En mode collab : clé = Matricule Vendeur
+        const mat = String(r['Matricule Vendeur'] || '').trim()
+        if (mat && mat !== 'null') pm1Map[mat] = val
+      }
     })
-    const allOpt = optRows.filter(r => r['Nom Vendeur'] && String(r['Nom Vendeur']).trim() !== '')
+    // En mode réseau, utiliser "Nom Magasin" comme clé de nom
+    const allOpt = isNetworkMode
+      ? optRows.filter(r => {
+          const nom = String(r['Nom Magasin'] || '').trim()
+          const code = String(r['Code Magasin'] || '').trim()
+          return nom && code && !nom.toUpperCase().includes('TOTAL') && !isNaN(parseInt(code))
+        }).map(r => ({ ...r, 'Nom Vendeur': cap(String(r['Nom Magasin'])), 'Matricule Vendeur': r['Code Magasin'] }))
+      : optRows.filter(r => r['Nom Vendeur'] && String(r['Nom Vendeur']).trim() !== '')
     const activeOpt = allOpt.filter(r => toNum(r['Nb Vente Opt']) > 0)
     const anomOpt   = allOpt.filter(r => toNum(r['CA Généré Opt']) < 0 && toNum(r['Nb Vente Opt']) === 0)
 
     // ── Stats Audio ────────────────────────────────────────────────────────
     const audRows = parseCSV(state.raw['stats_audio'])
-    const activeAud = audRows.filter(r => r['Nom Vendeur'] && String(r['Nom Vendeur']).trim() !== '' && toNum(r['Nb Ventes']) > 0)
+    const activeAud = isNetworkMode
+      ? audRows.filter(r => {
+          const nom = String(r['Nom Magasin'] || '').trim()
+          const code = String(r['Code Magasin'] || '').trim()
+          return nom && code && !nom.toUpperCase().includes('TOTAL') && !isNaN(parseInt(code)) && toNum(r['Nb Ventes']) > 0
+        }).map(r => ({ ...r, 'Nom Vendeur': cap(String(r['Nom Magasin'])), 'Matricule Vendeur': r['Code Magasin'] }))
+      : audRows.filter(r => r['Nom Vendeur'] && String(r['Nom Vendeur']).trim() !== '' && toNum(r['Nb Ventes']) > 0)
     // taMap : % test auditif pour TOUS les collaborateurs (y compris opticiens)
     const taMap = {}
     let taTotalRow = null  // ligne TOTAL stats audio
     audRows.forEach(r => {
-      const nom = String(r['Nom Vendeur'] || '').trim()
-      if (nom) taMap[norm(nom)] = toNum(r['% Test auditif'])
-      else taTotalRow = r
+      const nom = isNetworkMode
+        ? String(r['Nom Magasin'] || '').trim()
+        : String(r['Nom Vendeur'] || '').trim()
+      const code = isNetworkMode ? String(r['Code Magasin'] || '').trim() : nom
+      if (nom && !nom.toUpperCase().includes('TOTAL') && (isNetworkMode ? !isNaN(parseInt(code)) : true)) {
+        taMap[norm(nom)] = toNum(r['% Test auditif'])
+      } else {
+        taTotalRow = r
+      }
     })
 
     // ── CA Audio ───────────────────────────────────────────────────────────
@@ -1090,11 +1138,13 @@ function generateReport() {
     const tvaMap    = {}  // taux vente additionnelle (audioprothésistes actifs uniquement)
     let tvaTotalRow = null  // ligne TOTAL du fichier CA audio
     caAudRows.forEach(r => {
-      const nom = String(r['Nom Vendeur'] || '').trim()
+      const nom = isNetworkMode
+        ? cap(String(r['Nom du Mag'] || '').trim())
+        : String(r['Nom Vendeur'] || '').trim()
+      if (isNetworkMode && nom.toUpperCase().includes('TOTAL')) return
       if (nom && toNum(r['CA Généré Audio']) !== 0)
         caAudMap[norm(nom)] = toNum(r['CA Généré Audio'])
-      if (nom)
-        tvaMap[norm(nom)] = toNum(r['% Vente Additionnelle'])
+      if (nom) tvaMap[norm(nom)] = toNum(r['% Vente Additionnelle'])
       if (!nom)  // ligne TOTAL = nom vide
         tvaTotalRow = r
     })
@@ -1102,7 +1152,9 @@ function generateReport() {
     // Enrichir audio avec CA
     const auds = activeAud.map(r => ({
       nom: cap(r['Nom Vendeur']),
-      pm1: pm1Map[String(r['Matricule Vendeur'] || '').trim()] || 0,
+      pm1: isNetworkMode
+        ? pm1Map[cap(String(r['Nom Magasin'] || '').trim())] || 0
+        : pm1Map[String(r['Matricule Vendeur'] || '').trim()] || 0,
       proth: toNum(r['Nb prothèses vendues']),
       ca: caAudMap[norm(r['Nom Vendeur'])] || 0,
       txc: toNum(r['Tx de concrétisation audio']),
@@ -1128,7 +1180,9 @@ function generateReport() {
       mdc: toNum(r['% Marque Excl. et Intemp.']),
       luk: toNum(r['% LUKKAS']),
       pmpc: toNum(r['PM Pack Confort']),
-      pm1: pm1Map[String(r['Matricule Vendeur'] || '').trim()] || 0,
+      pm1: isNetworkMode
+        ? pm1Map[cap(String(r['Nom Magasin'] || '').trim())] || 0
+        : pm1Map[String(r['Matricule Vendeur'] || '').trim()] || 0,
       tva: tvaMap[norm(r['Nom Vendeur'])] || 0,
       ta: taMap[norm(r['Nom Vendeur'])] || 0,
     }))
@@ -1173,6 +1227,7 @@ function generateReport() {
       tauxMap: tauxMap,
       excluded: [...excludedCollabs],
       note: note,
+      isNetworkMode,
       extractDateObj: extractDateObj,
       tvaTot: tvaTotalRow ? toNum(tvaTotalRow['% Vente Additionnelle']) : null,
       taTot: taTotalRow ? toNum(taTotalRow['% Test auditif']) : null,
@@ -1206,7 +1261,7 @@ function norm(s) {
 
 function buildReportHTML(d) {
   const nomMagasin = d.nomMagasin || 'Optical Center'
-  const { OBJ, magasins, anoms } = d
+  const { OBJ, magasins, anoms, isNetworkMode } = d
   const OBJ_CA = d.obj_ca || 20
   const extractDateObj = d.extractDateObj || new Date()
   const excludedSet = new Set(d.excluded || [])
@@ -1256,7 +1311,7 @@ function buildReportHTML(d) {
     return `<th${s}>${label}<br><span style="font-weight:400;${sc}">${sub}</span></th>`
   }
   let collabHeader = `<th style="text-align:left">Collaborateur</th>`
-  collabHeader += th('Tps trav.', 'temps travail')
+  if (!d.isNetworkMode) collabHeader += th('Tps trav.', 'temps travail')
   collabHeader += th('CA généré', `en k${d.currency}`)
   collabHeader += th('Nb ventes', `obj. ${OBJ.nb}`)
   if (d.cols_opt.includes('pm'))   collabHeader += th('PM', `obj. ${OBJ.pm}${d.currency}`)
@@ -1289,14 +1344,14 @@ function buildReportHTML(d) {
     const oNb   = objPro(r.nom, OBJ.nb)
     const oProth = objPro(r.nom, OBJ.proth)
     if (r.anom) {
-      collabRows += `<tr class="anom-row"><td>${r.nom}</td><td class="anom-cell" colspan="${3 + d.cols_opt.length + 4 + d.cols_aud.length + 1}">CA négatif — anomalie à régulariser</td></tr>`
+      collabRows += `<tr class="anom-row"><td>${r.nom}</td><td class="anom-cell" colspan="${(d.isNetworkMode ? 2 : 3) + d.cols_opt.length + 4 + d.cols_aud.length + 1}">CA négatif — anomalie à régulariser</td></tr>`
       return
     }
     const aud = audMap[norm(r.nom)]
     if (aud) nomsFusionnes.add(norm(r.nom))
     collabRows += `<tr>
       <td>${r.nom}</td>
-      <td style="text-align:center;color:#888780;font-size:8px">${(tauxMap[r.nom]||100)+'%'}</td>
+      ${!isNetworkMode ? `<td style="text-align:center;color:#888780;font-size:8px">${(tauxMap[r.nom]||100)+'%'}</td>` : ''}
       <td style="text-align:right;font-weight:500">${((aud ? r.ca_total : r.ca)/1000).toFixed(1)}k${d.currency}</td>
       <td>${pill(r.nb, oNb)}</td>
       ${d.cols_opt.includes('pm') ? `<td>${pill(r.pm, OBJ.pm, d.currency)}</td>` : ''}
@@ -1321,11 +1376,11 @@ function buildReportHTML(d) {
   // Audio purs (non fusionnés)
   const audPurs = auds.filter(a => !nomsFusionnes.has(norm(a.nom)))
   if (audPurs.length > 0) {
-    collabRows += `<tr class="sep-row"><td colspan="${4 + d.cols_opt.length + 4 + d.cols_aud.length + 1}">Audio uniquement</td></tr>`
+    collabRows += `<tr class="sep-row"><td colspan="${(d.isNetworkMode ? 3 : 4) + d.cols_opt.length + 4 + d.cols_aud.length + 1}">Audio uniquement</td></tr>`
     audPurs.forEach(r => {
       collabRows += `<tr>
         <td>${r.nom}</td>
-        <td style="text-align:center;color:#888780;font-size:8px">${(tauxMap[r.nom]||100)+'%'}</td>
+        ${!d.isNetworkMode ? `<td style="text-align:center;color:#888780;font-size:8px">${(tauxMap[r.nom]||100)+'%'}</td>` : ''}
         <td style="text-align:right;font-weight:500">${(r.ca/1000).toFixed(1)}k${d.currency}</td>
         ${['pm','tc','sop','pack','pmpc','pm1','mdc','luk'].map(k=>d.cols_opt.includes(k)?na(''):'').join('')}
         <td class="ta-bg">${pill(r.ta, OBJ.ta, '%')}</td>
@@ -1377,7 +1432,7 @@ function buildReportHTML(d) {
   }
 
   let objRows = ''
-  opts.filter(r => !auds.find(a => a.nom === r.nom)).forEach(r => {
+  opts.filter(r => d.isNetworkMode || !auds.find(a => a.nom === r.nom)).forEach(r => {
     // Objectifs proratisés par taux de travail
     const oNb   = objPro(r.nom, OBJ.nb)
     // Objectifs qualitatifs déjà atteints ?
@@ -1543,7 +1598,7 @@ function buildReportHTML(d) {
   let totalProthActuel = 0, totalProthFinal = 0
 
   // Vendeurs optique (hors audio)
-  opts.filter(r => !audNomSet.has(r.nom)).forEach(r => {
+  opts.filter(r => d.isNetworkMode || !audNomSet.has(r.nom)).forEach(r => {
     // Recalculer vTotal comme dans objRows (facteur limitant)
     function vNeededG(cp,op,n){if(cp>=op)return 0;var d=1-op/100;if(d<=0)return 999;return Math.max(0,(op/100*n-cp/100*n)/d);}
     var vSopG  = vNeededG(r.sop,  OBJ.sop,  r.nb)
@@ -1662,7 +1717,7 @@ function buildReportHTML(d) {
   // Construire le classement (opticiens + audio sur profil audio)
   const audNomSetP = new Set(auds.map(a => a.nom))
   const allScores = [
-    ...opts.filter(r => !audNomSetP.has(r.nom)).map(r => ({
+    ...opts.filter(r => d.isNetworkMode || !audNomSetP.has(r.nom)).map(r => ({
       nom: r.nom, score: scoreCollab(r, false), isAud: false,
       highlights: [
         { label:'CA',    ok: r.ca >= objPro(r.nom, OBJ_CA)*1000 },
@@ -2026,7 +2081,7 @@ function buildReportHTML(d) {
 
 <div class="header">
   <div>
-    <div class="header-title">Performance — ${nomMagasin}</div>
+    <div class="header-title">${d.isNetworkMode ? "Performance Réseau — " : "Performance — "}${nomMagasin}</div>
     <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} j. ouvrés / ${d.jourstotal} &nbsp;·&nbsp; Objectifs proratisés &nbsp;·&nbsp; Collaborateurs actifs uniquement</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
