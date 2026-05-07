@@ -545,6 +545,7 @@
           </div>
           <div class="settings-field-row">
             <div class="settings-field"><label>Objectif CA collaborateur (en k)</label><input type="number" id="s-obj-ca" min="1"></div>
+            <div class="settings-field"><label>Seuil alerte RAF/jour (k€) — auto si vide</label><input type="number" id="s-raf-seuil" min="0" step="0.5" placeholder="auto"></div>
             <select class="prio-select" id="sp-obj-ca" title="Priorité"><option value="1">P1</option><option value="2" selected>P2</option><option value="3">P3</option></select>
           </div>
         </div>
@@ -676,7 +677,7 @@ const DEFAULTS = { lang:'fr', currency:'€',
   jours_ecoules:23, jours_mois:25,
   cols_opt: ['pm','tc','sop','mdc'],
   cols_aud: ['txe','assur'],
-  obj_ca:20, nb:50, pm:450, sop:40, tc:95, pack:50, mdc:66, luk:12, pmpc:80, pm1:120,
+  obj_ca:20, raf_seuil:0, nb:50, pm:450, sop:40, tc:95, pack:50, mdc:66, luk:12, pmpc:80, pm1:120,
   proth:30, txc:95, txe:95, assur:70, ta:30, tva:50, pm_aud:2350, pm_app:1250,
   p_obj_ca:1, p_nb:1, p_pm:2, p_pm1:2, p_tva:3, p_sop:2, p_tc:2, p_pack:2, p_mdc:2, p_luk:2, p_pmpc:2,
   p_proth:3, p_txc:3, p_txe:3, p_assur:3, p_ta:2, p_pm_aud:2, p_pm_app:2
@@ -688,6 +689,7 @@ function loadSettings() {
 function openSettings() {
   const s = loadSettings()
   document.getElementById('s-obj-ca').value   = s.obj_ca
+  document.getElementById('s-raf-seuil').value = s.raf_seuil || ''
   // Synchro jours (depuis la page d'accueil)
   const je = parseInt(document.getElementById('jours-ecoules').value) || s.jours_ecoules
   const jm = parseInt(document.getElementById('jours-mois').value)    || s.jours_mois
@@ -735,6 +737,7 @@ function closeSettings() {
 function saveSettings() {
   const s = {
     obj_ca:   parseInt(document.getElementById('s-obj-ca').value) || DEFAULTS.obj_ca,
+    raf_seuil: parseFloat(document.getElementById('s-raf-seuil').value) || 0,
     jours_ecoules: parseInt(document.getElementById('jours-ecoules').value) || DEFAULTS.jours_ecoules,
     jours_mois:    parseInt(document.getElementById('jours-mois').value)    || DEFAULTS.jours_mois,
     lang:     document.getElementById('s-lang').value,
@@ -1034,7 +1037,7 @@ function generateReport() {
         const ca = toNum(caVal)
         return {
           nom: cap(String(r['Libelle Magasin'])),
-          pos: toNum(r['Positionnement']),
+          pos: joursEcoules > 0 ? (ca * jourstotal / joursEcoules) / obj * 100 : toNum(r['Positionnement']),
           obj,
           ca,
           get raf() { return joursRest > 0 ? Math.max(0, (this.obj - this.ca) / joursRest) : 0 }
@@ -1162,6 +1165,7 @@ function generateReport() {
       nomMagasin,
       moisLabel, dateLabel, joursEcoules, jourstotal, joursRest,
       OBJ, magasins, avgPos, objTotal, rafTotal,
+      rafSeuil: _s.raf_seuil > 0 ? _s.raf_seuil : (objTotal / jourstotal),
       opts, anoms, auds,
       totCa, totCaOpt, totCaAud, avgPm, avgTc, avgSop, avgMdc, totProth, avgTxe,
       currency: CURRENCY,
@@ -2055,10 +2059,10 @@ function buildReportHTML(d) {
         <div style="font-size:14px;font-weight:600;color:#fff;line-height:1">${Math.round(d.totCaAud)}k${d.currency}</div>
         <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${auds.length} audioprothésiste${auds.length > 1 ? 's' : ''}</div>
       </div>
-      <div style="background:${d.joursRest<=5&&d.rafTotal>2?'#3D0A0A':'#2C2C2A'};border-radius:7px;padding:5px 8px 6px;margin-top:5px;${d.joursRest<=5&&d.rafTotal>2?'border:1px solid #CC1719;animation:raf-pulse 1.5s ease-in-out infinite;':''}">
-        <div style="font-size:7.5px;font-weight:500;color:${d.joursRest<=5&&d.rafTotal>2?'#FF8888':'#888780'};margin-bottom:2px">RAF / jour global${d.joursRest<=5&&d.rafTotal>2?' 🚨':''}</div>
-        <div style="font-size:14px;font-weight:600;color:${d.joursRest<=5&&d.rafTotal>2?'#FF4444':'#fff'};line-height:1">${d.rafTotal.toFixed(1)}k${d.currency}</div>
-        <div style="font-size:7px;color:${d.joursRest<=5&&d.rafTotal>2?'#FF8888':'#5F5E5A'};margin-top:2px">magasin · ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''}</div>
+      <div style="background:${d.rafTotal>d.rafSeuil?'#3D0A0A':d.joursRest>0&&d.rafTotal===0?'#0D2D0D':'#2C2C2A'};border-radius:7px;padding:5px 8px 6px;margin-top:5px;${d.rafTotal>d.rafSeuil?'border:1px solid #CC1719;animation:raf-pulse 1.5s ease-in-out infinite;':d.joursRest>0&&d.rafTotal===0?'border:1px solid #3B6D11;':''}">
+        <div style="font-size:7.5px;font-weight:500;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#888780'};margin-bottom:2px">RAF / jour global${d.rafTotal>d.rafSeuil?' 🚨':d.joursRest>0&&d.rafTotal===0?' 🎯':''}</div>
+        <div style="font-size:14px;font-weight:600;color:${d.rafTotal>d.rafSeuil?'#FF4444':d.joursRest>0&&d.rafTotal===0?'#7DC850':'#fff'};line-height:1">${d.rafTotal.toFixed(1)}k${d.currency}</div>
+        <div style="font-size:7px;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#5F5E5A'};margin-top:2px">magasin · ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''}</div>
       </div>
     </div>
   </div>
