@@ -1503,7 +1503,7 @@ function buildReportHTML(d) {
   let collabHeader = `<th style="text-align:left">Collaborateur</th>`
   if (!d.isNetworkMode) collabHeader += th('Tps trav.', 'temps travail')
   collabHeader += th('CA généré', `en k${d.currency}`)
-  collabHeader += th('Nb ventes', `obj. ${OBJ.nb}`)
+  collabHeader += th('Nb ventes', isNetworkMode ? 'par effectif' : `obj. ${OBJ.nb}`)
   if (d.cols_opt.includes('pm'))   collabHeader += th('PM', `obj. ${OBJ.pm}${d.currency}`)
   if (d.cols_opt.includes('sop'))  collabHeader += th('% SOP', `obj. ${OBJ.sop}%`)
   if (d.cols_opt.includes('tc'))   collabHeader += th('% TC', `obj. ${OBJ.tc}%`)
@@ -1801,8 +1801,21 @@ function buildReportHTML(d) {
     const caProj  = Math.round(vFinal * pmEff / 1000 * 10) / 10
     const caAct   = Math.round(r.ca / 1000 * 10) / 10
 
+    // En mode réseau, si ce magasin a aussi de l'audio → fusionner
+    const audEntry = isNetworkMode ? auds.find(a => a.nom === r.nom) : null
+    let prothActuel = 0, prothFinalMix = 0, caProjAudio = 0
+    if (audEntry) {
+      const objProthMix = objPro(audEntry.nom, OBJ.proth, true)
+      prothActuel   = audEntry.proth
+      prothFinalMix = Math.max(audEntry.proth, objProthMix)
+      caProjAudio   = Math.round(prothFinalMix * Math.max(audEntry.pm_app, OBJ.pm_app) / 1000 * 10) / 10
+      totalProthActuel += prothActuel
+      totalProthFinal  += prothFinalMix
+    }
+    const caProjTotal = audEntry ? Math.round((caProj + caProjAudio) * 10) / 10 : caProj
+
     totalCaActuel  += caAct
-    totalCaProj    += caProj
+    totalCaProj    += caProjTotal
     totalVActuel   += r.nb
     totalVFinal    += vFinal
 
@@ -1810,15 +1823,15 @@ function buildReportHTML(d) {
       + '<td>' + r.nom + '</td>'
       + '<td class="gtd-act">' + caAct + 'k' + d.currency + '</td>'
       + '<td class="gtd-act">' + r.nb + '</td>'
-      + '<td class="gtd-act">–</td>'
+      + '<td class="gtd-act">' + (audEntry ? prothActuel : '–') + '</td>'
       + '<td class="gtd-obj">' + vFinal + '</td>'
-      + '<td class="gtd-obj">–</td>'
-      + '<td class="gtd-res">' + caProj + 'k' + d.currency + '</td>'
+      + '<td class="gtd-obj">' + (audEntry ? prothFinalMix : '–') + '</td>'
+      + '<td class="gtd-res">' + caProjTotal + 'k' + d.currency + '</td>'
       + '</tr>'
   })
 
-  // Audioprothésistes — CA projeté = proth_final × max(PM_prothèse, OBJ.pm_app)
-  auds.forEach(a => {
+  // Audioprothésistes — en mode réseau, exclure ceux déjà dans le tableau optique
+  auds.filter(a => !isNetworkMode || !opts.find(r => r.nom === a.nom)).forEach(a => {
     const objProthA  = objPro(a.nom, OBJ.proth, true)
     const prothFinal = Math.max(a.proth, objProthA)
     const pmAppEff   = Math.max(a.pm_app, OBJ.pm_app)  // PM par prothèse
@@ -2041,6 +2054,10 @@ function buildReportHTML(d) {
   .p1-badge{background:#A32D2D}.p1-head-bg{border-left-color:#A32D2D}
   .p2-badge{background:#854F0B}.p2-head-bg{border-left-color:#854F0B}
   .p3-badge{background:#5F5E5A}.p3-head-bg{border-left-color:#5F5E5A}
+  .p4-badge{background:linear-gradient(135deg,#3B6D11,#5C9A1A);color:#fff}
+  .p4-head-bg{border-left-color:#3B6D11;background:linear-gradient(135deg,#0D2008,#162E0C)}
+  .p4-head-bg .pcard-title{color:#C8EDAA}
+  .p4-head-bg .pcard-detail{color:#8DC85A}
   /* Legend */
   .legend{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:7.5px;color:#5F5E5A}
   .leg-item{display:flex;align-items:center;gap:3px}
@@ -2356,7 +2373,7 @@ ${podiumHTML ? `<div class="podium-section">
 <div class="header">
   <div>
     <div class="header-title">${nomMagasin} — Que faire pour passer au vert ?</div>
-    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''} &nbsp;·&nbsp; Ventes supplémentaires nécessaires par indicateur</div>
+    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''} &nbsp;·&nbsp; ${isNetworkMode ? 'Objectifs par magasin' : 'Ventes supplémentaires nécessaires par indicateur'}</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
 </div>
@@ -2497,6 +2514,9 @@ const joursRest=${d.joursRest};
 const TA_TOT=${d.taTot !== null && d.taTot !== undefined ? d.taTot : -1};
 const TAUX=${JSON.stringify(d.tauxMap||{})};
 const CUR='${d.currency}';
+const IS_RESEAU=${isNetworkMode ? 'true' : 'false'};
+const COLLAB_LABEL=IS_RESEAU?'magasin':'vendeur';
+const COLLABS_LABEL=IS_RESEAU?'magasins':'vendeurs';
 const PRIO=${JSON.stringify(d.prio)};
 const OBJ_CA=${d.obj_ca||20};
 function cap(s){return String(s).toLowerCase().replace(/\\b\\w/g,c=>c.toUpperCase()).trim();}
@@ -2505,151 +2525,236 @@ function isAudio(nom){return !!auds.find(a=>a.nom===nom);}
 const audNoms=new Set(auds.map(a=>a.nom.toLowerCase().trim()));
 const optsOpt=opts.filter(r=>!audNoms.has(r.nom.toLowerCase().trim()));
 const prios=[];
-const jL=joursRest<=1?'dernier jour':joursRest+' jours restants';
+const felicitations=[];
+const jL=joursRest<=0?'dernier jour':joursRest===1?'dernier jour':joursRest+' jours restants';
+const urgence=joursRest<=5;
+const debut=joursRest>=18;
 const n=optsOpt.length||1;
+const prenom=nom=>nom.split(' ')[0];
 
 // Moyennes magasin
 const moy_nb  =optsOpt.reduce((s,r)=>s+r.nb,0)/n;
-const moy_pm  =optsOpt.reduce((s,r)=>s+r.pm,0)/n;
+const moy_pm  =optsOpt.filter(r=>r.pm>0).reduce((s,r)=>s+r.pm,0)/(optsOpt.filter(r=>r.pm>0).length||1);
 const moy_sop =optsOpt.reduce((s,r)=>s+r.sop,0)/n;
 const moy_mdc =optsOpt.reduce((s,r)=>s+r.mdc,0)/n;
 const moy_luk =optsOpt.reduce((s,r)=>s+r.luk,0)/n;
-const moy_pmpc=optsOpt.filter(r=>r.pmpc>0).length?optsOpt.filter(r=>r.pmpc>0).reduce((s,r)=>s+r.pmpc,0)/optsOpt.filter(r=>r.pmpc>0).length:0;
+const moy_pmpc=optsOpt.filter(r=>r.pmpc>0).reduce((s,r)=>s+r.pmpc,0)/(optsOpt.filter(r=>r.pmpc>0).length||1);
+const moy_tc  =optsOpt.reduce((s,r)=>s+r.tc,0)/n;
 
-// ── Fonction générique d'action adaptative ──────────────────────────────
-function actionAdaptive(label, valeurs, objVal, pBase, nomsFn, unitFn) {
-  if(!objVal||!valeurs.length) return null;
-  const tous0    = valeurs.every(v=>v.val===0);
-  const moy      = valeurs.reduce((s,v)=>s+v.val,0)/valeurs.length;
-  const seuil70  = objVal*0.7;
-  const moyBasse = moy < seuil70;
+// Contexte temporel
+const ctxFin = urgence ? 'Chaque vente compte sur '+jL+'.' : 'A traiter sur '+jL+'.';
+const ctxDebut = debut ? 'Poser les bases maintenant pour finir le mois en force.' : '';
 
-  let candidats, titre, detail, prio;
-
-  if(tous0) {
-    // Option C : tout le monde à 0
-    candidats = valeurs;
-    const noms = candidats.slice(0,4).map(v=>v.nom.split(' ')[0]).join(', ');
-    titre = label+' - '+candidats.length+' vendeur'+(candidats.length>1?'s':'')+' à 0%';
-    detail = noms+(candidats.length>4?' et autres':'')+(unitFn?' '+unitFn:'')
-      +'. Obj. '+objVal+(unitFn||'%')+'. '+nomsFn;
-    prio = pBase;
-  } else if(moyBasse) {
-    // Option D : sous 70% objectif (zone critique)
-    candidats = valeurs.filter(v=>v.val<seuil70);
-    if(!candidats.length) return null;
-    const noms = candidats.slice(0,4).map(v=>v.nom.split(' ')[0]+' '+Math.round(v.val)+(unitFn||'%')).join(' - ');
-    titre = label+' - '+candidats.length+' vendeur'+(candidats.length>1?'s':'')+' en zone critique (< '+Math.round(seuil70)+(unitFn||'%')+')';
-    detail = noms+'. Obj. '+objVal+(unitFn||'%')+' - Moy. magasin '+Math.round(moy)+(unitFn||'%')+'. '+nomsFn;
-    prio = pBase;
-  } else {
-    // Option B : sous la moyenne magasin
-    candidats = valeurs.filter(v=>v.val<moy*0.85);
-    if(candidats.length<2) return null;
-    const noms = candidats.slice(0,4).map(v=>v.nom.split(' ')[0]+' '+Math.round(v.val)+(unitFn||'%')).join(' - ');
-    titre = label+' - '+candidats.length+' vendeur'+(candidats.length>1?'s':'')+' sous la moyenne magasin '+Math.round(moy)+(unitFn||'%');
-    detail = noms+'. Obj. '+objVal+(unitFn||'%')+' - Moy. magasin '+Math.round(moy)+(unitFn||'%')+'. '+nomsFn;
-    prio = Math.min(3, pBase+1);
-  }
-  return candidats.length>0 ? {p:prio,titre,detail} : null;
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function listNoms(arr, maxN, valFn) {
+  return arr.slice(0,maxN).map(r=>prenom(r.nom)+(valFn?' ('+valFn(r)+')':'')).join(', ')
+}
+function addPrio(p, titre, detail) {
+  if (prios.length < 9) prios.push({p, titre, detail});
+}
+function addFelicitation(emoji, titre, detail) {
+  felicitations.push({p:4, titre: emoji+' '+titre, detail});
 }
 
-// ── Anomalies CA ──────────────────────────────────────────────────────────
+// ─── ANOMALIES CA ─────────────────────────────────────────────────────────────
 anoms.forEach(r=>{
-  if(prios.length<9) prios.push({p:PRIO.nb,titre:'Anomalie CA - '+r.nom,detail:'CA negatif detecte ('+r.ca.toFixed(0)+CUR+'). Avoirs ou retours non compenses - a regulariser avant cloture mensuelle.'});
+  addPrio(1, 'Anomalie CA — '+r.nom, 'CA négatif détecté ('+r.ca.toFixed(0)+CUR+'). Avoirs ou retours non compensés — à régulariser avant clôture mensuelle.');
 });
 
-// ── Magasins en retard ────────────────────────────────────────────────────
+// ─── MAGASINS EN RETARD CRITIQUE ──────────────────────────────────────────────
 magasins.filter(m=>m.pos<85).sort((a,b)=>a.pos-b.pos).forEach(m=>{
-  if(prios.length<9) prios.push({p:PRIO.nb,titre:cap(m.nom)+' - '+m.pos.toFixed(1)+"% de l'objectif ("+m.obj+'k'+CUR+')',detail:'RAF/jour : '+m.raf.toFixed(1)+'k'+CUR+' sur '+jL+". Zone critique - mobiliser toute l'equipe et faire un point animateur en urgence."});
+  if (!prios.find(p=>p.titre.includes(cap(m.nom)))) {
+    const raf = m.raf.toFixed(1);
+    const detail = urgence
+      ? 'RAF '+raf+'k'+CUR+'/jour sur '+jL+'. Mobiliser toute l\'équipe sur les dossiers en attente et maximiser chaque opportunité client.'
+      : 'RAF '+raf+'k'+CUR+'/jour sur '+jL+'. Relancer les devis en attente, prioriser les ventes à forte valeur et bloquer du temps avec l\'équipe cette semaine.';
+    addPrio(1, cap(m.nom)+' — '+m.pos.toFixed(1)+'% de l\'objectif ('+m.obj+'k'+CUR+')', detail);
+  }
 });
 
-// ── Retard ventes optique ─────────────────────────────────────────────────
+// ─── RAF RÉSEAU CRITIQUE ──────────────────────────────────────────────────────
+const magRafCrit=[...magasins].filter(m=>m.raf>5&&m.pos<100&&!prios.find(p=>p.titre.includes(cap(m.nom)))).sort((a,b)=>b.raf-a.raf)[0];
+if (magRafCrit) {
+  addPrio(1, cap(magRafCrit.nom)+' — '+magRafCrit.raf.toFixed(1)+'k'+CUR+'/jour à générer',
+    'Positionnement '+magRafCrit.pos.toFixed(1)+'%. '+(urgence?'Dernier sprint : ':'')+'Relancer les devis en attente et concentrer l\'énergie sur les ventes à fort panier.');
+}
+
+// ─── RETARD VENTES OPTIQUE ───────────────────────────────────────────────────
 const ventesManquantes=optsOpt.filter(r=>{
-  var t=TAUX[r.nom]!==undefined?TAUX[r.nom]:100;
-  var objNb=Math.round(OBJ.nb*t/100);
+  const t=TAUX[r.nom]!==undefined?TAUX[r.nom]:100;
+  const objNb=Math.round(OBJ.nb*t/100);
   return r.nb<objNb*0.5&&r.nb>0;
 }).sort((a,b)=>a.nb-b.nb);
-if(ventesManquantes.length>0&&prios.length<9){
-  const noms=ventesManquantes.slice(0,3).map(r=>r.nom.split(' ')[0]+' ('+r.nb+' ventes)').join(', ');
-  const objNbEx=Math.round(OBJ.nb*(TAUX[ventesManquantes[0].nom]||100)/100);
-  prios.push({p:PRIO.nb,titre:'Retard ventes optique - '+ventesManquantes.length+' vendeur'+(ventesManquantes.length>1?'s':'')+' sous 50% objectif',detail:noms+'. Obj. proratise : '+objNbEx+' ventes. Identifier les blocages et maximiser les ventes sur '+jL+'.'});
+if (ventesManquantes.length > 0) {
+  const t0 = TAUX[ventesManquantes[0].nom]||100;
+  const objEx = Math.round(OBJ.nb*t0/100);
+  const detail = ventesManquantes.length === 1
+    ? prenom(ventesManquantes[0].nom)+' à seulement '+ventesManquantes[0].nb+' ventes (obj. proratisé : '+objEx+'). Identifier les blocages et mettre en place un accompagnement terrain. '+ctxFin
+    : listNoms(ventesManquantes, 3, r=>r.nb+' ventes')+'. Obj. proratisé : '+objEx+' ventes. '+ctxFin;
+  addPrio(PRIO.nb, 'Retard ventes — '+ventesManquantes.length+' '+COLLAB_LABEL+(ventesManquantes.length>1?'s':'')+' sous 50% objectif', detail);
 }
 
-// ── Magasin RAF élevé ─────────────────────────────────────────────────────
-const magRafMax=[...magasins].filter(m=>m.raf>5&&m.pos<100).sort((a,b)=>b.raf-a.raf)[0];
-if(magRafMax&&prios.length<9&&!prios.find(p=>p.titre.includes(cap(magRafMax.nom)))){
-  prios.push({p:PRIO.nb,titre:cap(magRafMax.nom)+' - '+magRafMax.raf.toFixed(1)+'k'+CUR+'/jour a generer',detail:'Positionnement '+magRafMax.pos.toFixed(1)+'% (obj. '+magRafMax.obj+'k'+CUR+'). Prioriser les ventes a forte valeur et relancer les devis en attente sur '+jL+'.'});
-}
-
-// ── CA collaborateur ──────────────────────────────────────────────────────
+// ─── CA COLLABORATEUR ─────────────────────────────────────────────────────────
 const caBad=optsOpt.filter(r=>r.ca>0&&(r.ca/1000)<OBJ_CA*(TAUX[r.nom]||100)/100*0.85).sort((a,b)=>a.ca-b.ca);
-if(caBad.length>0&&prios.length<9){
-  const noms=caBad.slice(0,3).map(r=>r.nom.split(' ')[0]+' ('+(r.ca/1000).toFixed(1)+'k'+CUR+')').join(', ');
-  prios.push({p:PRIO.obj_ca,titre:'CA collaborateur - '+caBad.length+' vendeur'+(caBad.length>1?'s':'')+' sous '+(OBJ_CA*0.85).toFixed(0)+'k'+CUR,detail:noms+'. Obj. '+OBJ_CA+'k'+CUR+' par collaborateur. Identifier les freins et maximiser les ventes sur '+jL+'.'});
+if (caBad.length > 0) {
+  const detail = caBad.length <= 2
+    ? caBad.map(r=>prenom(r.nom)+' à '+(r.ca/1000).toFixed(1)+'k'+CUR+' (obj. '+(OBJ_CA*(TAUX[r.nom]||100)/100).toFixed(0)+'k'+CUR+')').join(' et ')+'. '+ctxFin
+    : listNoms(caBad, 3, r=>(r.ca/1000).toFixed(1)+'k'+CUR)+'. Obj. '+OBJ_CA+'k'+CUR+'. '+ctxFin;
+  addPrio(PRIO.obj_ca, 'CA — '+caBad.length+' '+COLLAB_LABEL+(caBad.length>1?'s':'')+' sous '+(OBJ_CA*0.85).toFixed(0)+'k'+CUR, detail);
 }
 
-// ── Indicateurs adaptatifs ────────────────────────────────────────────────
-const indicateurs = [
-  { label:'% SOP',  vals:optsOpt.map(r=>({nom:r.nom,val:r.sop})),  obj:OBJ.sop,  p:PRIO.sop,  conseil:"Systematiser la presentation de la garantie a chaque vente." },
-  { label:'Panier moyen', vals:optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), obj:OBJ.pm, p:PRIO.pm, conseil:"Valoriser les montures premium et les verres progressifs a chaque vente.", unite:'€' },
-  { label:'PM Pack Confort', vals:optsOpt.filter(r=>r.pmpc>0).map(r=>({nom:r.nom,val:r.pmpc})), obj:OBJ.pmpc, p:PRIO.pmpc, conseil:"Proposer systematiquement le pack confort a chaque vente de verres progressifs.", unite:'€' },
-  { label:'% MdC',  vals:optsOpt.map(r=>({nom:r.nom,val:r.mdc})),  obj:OBJ.mdc,  p:PRIO.mdc,  conseil:"Proposer systematiquement les marques exclusives et intemporelles a chaque vente." },
-  { label:'% LUKKAS', vals:optsOpt.map(r=>({nom:r.nom,val:r.luk})), obj:OBJ.luk, p:PRIO.luk, conseil:"Rappeler le programme LUKKAS et fixer un objectif individuel." },
-];
-
-indicateurs.forEach(ind=>{
-  if(prios.length>=9||!ind.vals.length) return;
-  const res=actionAdaptive(ind.label,ind.vals,ind.obj,ind.p,ind.conseil,ind.unite||null);
-  if(res) prios.push(res);
-});
-
-// ── Test auditif ──────────────────────────────────────────────────────────
-// Utiliser la ligne TOTAL du fichier stats_audio (couvre opticiens + audio)
-const avgTa = TA_TOT >= 0 ? TA_TOT : (auds.length ? auds.reduce((s,a)=>s+a.ta,0)/auds.length : 0);
-const allCollabs = [...opts, ...auds];
-const ta0 = allCollabs.filter(r => r.ta === 0 && r.ta !== undefined);
-if(avgTa < OBJ.ta - 10 && prios.length < 9){
-  const det = ta0.length === allCollabs.length
-    ? "Aucun test realise ce mois dans le magasin. Integrer systematiquement le depistage auditif a l'accueil client - outil de conversion et de differentiation."
-    : ta0.slice(0,4).map(a=>a.nom.split(' ')[0]).join(', ')+' a 0% (obj. '+OBJ.ta+"%). Integrer le test auditif a l'accueil client de maniere systematique.";
-  prios.push({p:PRIO.ta,titre:'Test auditif - '+Math.round(avgTa)+'% magasin vs obj. '+OBJ.ta+'%',detail:det});
-}
-
-// ── Prothèses audio ───────────────────────────────────────────────────────
+// ─── PROTHÈSES AUDIO ──────────────────────────────────────────────────────────
 const audProthBad=auds.filter(a=>a.proth<OBJ.proth*0.85).sort((a,b)=>a.proth-b.proth);
-if(audProthBad.length>0&&prios.length<9){
-  const noms=audProthBad.map(a=>a.nom.split(' ')[0]+' ('+a.proth+'/'+OBJ.proth+')').join(', ');
-  prios.push({p:PRIO.proth,titre:'Protheses - '+audProthBad.length+' audioprothesiste'+(audProthBad.length>1?'s':'')+' en retard',detail:noms+'. Analyser concretisation et reussite essai pour identifier les leviers.'});
+if (audProthBad.length > 0) {
+  const detail = audProthBad.length === 1
+    ? prenom(audProthBad[0].nom)+' à '+audProthBad[0].proth+' prothèses sur '+OBJ.proth+' attendues. Analyser le taux de concrétisation et les dossiers en cours. '+ctxFin
+    : listNoms(audProthBad, 3, a=>a.proth+'/'+OBJ.proth)+'. '+ctxFin;
+  addPrio(PRIO.proth, 'Prothèses — '+audProthBad.length+' audioprothésiste'+(audProthBad.length>1?'s':'')+' en retard', detail);
 }
 
-// ── Tx réussite audio ─────────────────────────────────────────────────────
+// ─── INDICATEURS ADAPTATIFS ───────────────────────────────────────────────────
+function actionIndicateur(label, vals, objVal, pBase, conseilUrgent, conseilNormal, unite) {
+  if (!objVal || !vals.length) return;
+  const u = unite || '%';
+  const tous0 = vals.every(v=>v.val===0);
+  const moy = vals.reduce((s,v)=>s+v.val,0)/vals.length;
+  const seuil70 = objVal*0.7;
+  const candidats = tous0 ? vals : moy < seuil70 ? vals.filter(v=>v.val<seuil70) : vals.filter(v=>v.val<moy*0.85);
+  if (!candidats.length) return;
+  const prio = moy < seuil70 ? pBase : Math.min(3, pBase+1);
+
+  let titre, detail;
+  if (tous0) {
+    const noms = candidats.slice(0,3).map(v=>prenom(v.nom)).join(', ');
+    titre = label+' à 0% — '+candidats.length+' '+COLLAB_LABEL+(candidats.length>1?'s':'');
+    detail = noms+(candidats.length>3?' et autres':'')+'. Aucune action ce mois. '+(urgence?conseilUrgent:conseilNormal);
+  } else if (moy < seuil70) {
+    const noms = candidats.slice(0,3).map(v=>prenom(v.nom)+' '+Math.round(v.val)+u).join(' — ');
+    titre = label+' — '+candidats.length+' '+COLLAB_LABEL+(candidats.length>1?'s':'')+' en zone critique (< '+Math.round(seuil70)+u+')';
+    detail = noms+'. Obj. '+objVal+u+' · Moy. magasin '+Math.round(moy)+u+'. '+(urgence?conseilUrgent:conseilNormal);
+  } else {
+    const noms = candidats.slice(0,3).map(v=>prenom(v.nom)+' '+Math.round(v.val)+u).join(' — ');
+    titre = label+' — '+candidats.length+' '+COLLAB_LABEL+(candidats.length>1?'s':'')+' sous la moyenne '+Math.round(moy)+u;
+    detail = noms+'. Obj. '+objVal+u+' · Moy. '+Math.round(moy)+u+'. '+(urgence?conseilUrgent:conseilNormal);
+  }
+  addPrio(prio, titre, detail);
+}
+
+actionIndicateur('% SOP', optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop, PRIO.sop,
+  'Systématiser la présentation de la garantie SOP sur chaque paire vendue ce sprint.',
+  'Faire un point équipe sur la présentation de la garantie SOP — objectif : 100% des ventes.');
+actionIndicateur('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, PRIO.pm,
+  'Orienter systématiquement vers les montures premium et les verres progressifs haut de gamme.',
+  'Travailler la montée en gamme : montures créateur, verres Transitions, add-ons SOP.', '€');
+actionIndicateur('PM Pack Confort', optsOpt.filter(r=>r.pmpc>0).map(r=>({nom:r.nom,val:r.pmpc})), OBJ.pmpc, PRIO.pmpc,
+  'Proposer le Pack Confort sur toutes les ventes restantes.',
+  'Rappeler le pitch Pack Confort en réunion — objectif : proposition sur chaque vente de progressifs.', '€');
+actionIndicateur('% MdC', optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, PRIO.mdc,
+  'Orienter vers les marques exclusives et intemporelles sur chaque vente.',
+  'Valoriser les collections exclusives en vitrine et en conseil — cible : 2 paires sur marque excl./intemp.');
+actionIndicateur('% LUKKAS', optsOpt.map(r=>({nom:r.nom,val:r.luk})), OBJ.luk, PRIO.luk,
+  'Rappeler LUKKAS à chaque vente — engagement à prendre avec chaque collaborateur.',
+  'Faire un point LUKKAS en réunion et fixer un objectif individuel pour le reste du mois.');
+
+// Test auditif
+const avgTa = TA_TOT >= 0 ? TA_TOT : (auds.length ? auds.reduce((s,a)=>s+a.ta,0)/auds.length : 0);
+const allCollabs=[...opts,...auds];
+const ta0=allCollabs.filter(r=>r.ta===0);
+if (avgTa < OBJ.ta-10) {
+  const detail = ta0.length === allCollabs.length
+    ? 'Aucun test réalisé ce mois. Intégrer le dépistage auditif à l\'accueil — à proposer à chaque client. '+(urgence?'Objectif : au moins un test par jour jusqu\'à la fin du mois.':ctxDebut||'Poser l\'habitude dès maintenant.')
+    : ta0.slice(0,3).map(a=>prenom(a.nom)).join(', ')+' à 0%. Intégrer le test auditif à l\'accueil client de manière systématique.';
+  addPrio(PRIO.ta, 'Test auditif — '+Math.round(avgTa)+'% magasin vs obj. '+OBJ.ta+'%', detail);
+}
+
+// Tx réussite audio
 const audTxeBad=auds.filter(a=>a.txe<OBJ.txe&&a.txe>0).sort((a,b)=>a.txe-b.txe);
-if(audTxeBad.length>0&&prios.length<9){
-  const noms=audTxeBad.map(a=>a.nom.split(' ')[0]+' '+a.txe.toFixed(0)+'%').join(', ');
-  prios.push({p:PRIO.txe,titre:'Taux reussite essai audio - sous objectif '+OBJ.txe+'%',detail:noms+". Soigner le suivi et les relances avant fin de periode d'essai."});
+if (audTxeBad.length > 0) {
+  const detail = audTxeBad.length === 1
+    ? prenom(audTxeBad[0].nom)+' à '+audTxeBad[0].txe.toFixed(0)+'% (obj. '+OBJ.txe+'%). Soigner le suivi des essais et relancer avant expiration. '+ctxFin
+    : listNoms(audTxeBad, 3, a=>a.txe.toFixed(0)+'%')+'. Analyser les blocages à la concrétisation. '+ctxFin;
+  addPrio(PRIO.txe, 'Taux réussite essai audio — sous objectif '+OBJ.txe+'%', detail);
 }
 
-// ── Assurance audio ───────────────────────────────────────────────────────
+// Assurance audio
 const audAssurBad=auds.filter(a=>a.assur<OBJ.assur*0.5);
-if(audAssurBad.length>0&&prios.length<9){
-  const noms=audAssurBad.map(a=>a.nom.split(' ')[0]+(a.assur===0?' (0%)':' '+a.assur.toFixed(0)+'%')).join(', ');
-  prios.push({p:PRIO.assur,titre:"Assurance audio - "+audAssurBad.length+' audioprothesiste'+(audAssurBad.length>1?'s':'')+' tres en deca obj. '+OBJ.assur+'%',detail:noms+". Systematiser la presentation d'AudioPrev a chaque adaptation prothetique."});
+if (audAssurBad.length > 0) {
+  const noms = audAssurBad.map(a=>prenom(a.nom)+(a.assur===0?' (0%)':' '+a.assur.toFixed(0)+'%')).join(', ');
+  addPrio(PRIO.assur, 'Assurance audio — très en deçà obj. '+OBJ.assur+'%',
+    noms+'. Systématiser la présentation d\'AudioPrev à chaque adaptation prothétique. '+ctxFin);
 }
 
-// ── Magasins entre 85 et 95% ──────────────────────────────────────────────
+// Magasins entre 85 et 95%
 magasins.filter(m=>m.pos>=85&&m.pos<95).sort((a,b)=>a.pos-b.pos).forEach(m=>{
-  if(prios.length<9&&!prios.find(p=>p.titre.includes(cap(m.nom))))
-    prios.push({p:PRIO.nb,titre:cap(m.nom)+' - '+m.pos.toFixed(1)+'% - a surveiller',detail:'RAF/jour '+m.raf.toFixed(1)+'k'+CUR+' sur '+jL+". A la frontiere de l'objectif - maintenir la dynamique en fin de mois."});
+  if (!prios.find(p=>p.titre.includes(cap(m.nom))))
+    addPrio(PRIO.nb, cap(m.nom)+' — '+m.pos.toFixed(1)+'% — à surveiller',
+      'RAF '+m.raf.toFixed(1)+'k'+CUR+'/jour sur '+jL+'. À la frontière de l\'objectif — maintenir la dynamique et sécuriser chaque vente.');
 });
+
+// ─── FÉLICITATIONS (si slots disponibles) ─────────────────────────────────────
+function checkFelicitation(label, vals, objVal, emoji, msgTopFn, msgEquipeFn, unite) {
+  if (!objVal || !vals.length) return;
+  const u = unite || '%';
+  const tousOk = vals.every(v=>v.val >= objVal);
+  const moy = vals.reduce((s,v)=>s+v.val,0)/vals.length;
+  if (!tousOk && moy < objVal*1.1) return; // pas assez bien pour féliciter
+  const top = [...vals].sort((a,b)=>b.val-a.val)[0];
+  const detail = tousOk
+    ? (vals.length > 1 ? msgEquipeFn(Math.round(moy), top) : msgTopFn(top))
+    : msgTopFn(top);
+  addFelicitation(emoji, label+' — '+(tousOk?'toute l\'équipe au vert 🎯':prenom(top.nom)+' au top'), detail);
+}
+
+checkFelicitation('% SOP', optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop, '✅',
+  t=>'Bravo '+prenom(t.nom)+' — '+Math.round(t.val)+'% de SOP, c\'est un excellent travail de conseil client. Continue !',
+  (moy,t)=>'Toute l\'équipe au-dessus de l\'objectif ! Moyenne à '+moy+'%, avec '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%. Félicitations à tous.');
+
+checkFelicitation('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, '💎',
+  t=>''+prenom(t.nom)+' affiche un PM exceptionnel à '+Math.round(t.val)+'€. La montée en gamme fonctionne — partager la méthode avec l\'équipe !',
+  (moy,t)=>'PM magasin à '+moy+'€ pour un objectif de '+OBJ.pm+'€. '+prenom(t.nom)+' mène la danse à '+Math.round(t.val)+'€. Excellente performance collective !', '€');
+
+checkFelicitation('% TC', optsOpt.map(r=>({nom:r.nom,val:r.tc})), OBJ.tc, '🎯',
+  t=>''+prenom(t.nom)+' concrétise à '+Math.round(t.val)+'%. Chaque essai devient une vente — c\'est du grand art commercial !',
+  (moy,t)=>'Taux de concrétisation magasin à '+moy+'% — au-dessus de l\'objectif. '+prenom(t.nom)+' exemplaire à '+Math.round(t.val)+'%. Super travail d\'équipe !');
+
+checkFelicitation('% MdC', optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, '⭐',
+  t=>''+prenom(t.nom)+' à '+Math.round(t.val)+'% de MdC — excellente valorisation des marques exclusives et intemporelles.',
+  (moy,t)=>'L\'équipe maîtrise parfaitement la mise en avant des marques exclusives — moy. à '+moy+'%. '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%.');
+
+checkFelicitation('Positionnement', magasins.map(m=>({nom:m.nom,val:m.pos})), 100, '🚀',
+  t=>''+cap(t.nom)+' dépasse son objectif à '+Math.round(t.val)+'% — objectif atteint, garder le rythme !',
+  (moy,t)=>'Réseau en bonne forme à '+moy+'% en moyenne. '+cap(t.nom)+' est le meilleur élève à '+Math.round(t.val)+'%. Maintenir la dynamique !');
+
+// Prothèses audio all ok
+if (auds.length > 0 && auds.every(a=>a.proth >= OBJ.proth)) {
+  const top = [...auds].sort((a,b)=>b.proth-a.proth)[0];
+  addFelicitation('🦻', 'Prothèses — objectif atteint', prenom(top.nom)+' mène avec '+top.proth+' prothèses. Tous les audioprothésistes dans les clous — excellent travail !');
+}
+
+// ─── COMPLÉTER JUSQU'À 9 AVEC FÉLICITATIONS ──────────────────────────────────
+const slotsRestants = 9 - prios.length;
+for (let i = 0; i < Math.min(slotsRestants, felicitations.length); i++) {
+  prios.push(felicitations[i]);
+}
+
+// Si encore des slots vides (magasin au top sur tout)
+while (prios.length < 9) {
+  const msgs = [
+    {p:4, titre:'🌟 Équipe au top — continuez comme ça !', detail:'Tous les indicateurs sont dans le vert ce mois-ci. C\'est le résultat d\'un travail d\'équipe remarquable. Maintenez le cap jusqu\'à la fin du mois !'},
+    {p:4, titre:'💪 Belle performance collective !', detail:'Le magasin est bien positionné. Profitez de cette dynamique pour viser l\'excellence sur les jours restants et finir le mois en beauté.'},
+    {p:4, titre:'🎯 Objectifs en bonne voie', detail:'La trajectoire est positive. Restez concentrés sur les indicateurs qualitatifs pour transformer cette bonne performance en excellence.'},
+  ];
+  prios.push(msgs[prios.length % msgs.length]);
+}
 
 
 const pg=document.getElementById('prio-grid-auto');
 prios.sort((a,b)=>a.p-b.p).slice(0,9).forEach(function(item){
   var p=item.p, titre=item.titre, detail=item.detail;
+  var badge = p <= 3 ? '<div class="pcard-badge p'+p+'-badge">P'+p+'</div>' : '';
   pg.innerHTML+='<div class="pcard">'
     +'<div class="pcard-head p'+p+'-head-bg">'
-    +'<div class="pcard-badge p'+p+'-badge">P'+p+'</div>'
+    +badge
     +'<div class="pcard-title">'+titre+'</div>'
     +'</div>'
     +'<div class="pcard-detail">'+detail+'</div>'
