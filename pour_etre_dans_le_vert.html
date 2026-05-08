@@ -551,6 +551,10 @@
           <div class="effectif-col"><div class="effectif-label">🦻 Audioproth.</div></div>
         </div>
       </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:#888780;display:block;margin-bottom:5px">📝 Note contextuelle (optionnel)</label>
+        <textarea id="rapport-note-reseau" placeholder="Ex: Réunion réseau le 15/05, objectif commun semaine 21..." style="width:100%;background:#2C2C2A;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#D3D1C7;font-size:11px;padding:8px 10px;resize:vertical;min-height:48px;font-family:inherit;box-sizing:border-box"></textarea>
+      </div>
       <button class="btn-generate" onclick="generateReport()" style="margin-top:0">
         Générer le rapport réseau
       </button>
@@ -979,8 +983,13 @@ function getEffectifMap() {
     map[nom][type] = val
     saved['mag_' + code + '_' + type] = val
   })
+  // Lire la note réseau
+  const noteReseauEl = document.getElementById('rapport-note-reseau')
+  const noteReseau = noteReseauEl ? noteReseauEl.value.trim() : (saved['__note_reseau__'] || '')
+  if (noteReseau) saved['__note_reseau__'] = noteReseau
+  else delete saved['__note_reseau__']
   localStorage.setItem('oc_effectifs', JSON.stringify(saved))
-  return map
+  return { map, note: noteReseau }
 }
 
 function showTauxOrGenerate() {
@@ -1024,6 +1033,10 @@ function showEffectifsPanel() {
       + '</div>'
     grid.appendChild(row)
   })
+  // Restaurer la note réseau
+  const savedNoteReseau = saved['__note_reseau__'] || ''
+  const noteReseauEl = document.getElementById('rapport-note-reseau')
+  if (noteReseauEl) noteReseauEl.value = savedNoteReseau
   document.getElementById('btn-generate').style.display = 'none'
   document.getElementById('effectif-panel').style.display = 'block'
 }
@@ -1040,8 +1053,13 @@ function getEffectifsMap() {
     if (!saved[mag]) saved[mag] = {}
     saved[mag][type] = val
   })
+  // Lire la note réseau
+  const noteReseauEl = document.getElementById('rapport-note-reseau')
+  const noteReseau = noteReseauEl ? noteReseauEl.value.trim() : (saved['__note_reseau__'] || '')
+  if (noteReseau) saved['__note_reseau__'] = noteReseau
+  else delete saved['__note_reseau__']
   localStorage.setItem('oc_effectifs', JSON.stringify(saved))
-  return map
+  return { map, note: noteReseau }
 }
 
 function showTauxPanel() {
@@ -1171,7 +1189,9 @@ function generateReport() {
   const headers = (optRaw.split('\n')[2] || '').split(';')
   const _isNetworkMode = headers[0] === 'Code Magasin'
   const { map: tauxMap, excluded: excludedCollabs, note } = _isNetworkMode ? { map: {}, excluded: new Set(), note: '' } : getTauxMap()
-  const effectifMap = _isNetworkMode ? getEffectifMap() : {}
+  const _effectifResult = _isNetworkMode ? getEffectifMap() : { map: {}, note: '' }
+  const effectifMap = _isNetworkMode ? _effectifResult.map : {}
+  const noteReseau = _isNetworkMode ? _effectifResult.note : ''
   setStatus('Analyse des données…')
   try {
     const nomMagasin   = document.getElementById('nom-magasin').value.trim() || 'Optical Center'
@@ -1383,7 +1403,7 @@ function generateReport() {
       obj_ca: _s.obj_ca,
       tauxMap: tauxMap,
       excluded: [...excludedCollabs],
-      note: note,
+      note: _isNetworkMode ? noteReseau : note,
       isNetworkMode,
       effectifMap,
       extractDateObj: extractDateObj,
@@ -2252,7 +2272,7 @@ function buildReportHTML(d) {
 <div class="header">
   <div>
     <div class="header-title">${d.isNetworkMode ? "Performance Réseau — " : "Performance — "}${nomMagasin}</div>
-    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} j. ouvrés / ${d.jourstotal} &nbsp;·&nbsp; Objectifs proratisés &nbsp;·&nbsp; Collaborateurs actifs uniquement</div>
+    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} j. ouvrés / ${d.jourstotal} &nbsp;·&nbsp; Objectifs proratisés &nbsp;·&nbsp; ${isNetworkMode ? 'Magasins actifs' : 'Collaborateurs actifs uniquement'}</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
 </div>
