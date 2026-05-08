@@ -356,6 +356,61 @@
   }
   .taux-input:focus { outline:none; border-color:#CC1719; }
   .taux-pct { font-size:11px; color:#5F5E5A; }
+  /* Panneau effectifs réseau */
+  .effectif-grid { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:14px; }
+  .effectif-row {
+    background:#2C2C2A; border-radius:8px; padding:8px 12px;
+    display:grid; grid-template-columns:1fr 90px 90px; gap:8px; align-items:center;
+  }
+  .effectif-nom { font-size:12px; color:#D3D1C7; font-weight:600; }
+  .effectif-label { font-size:9px; color:#5F5E5A; margin-bottom:2px; }
+  .effectif-field { display:flex; flex-direction:column; }
+  .effectif-input {
+    background:#1C1C1A; border:1px solid rgba(255,255,255,0.15);
+    border-radius:6px; color:#D3D1C7; font-size:12px; font-weight:600;
+    padding:5px 7px; text-align:center; font-family:inherit; width:100%;
+    box-sizing:border-box;
+  }
+  .effectif-input:focus { outline:none; border-color:#CC1719; }
+  /* ── PANNEAU EFFECTIFS RÉSEAU ── */
+  #effectif-panel {
+    display:none; margin-top:16px; background:#1C1C1A;
+    border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px;
+  }
+  #effectif-panel h3 { font-size:13px; font-weight:600; color:#D3D1C7; margin-bottom:4px; }
+  #effectif-panel p  { font-size:11px; color:#5F5E5A; margin-bottom:12px; }
+  .effectif-grid { display:grid; grid-template-columns:1fr; gap:6px; margin-bottom:14px; }
+  .effectif-row {
+    display:grid; grid-template-columns:1fr 100px 100px;
+    align-items:center; gap:8px;
+    background:#2C2C2A; border-radius:8px; padding:7px 10px;
+  }
+  .effectif-nom { font-size:12px; color:#D3D1C7; font-weight:500; }
+  .effectif-label { font-size:9px; color:#5F5E5A; text-align:center; margin-bottom:2px; }
+  .effectif-input {
+    width:100%; background:#1C1C1A; border:1px solid rgba(255,255,255,0.15);
+    border-radius:6px; color:#D3D1C7; font-size:12px; font-weight:600;
+    padding:4px 6px; text-align:center; font-family:inherit;
+  }
+  .effectif-input:focus { outline:none; border-color:#CC1719; }
+  .effectif-col { display:flex; flex-direction:column; align-items:center; }
+
+  /* ── EFFECTIFS RÉSEAU ── */
+  .effectif-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .effectif-row {
+    background:#2C2C2A; border-radius:8px; padding:7px 10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .effectif-mag { font-size:11px; color:#D3D1C7; font-weight:600; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .effectif-fields { display:flex; gap:6px; align-items:center; flex-shrink:0; }
+  .effectif-label { font-size:9px; color:#5F5E5A; white-space:nowrap; }
+  .effectif-input {
+    width:48px; background:#1C1C1A; border:1px solid rgba(255,255,255,0.15);
+    border-radius:6px; color:#D3D1C7; font-size:12px; font-weight:600;
+    padding:4px 6px; text-align:center; font-family:inherit;
+  }
+  .effectif-input:focus { outline:none; border-color:#CC1719; }
+
   .taux-check {
     width:16px; height:16px; accent-color:#CC1719; cursor:pointer; flex-shrink:0;
   }
@@ -485,6 +540,22 @@
 
     <hr class="sep">
 
+    <!-- EFFECTIFS RÉSEAU -->
+    <div id="effectif-panel">
+      <h3>👥 Effectifs par magasin</h3>
+      <p>Indiquez le nombre d'opticiens et d'audioprothésistes par magasin. Les objectifs de volume (ventes, prothèses) seront multipliés par ces effectifs.</p>
+      <div class="effectif-grid" id="effectif-grid">
+        <div class="effectif-row" style="background:transparent;padding:0 10px">
+          <div></div>
+          <div class="effectif-col"><div class="effectif-label">🕶 Opticiens</div></div>
+          <div class="effectif-col"><div class="effectif-label">🦻 Audioproth.</div></div>
+        </div>
+      </div>
+      <button class="btn-generate" onclick="generateReport()" style="margin-top:0">
+        Générer le rapport réseau
+      </button>
+    </div>
+
     <!-- TAUX DE TRAVAIL -->
     <div id="taux-panel">
       <h3>⏱ Temps de travail des collaborateurs</h3>
@@ -497,6 +568,14 @@
       <button class="btn-generate" onclick="generateReport()" style="margin-top:0">
         Générer le rapport
       </button>
+    </div>
+
+    <!-- EFFECTIFS RÉSEAU -->
+    <div id="effectif-panel" style="display:none;margin-top:16px;background:#1C1C1A;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px">
+      <h3 style="font-size:13px;font-weight:600;color:#D3D1C7;margin-bottom:4px">👥 Effectifs par magasin</h3>
+      <p style="font-size:11px;color:#5F5E5A;margin-bottom:12px">Renseignez le nombre d'opticiens 🕶 et d'audioprothésistes 🦻 par magasin. Les objectifs de volume seront multipliés par ces effectifs.</p>
+      <div class="effectif-grid" id="effectif-grid"></div>
+      <button class="btn-generate" onclick="generateReport()" style="margin-top:0">Générer le rapport</button>
     </div>
 
     <!-- GENERATE -->
@@ -879,17 +958,90 @@ function checkReady() {
   if (allLoaded) setStatus('5 fichiers chargés — cliquez pour configurer et générer', 'ok')
 }
 
+function getEffectifMap() {
+  const saved = JSON.parse(localStorage.getItem('oc_effectifs') || '{}')
+  const inputs = document.querySelectorAll('#effectif-grid .effectif-input')
+  const map = {}  // nom magasin (cap) → { opt, aud }
+  // Construire aussi un index nom→code depuis les inputs
+  const rows = document.querySelectorAll('#effectif-grid .effectif-row')
+  const codeToNom = {}
+  rows.forEach(row => {
+    const nomEl = row.querySelector('.effectif-nom')
+    const codeEl = row.querySelector('[data-code]')
+    if (nomEl && codeEl) codeToNom[codeEl.getAttribute('data-code')] = nomEl.textContent.trim()
+  })
+  inputs.forEach(inp => {
+    const code = inp.getAttribute('data-code')
+    const type = inp.getAttribute('data-type')
+    const val  = parseFloat(inp.value) || 0
+    const nom  = codeToNom[code] || code
+    if (!map[nom]) map[nom] = { opt: 0, aud: 0 }
+    map[nom][type] = val
+    saved['mag_' + code + '_' + type] = val
+  })
+  localStorage.setItem('oc_effectifs', JSON.stringify(saved))
+  return map
+}
+
 function showTauxOrGenerate() {
-  // En mode réseau (pas de lignes par collaborateur), générer directement
   const optRaw = state.raw['stats_opt'] || ''
-  const firstDataLine = optRaw.split('\n')[4] || ''
   const headers = (optRaw.split('\n')[2] || '').split(';')
   const networkMode = headers[0] === 'Code Magasin'
   if (networkMode) {
-    generateReport()
+    showEffectifsPanel()
   } else {
     showTauxPanel()
   }
+}
+
+function showEffectifsPanel() {
+  const saved = JSON.parse(localStorage.getItem('oc_effectifs') || '{}')
+  const optRaw = state.raw['stats_opt'] || ''
+  const lines = optRaw.split('\n')
+  const magasins = []
+  for (let i = 4; i < lines.length; i++) {
+    const p = lines[i].split(';')
+    const code = (p[0] || '').trim()
+    const nom  = (p[1] || '').trim()
+    if (!nom || nom.toUpperCase().includes('TOTAL') || isNaN(parseInt(code))) continue
+    const nomCap = nom.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+    magasins.push(nomCap)
+  }
+  const grid = document.getElementById('effectif-grid')
+  grid.innerHTML = ''
+  magasins.forEach(mag => {
+    const savedMag = saved[mag] || {}
+    const nbOpt = savedMag.opt !== undefined ? savedMag.opt : 1
+    const nbAud = savedMag.aud !== undefined ? savedMag.aud : 0
+    const row = document.createElement('div')
+    row.className = 'effectif-row'
+    row.innerHTML = '<span class="effectif-mag" title="'+mag+'">'+mag+'</span>'
+      + '<div class="effectif-fields">'
+      + '<span class="effectif-label">🕶</span>'
+      + '<input class="effectif-input" type="number" min="0" max="20" step="0.5" value="'+nbOpt+'" data-mag="'+mag+'" data-type="opt">'
+      + '<span class="effectif-label">🦻</span>'
+      + '<input class="effectif-input" type="number" min="0" max="20" step="0.5" value="'+nbAud+'" data-mag="'+mag+'" data-type="aud">'
+      + '</div>'
+    grid.appendChild(row)
+  })
+  document.getElementById('btn-generate').style.display = 'none'
+  document.getElementById('effectif-panel').style.display = 'block'
+}
+
+function getEffectifsMap() {
+  const saved = JSON.parse(localStorage.getItem('oc_effectifs') || '{}')
+  const map = {}
+  document.querySelectorAll('#effectif-grid .effectif-input').forEach(inp => {
+    const mag  = inp.getAttribute('data-mag')
+    const type = inp.getAttribute('data-type')
+    const val  = Math.max(0, parseFloat(inp.value) || 0)
+    if (!map[mag]) map[mag] = { opt: 1, aud: 0 }
+    map[mag][type] = val
+    if (!saved[mag]) saved[mag] = {}
+    saved[mag][type] = val
+  })
+  localStorage.setItem('oc_effectifs', JSON.stringify(saved))
+  return map
 }
 
 function showTauxPanel() {
@@ -1015,7 +1167,11 @@ function toNum(v) {
 
 // ── Génération rapport ────────────────────────────────────────────────────────
 function generateReport() {
-  const { map: tauxMap, excluded: excludedCollabs, note } = getTauxMap()
+  const optRaw = state.raw['stats_opt'] || ''
+  const headers = (optRaw.split('\n')[2] || '').split(';')
+  const _isNetworkMode = headers[0] === 'Code Magasin'
+  const { map: tauxMap, excluded: excludedCollabs, note } = _isNetworkMode ? { map: {}, excluded: new Set(), note: '' } : getTauxMap()
+  const effectifMap = _isNetworkMode ? getEffectifMap() : {}
   setStatus('Analyse des données…')
   try {
     const nomMagasin   = document.getElementById('nom-magasin').value.trim() || 'Optical Center'
@@ -1152,6 +1308,7 @@ function generateReport() {
     // Enrichir audio avec CA
     const auds = activeAud.map(r => ({
       nom: cap(r['Nom Vendeur']),
+      code: String(r['Matricule Vendeur'] || '').trim(),
       pm1: isNetworkMode
         ? pm1Map[cap(String(r['Nom Magasin'] || '').trim())] || 0
         : pm1Map[String(r['Matricule Vendeur'] || '').trim()] || 0,
@@ -1228,6 +1385,7 @@ function generateReport() {
       excluded: [...excludedCollabs],
       note: note,
       isNetworkMode,
+      effectifMap,
       extractDateObj: extractDateObj,
       tvaTot: tvaTotalRow ? toNum(tvaTotalRow['% Vente Additionnelle']) : null,
       taTot: taTotalRow ? toNum(taTotalRow['% Test auditif']) : null,
@@ -1267,8 +1425,20 @@ function buildReportHTML(d) {
   const excludedSet = new Set(d.excluded || [])
   const opts = d.opts.filter(r => !excludedSet.has(r.nom))
   const auds = d.auds.filter(a => !excludedSet.has(a.nom))
-  const tauxMap = d.tauxMap || {}
-  function objPro(nom, val) {
+  const tauxMap    = d.tauxMap || {}
+  const effectifMap = d.effectifMap || {}
+  // En mode réseau : objectif = val × effectif (nb personnes)
+  // En mode collab : objectif = val × taux (% temps de travail)
+  function objPro(nom, val, isAud) {
+    if (isNetworkMode) {
+      const eff = effectifMap[nom]
+      if (eff) {
+        const nb = isAud ? (eff.aud || 0) : (eff.opt || 1)
+        return Math.round(val * nb)
+      }
+      return Math.round(val) // défaut 1 personne
+    }
+    // Mode collab : proratisation par taux de travail
     const t = tauxMap[nom] !== undefined ? tauxMap[nom] : 100
     return Math.round(val * t / 100)
   }
@@ -1341,8 +1511,8 @@ function buildReportHTML(d) {
 
   ;[...opts, ...anoms].forEach(r => {
     // Objectifs proratisés par taux de travail
-    const oNb   = objPro(r.nom, OBJ.nb)
-    const oProth = objPro(r.nom, OBJ.proth)
+    const oNb   = objPro(r.nom, OBJ.nb, false)
+    const oProth = objPro(r.nom, OBJ.proth, true)
     if (r.anom) {
       collabRows += `<tr class="anom-row"><td>${r.nom}</td><td class="anom-cell" colspan="${(d.isNetworkMode ? 2 : 3) + d.cols_opt.length + 4 + d.cols_aud.length + 1}">CA négatif — anomalie à régulariser</td></tr>`
       return
@@ -1384,7 +1554,7 @@ function buildReportHTML(d) {
         <td style="text-align:right;font-weight:500">${(r.ca/1000).toFixed(1)}k${d.currency}</td>
         ${['pm','tc','sop','pack','pmpc','pm1','mdc','luk'].map(k=>d.cols_opt.includes(k)?na(''):'').join('')}
         <td class="ta-bg">${pill(r.ta, OBJ.ta, '%')}</td>
-        <td class="aud-bg">${pill(r.proth, objPro(r.nom, OBJ.proth))}</td>
+        <td class="aud-bg">${pill(r.proth, objPro(r.nom, OBJ.proth, true))}</td>
         <td class="aud-bg">${r.pm_aud > 0 ? pill(r.pm_aud, OBJ.pm_aud, d.currency) : '<span style="color:#D3D1C7">–</span>'}</td>
         <td class="aud-bg">${r.pm_app > 0 ? pill(r.pm_app, OBJ.pm_app, d.currency) : '<span style="color:#D3D1C7">–</span>'}</td>
         ${d.cols_aud.includes('txc') ? `<td class="aud-bg">${pill(r.txc, OBJ.txc, '%')}</td>` : ''}
@@ -1434,7 +1604,7 @@ function buildReportHTML(d) {
   let objRows = ''
   opts.filter(r => d.isNetworkMode || !auds.find(a => a.nom === r.nom)).forEach(r => {
     // Objectifs proratisés par taux de travail
-    const oNb   = objPro(r.nom, OBJ.nb)
+    const oNb   = objPro(r.nom, OBJ.nb, false)
     // Objectifs qualitatifs déjà atteints ?
     const ok_nb   = r.nb   >= oNb
     const ok_pm   = r.pm   >= OBJ.pm
@@ -1511,7 +1681,7 @@ function buildReportHTML(d) {
   // ── Section audio page 2 ──────────────────────────────────────────────
   let audRows = ''
   auds.forEach(a => {
-    const objProth  = objPro(a.nom, OBJ.proth)
+    const objProth  = objPro(a.nom, OBJ.proth, true)
     const ok_proth  = a.proth  >= objProth
     const ok_pmAud  = a.pm_aud >= OBJ.pm_aud
     const ok_pmApp  = a.pm_app >= OBJ.pm_app
@@ -1604,7 +1774,7 @@ function buildReportHTML(d) {
     var vSopG  = vNeededG(r.sop,  OBJ.sop,  r.nb)
     var vPackG = vNeededG(r.pack, OBJ.pack, r.nb)
     var vMdcG  = vNeededG(r.mdc,  OBJ.mdc,  r.nb)
-    var vNbG   = Math.max(0, objPro(r.nom, OBJ.nb) - r.nb)
+    var vNbG   = Math.max(0, objPro(r.nom, OBJ.nb, false) - r.nb)
     var vTotalG = Math.ceil(Math.max(vSopG, vPackG, vMdcG, vNbG, 0))
     const vFinal  = r.nb + vTotalG
     const pmEff   = r.nb > 0 ? Math.max(r.ca_opt / r.nb, OBJ.pm) : OBJ.pm
@@ -1629,7 +1799,7 @@ function buildReportHTML(d) {
 
   // Audioprothésistes — CA projeté = proth_final × max(PM_prothèse, OBJ.pm_app)
   auds.forEach(a => {
-    const objProthA  = objPro(a.nom, OBJ.proth)
+    const objProthA  = objPro(a.nom, OBJ.proth, true)
     const prothFinal = Math.max(a.proth, objProthA)
     const pmAppEff   = Math.max(a.pm_app, OBJ.pm_app)  // PM par prothèse
     const caProj     = Math.round(prothFinal * pmAppEff / 1000 * 10) / 10
@@ -1674,8 +1844,8 @@ function buildReportHTML(d) {
   }
 
   function scoreCollab(r, isAud) {
-    const oNb    = objPro(r.nom, OBJ.nb)
-    const oProth = objPro(r.nom, OBJ.proth)
+    const oNb    = objPro(r.nom, OBJ.nb, false)
+    const oProth = objPro(r.nom, OBJ.proth, true)
     const oCa    = objPro(r.nom, OBJ_CA) * 1000
 
     function pct(val, obj) {
@@ -1721,7 +1891,7 @@ function buildReportHTML(d) {
       nom: r.nom, score: scoreCollab(r, false), isAud: false,
       highlights: [
         { label:'CA',    ok: r.ca >= objPro(r.nom, OBJ_CA)*1000 },
-        { label:'Ventes',ok: r.nb >= objPro(r.nom, OBJ.nb) },
+        { label:'Ventes',ok: r.nb >= objPro(r.nom, OBJ.nb, false) },
         { label:'PM',    ok: r.pm >= OBJ.pm },
         { label:'SOP',   ok: r.sop >= OBJ.sop },
         { label:'MdC',   ok: r.mdc >= OBJ.mdc },
@@ -1731,7 +1901,7 @@ function buildReportHTML(d) {
       nom: a.nom, score: scoreCollab(a, true), isAud: true,
       highlights: [
         { label:'CA',      ok: a.ca >= objPro(a.nom, OBJ_CA)*1000 },
-        { label:'Proth.',  ok: a.proth >= objPro(a.nom, OBJ.proth) },
+        { label:'Proth.',  ok: a.proth >= objPro(a.nom, OBJ.proth, true) },
         { label:'Tx réus.',ok: a.txe >= OBJ.txe },
         { label:'Assur.',  ok: a.assur >= OBJ.assur },
       ].filter(h => h.ok).map(h => h.label).slice(0,3)
@@ -2304,6 +2474,7 @@ const auds=${JSON.stringify(d.auds)};
 const magasins=${JSON.stringify(d.magasins)};
 const OBJ=${JSON.stringify(OBJ)};
 const joursRest=${d.joursRest};
+const TA_TOT=${d.taTot !== null && d.taTot !== undefined ? d.taTot : -1};
 const TAUX=${JSON.stringify(d.tauxMap||{})};
 const CUR='${d.currency}';
 const PRIO=${JSON.stringify(d.prio)};
@@ -2414,12 +2585,14 @@ indicateurs.forEach(ind=>{
 });
 
 // ── Test auditif ──────────────────────────────────────────────────────────
-const avgTa=auds.length?auds.reduce((s,a)=>s+a.ta,0)/auds.length:0;
-if(avgTa<OBJ.ta-10&&prios.length<9){
-  const ta0=auds.filter(a=>a.ta===0);
-  const det=ta0.length===auds.length
+// Utiliser la ligne TOTAL du fichier stats_audio (couvre opticiens + audio)
+const avgTa = TA_TOT >= 0 ? TA_TOT : (auds.length ? auds.reduce((s,a)=>s+a.ta,0)/auds.length : 0);
+const allCollabs = [...opts, ...auds];
+const ta0 = allCollabs.filter(r => r.ta === 0 && r.ta !== undefined);
+if(avgTa < OBJ.ta - 10 && prios.length < 9){
+  const det = ta0.length === allCollabs.length
     ? "Aucun test realise ce mois dans le magasin. Integrer systematiquement le depistage auditif a l'accueil client - outil de conversion et de differentiation."
-    : ta0.map(a=>a.nom.split(' ')[0]).join(', ')+' a 0% (obj. '+OBJ.ta+"%). Integrer le test auditif a l'accueil client de maniere systematique.";
+    : ta0.slice(0,4).map(a=>a.nom.split(' ')[0]).join(', ')+' a 0% (obj. '+OBJ.ta+"%). Integrer le test auditif a l'accueil client de maniere systematique.";
   prios.push({p:PRIO.ta,titre:'Test auditif - '+Math.round(avgTa)+'% magasin vs obj. '+OBJ.ta+'%',detail:det});
 }
 
