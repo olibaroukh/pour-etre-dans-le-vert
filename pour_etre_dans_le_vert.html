@@ -2573,9 +2573,9 @@ magasins.filter(m=>m.pos<85).sort((a,b)=>a.pos-b.pos).forEach(m=>{
   if (!prios.find(p=>p.titre.includes(cap(m.nom)))) {
     const raf = m.raf.toFixed(1);
     const detail = urgence
-      ? 'RAF '+raf+'k'+CUR+'/jour sur '+jL+'. Mobiliser toute l\'équipe sur les dossiers en attente et maximiser chaque opportunité client.'
-      : 'RAF '+raf+'k'+CUR+'/jour sur '+jL+'. Relancer les devis en attente, prioriser les ventes à forte valeur et bloquer du temps avec l\'équipe cette semaine.';
-    addPrio(1, cap(m.nom)+' — '+m.pos.toFixed(1)+'% de l\'objectif ('+m.obj+'k'+CUR+')', detail);
+      ? 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". Mobiliser toute l'équipe sur les dossiers en attente et maximiser chaque opportunité client."
+      : 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". Relancer les devis en attente, prioriser les ventes à forte valeur et bloquer du temps avec l'équipe cette semaine.";
+    addPrio(1, cap(m.nom)+' — '+m.pos.toFixed(1)+"% de l'objectif ("+m.obj+'k'+CUR+')', detail);
   }
 });
 
@@ -2583,7 +2583,7 @@ magasins.filter(m=>m.pos<85).sort((a,b)=>a.pos-b.pos).forEach(m=>{
 const magRafCrit=[...magasins].filter(m=>m.raf>5&&m.pos<100&&!prios.find(p=>p.titre.includes(cap(m.nom)))).sort((a,b)=>b.raf-a.raf)[0];
 if (magRafCrit) {
   addPrio(1, cap(magRafCrit.nom)+' — '+magRafCrit.raf.toFixed(1)+'k'+CUR+'/jour à générer',
-    'Positionnement '+magRafCrit.pos.toFixed(1)+'%. '+(urgence?'Dernier sprint : ':'')+'Relancer les devis en attente et concentrer l\'énergie sur les ventes à fort panier.');
+    'Positionnement '+magRafCrit.pos.toFixed(1)+'%. '+(urgence?'Dernier sprint : ':'')+"Relancer les devis en attente et concentrer l'énergie sur les ventes à fort panier.");
 }
 
 // ─── RETARD VENTES OPTIQUE ───────────────────────────────────────────────────
@@ -2669,8 +2669,8 @@ const allCollabs=[...opts,...auds];
 const ta0=allCollabs.filter(r=>r.ta===0);
 if (avgTa < OBJ.ta-10) {
   const detail = ta0.length === allCollabs.length
-    ? 'Aucun test réalisé ce mois. Intégrer le dépistage auditif à l\'accueil — à proposer à chaque client. '+(urgence?'Objectif : au moins un test par jour jusqu\'à la fin du mois.':ctxDebut||'Poser l\'habitude dès maintenant.')
-    : ta0.slice(0,3).map(a=>prenom(a.nom)).join(', ')+' à 0%. Intégrer le test auditif à l\'accueil client de manière systématique.';
+    ? "Aucun test réalisé ce mois. Intégrer le dépistage auditif à l'accueil — à proposer à chaque client. "+(urgence?"Objectif : au moins un test par jour jusqu'à la fin du mois.":ctxDebut||"Poser l'habitude dès maintenant.")
+    : ta0.slice(0,3).map(a=>prenom(a.nom)).join(', ')+" à 0%. Intégrer le test auditif à l'accueil client de manière systématique.";
   addPrio(PRIO.ta, 'Test auditif — '+Math.round(avgTa)+'% magasin vs obj. '+OBJ.ta+'%', detail);
 }
 
@@ -2688,14 +2688,14 @@ const audAssurBad=auds.filter(a=>a.assur<OBJ.assur*0.5);
 if (audAssurBad.length > 0) {
   const noms = audAssurBad.map(a=>prenom(a.nom)+(a.assur===0?' (0%)':' '+a.assur.toFixed(0)+'%')).join(', ');
   addPrio(PRIO.assur, 'Assurance audio — très en deçà obj. '+OBJ.assur+'%',
-    noms+'. Systématiser la présentation d\'AudioPrev à chaque adaptation prothétique. '+ctxFin);
+    noms+". Systématiser la présentation d'AudioPrev à chaque adaptation prothétique. "+ctxFin);
 }
 
 // Magasins entre 85 et 95%
 magasins.filter(m=>m.pos>=85&&m.pos<95).sort((a,b)=>a.pos-b.pos).forEach(m=>{
   if (!prios.find(p=>p.titre.includes(cap(m.nom))))
     addPrio(PRIO.nb, cap(m.nom)+' — '+m.pos.toFixed(1)+'% — à surveiller',
-      'RAF '+m.raf.toFixed(1)+'k'+CUR+'/jour sur '+jL+'. À la frontière de l\'objectif — maintenir la dynamique et sécuriser chaque vente.');
+      'RAF '+m.raf.toFixed(1)+'k'+CUR+'/jour sur '+jL+". À la frontière de l'objectif — maintenir la dynamique et sécuriser chaque vente.");
 });
 
 // ─── FÉLICITATIONS (si slots disponibles) ─────────────────────────────────────
@@ -2709,24 +2709,24 @@ function checkFelicitation(label, vals, objVal, emoji, msgTopFn, msgEquipeFn, un
   const detail = tousOk
     ? (vals.length > 1 ? msgEquipeFn(Math.round(moy), top) : msgTopFn(top))
     : msgTopFn(top);
-  addFelicitation(emoji, label+' — '+(tousOk?'toute l\'équipe au vert 🎯':prenom(top.nom)+' au top'), detail);
+  addFelicitation(emoji, label+' — '+(tousOk?"toute l'équipe au vert 🎯":prenom(top.nom)+' au top'), detail);
 }
 
 checkFelicitation('% SOP', optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop, '✅',
-  t=>'Bravo '+prenom(t.nom)+' — '+Math.round(t.val)+'% de SOP, c\'est un excellent travail de conseil client. Continue !',
-  (moy,t)=>'Toute l\'équipe au-dessus de l\'objectif ! Moyenne à '+moy+'%, avec '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%. Félicitations à tous.');
+  t=>'Bravo '+prenom(t.nom)+' — '+Math.round(t.val)+"% de SOP, c'est un excellent travail de conseil client. Continue !",
+  (moy,t)=>"Toute l'équipe au-dessus de l'objectif ! Moyenne à "+moy+'%, avec '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%. Félicitations à tous.');
 
 checkFelicitation('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, '💎',
-  t=>''+prenom(t.nom)+' affiche un PM exceptionnel à '+Math.round(t.val)+'€. La montée en gamme fonctionne — partager la méthode avec l\'équipe !',
+  t=>''+prenom(t.nom)+' affiche un PM exceptionnel à '+Math.round(t.val)+"€. La montée en gamme fonctionne — partager la méthode avec l'équipe !",
   (moy,t)=>'PM magasin à '+moy+'€ pour un objectif de '+OBJ.pm+'€. '+prenom(t.nom)+' mène la danse à '+Math.round(t.val)+'€. Excellente performance collective !', '€');
 
 checkFelicitation('% TC', optsOpt.map(r=>({nom:r.nom,val:r.tc})), OBJ.tc, '🎯',
-  t=>''+prenom(t.nom)+' concrétise à '+Math.round(t.val)+'%. Chaque essai devient une vente — c\'est du grand art commercial !',
-  (moy,t)=>'Taux de concrétisation magasin à '+moy+'% — au-dessus de l\'objectif. '+prenom(t.nom)+' exemplaire à '+Math.round(t.val)+'%. Super travail d\'équipe !');
+  t=>''+prenom(t.nom)+' concrétise à '+Math.round(t.val)+"%. Chaque essai devient une vente — c'est du grand art commercial !",
+  (moy,t)=>"Taux de concrétisation magasin à "+moy+"% — au-dessus de l'objectif. "+prenom(t.nom)+" exemplaire à "+Math.round(t.val)+"%. Super travail d'équipe !");
 
 checkFelicitation('% MdC', optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, '⭐',
   t=>''+prenom(t.nom)+' à '+Math.round(t.val)+'% de MdC — excellente valorisation des marques exclusives et intemporelles.',
-  (moy,t)=>'L\'équipe maîtrise parfaitement la mise en avant des marques exclusives — moy. à '+moy+'%. '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%.');
+  (moy,t)=>"L'équipe maîtrise parfaitement la mise en avant des marques exclusives — moy. à "+moy+'%. '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%.');
 
 checkFelicitation('Positionnement', magasins.map(m=>({nom:m.nom,val:m.pos})), 100, '🚀',
   t=>''+cap(t.nom)+' dépasse son objectif à '+Math.round(t.val)+'% — objectif atteint, garder le rythme !',
@@ -2747,8 +2747,8 @@ for (let i = 0; i < Math.min(slotsRestants, felicitations.length); i++) {
 // Si encore des slots vides (magasin au top sur tout)
 while (prios.length < 9) {
   const msgs = [
-    {p:4, titre:'🌟 Équipe au top — continuez comme ça !', detail:'Tous les indicateurs sont dans le vert ce mois-ci. C\'est le résultat d\'un travail d\'équipe remarquable. Maintenez le cap jusqu\'à la fin du mois !'},
-    {p:4, titre:'💪 Belle performance collective !', detail:'Le magasin est bien positionné. Profitez de cette dynamique pour viser l\'excellence sur les jours restants et finir le mois en beauté.'},
+    {p:4, titre:"🌟 Équipe au top — continuez comme ça !", detail:"Tous les indicateurs sont dans le vert ce mois-ci. C'est le résultat d'un travail d'équipe remarquable. Maintenez le cap jusqu'à la fin du mois !"},
+    {p:4, titre:"💪 Belle performance collective !", detail:"Le magasin est bien positionné. Profitez de cette dynamique pour viser l'excellence sur les jours restants et finir le mois en beauté."},
     {p:4, titre:'🎯 Objectifs en bonne voie', detail:'La trajectoire est positive. Restez concentrés sur les indicateurs qualitatifs pour transformer cette bonne performance en excellence.'},
   ];
   prios.push(msgs[prios.length % msgs.length]);
