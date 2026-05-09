@@ -2503,12 +2503,13 @@ ${podiumHTML ? `<div class="podium-section">
 
 </div></div>
 
+${'<'+'script>'}window.__rapportData={opts:${JSON.stringify(d.opts)},anoms:${JSON.stringify(d.anoms)},auds:${JSON.stringify(d.auds)},magasins:${JSON.stringify(d.magasins)}};</'+'script'+'>'}
 ${'<'+'script>'}
 // Génération automatique des actions prioritaires
-const opts=JSON.parse(document.getElementById('_data_opts').textContent);
-const anoms=JSON.parse(document.getElementById('_data_anoms').textContent);
-const auds=JSON.parse(document.getElementById('_data_auds').textContent);
-const magasins=JSON.parse(document.getElementById('_data_magasins').textContent);
+const opts=window.__rapportData.opts;
+const anoms=window.__rapportData.anoms;
+const auds=window.__rapportData.auds;
+const magasins=window.__rapportData.magasins;
 const OBJ=${JSON.stringify(OBJ)};
 const joursRest=${d.joursRest};
 const TA_TOT=${d.taTot !== null && d.taTot !== undefined ? d.taTot : -1};
