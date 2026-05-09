@@ -2503,8 +2503,9 @@ ${podiumHTML ? `<div class="podium-section">
 
 </div></div>
 
-${'<'+'script>'}window.__rapportData={opts:${JSON.stringify(d.opts)},anoms:${JSON.stringify(d.anoms)},auds:${JSON.stringify(d.auds)},magasins:${JSON.stringify(d.magasins)}};</'+'script'+'>'}
 ${'<'+'script>'}
+// Données injectées via JSON sécurisé
+window.__rapportData={opts:${JSON.stringify(d.opts)},anoms:${JSON.stringify(d.anoms)},auds:${JSON.stringify(d.auds)},magasins:${JSON.stringify(d.magasins)}};
 // Génération automatique des actions prioritaires
 const opts=window.__rapportData.opts;
 const anoms=window.__rapportData.anoms;
