@@ -2505,10 +2505,10 @@ ${podiumHTML ? `<div class="podium-section">
 
 ${'<'+'script>'}
 // Génération automatique des actions prioritaires
-const opts=${JSON.stringify(d.opts)};
-const anoms=${JSON.stringify(d.anoms)};
-const auds=${JSON.stringify(d.auds)};
-const magasins=${JSON.stringify(d.magasins)};
+const opts=JSON.parse(document.getElementById('_data_opts').textContent);
+const anoms=JSON.parse(document.getElementById('_data_anoms').textContent);
+const auds=JSON.parse(document.getElementById('_data_auds').textContent);
+const magasins=JSON.parse(document.getElementById('_data_magasins').textContent);
 const OBJ=${JSON.stringify(OBJ)};
 const joursRest=${d.joursRest};
 const TA_TOT=${d.taTot !== null && d.taTot !== undefined ? d.taTot : -1};
