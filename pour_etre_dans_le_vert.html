@@ -2506,7 +2506,12 @@ ${podiumHTML ? `<div class="podium-section">
 ${'<'+'script>'}
 // Données injectées via JSON sécurisé
 window.__rapportData={opts:${JSON.stringify(d.opts)},anoms:${JSON.stringify(d.anoms)},auds:${JSON.stringify(d.auds)},magasins:${JSON.stringify(d.magasins)}};
-// Génération automatique des actions prioritaires
+// Génération automatique des actions prioritaires — exécuté après chargement DOM
+(function runWhenReady() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runWhenReady);
+    return;
+  }
 const opts=window.__rapportData.opts;
 const anoms=window.__rapportData.anoms;
 const auds=window.__rapportData.auds;
@@ -2751,6 +2756,19 @@ while (prios.length < 9) {
 
 
 const pg=document.getElementById('prio-grid-auto');
+// DIAGNOSTIC
+try {
+  const diag = {
+    pgExists: !!pg,
+    dataExists: !!window.__rapportData,
+    optsIsArray: window.__rapportData && Array.isArray(window.__rapportData.opts),
+    optsLen: window.__rapportData && window.__rapportData.opts ? window.__rapportData.opts.length : -1,
+    priosLen: typeof prios !== 'undefined' ? prios.length : -1
+  };
+  if (pg) pg.innerHTML = '<div style="background:#1a1a1a;color:#fff;padding:10px;font-size:11px;border:1px solid #CC1719">DIAG: '+JSON.stringify(diag)+'</div>';
+} catch(diagErr) {
+  if (pg) pg.innerHTML = '<div style="color:red">DIAG ERR: '+diagErr.message+'</div>';
+}
 prios.sort((a,b)=>a.p-b.p).slice(0,9).forEach(function(item){
   var p=item.p, titre=item.titre, detail=item.detail;
   var badge = p <= 3 ? '<div class="pcard-badge p'+p+'-badge">P'+p+'</div>' : '';
@@ -2762,6 +2780,8 @@ prios.sort((a,b)=>a.p-b.p).slice(0,9).forEach(function(item){
     +'<div class="pcard-detail">'+detail+'</div>'
     +'</div>';
 });
+
+})(); // fin runWhenReady
 
 // Scale wrappers
 function scaleWrapper(){
