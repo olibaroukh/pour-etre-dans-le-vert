@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Config Podium — Optical Center</title>
+<style>
+  :root {
+    --red: #CC1719;
+    --bg: #141412;
+    --card: #1E1E1C;
+    --border: rgba(255,255,255,0.08);
+    --text: #D3D1C7;
+    --muted: #5F5E5A;
+    --gold: #f0a500;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+  }
+  .header {
+    width: 100%; max-width: 480px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .logo {
+    width: 36px; height: 36px;
+    background: var(--red);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+  }
+  .header-text h1 {
+    font-size: 15px; font-weight: 700; color: var(--text);
+    letter-spacing: -.01em;
+  }
+  .header-text p {
+    font-size: 11px; color: var(--muted); margin-top: 1px;
+  }
+  .card {
+    width: 100%; max-width: 480px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .group-label {
+    font-size: 10px; font-weight: 700; color: var(--muted);
+    letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .row:last-child { margin-bottom: 0; }
+  .label {
+    font-size: 12px; color: var(--text);
+    width: 130px; flex-shrink: 0;
+  }
+  input[type=range] {
+    flex: 1; accent-color: var(--red); cursor: pointer;
+    height: 4px;
+  }
+  .val {
+    font-size: 13px; font-weight: 700; color: var(--red);
+    width: 18px; text-align: right; flex-shrink: 0;
+  }
+  .actions {
+    width: 100%; max-width: 480px;
+    display: flex; gap: 8px; margin-top: 4px;
+  }
+  .btn {
+    flex: 1; padding: 13px;
+    border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn.primary { background: var(--red); color: #fff; }
+  .btn.secondary { background: #2C2C2A; color: var(--text); }
+  .btn.ghost { background: #2C2C2A; color: var(--muted); flex: 0 0 auto; padding: 13px 16px; }
+  .status {
+    width: 100%; max-width: 480px;
+    font-size: 11px; color: var(--muted);
+    text-align: center; margin-top: 12px;
+    min-height: 16px;
+  }
+  .status.ok { color: #4CAF7D; }
+  .status.err { color: var(--red); }
+  .badge {
+    display: inline-block; background: rgba(204,23,25,.12);
+    color: var(--red); font-size: 9px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 4px; margin-left: 6px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">OC</div>
+  <div class="header-text">
+    <h1>Coefficients du podium <span class="badge">Admin</span></h1>
+    <p>Optical Center — Configuration réseau</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="group-label">Commun</div>
+  <div class="row"><span class="label">CA généré</span><input type="range" id="p-ca" min="0" max="10" step="1" value="7"><span class="val" id="v-ca">7</span></div>
+</div>
+
+<div class="card">
+  <div class="group-label">Optique</div>
+  <div class="row"><span class="label">Nb ventes</span><input type="range" id="p-nb" min="0" max="10" step="1" value="6"><span class="val" id="v-nb">6</span></div>
+  <div class="row"><span class="label">Panier moyen</span><input type="range" id="p-pm" min="0" max="10" step="1" value="4"><span class="val" id="v-pm">4</span></div>
+  <div class="row"><span class="label">% SOP</span><input type="range" id="p-sop" min="0" max="10" step="1" value="5"><span class="val" id="v-sop">5</span></div>
+  <div class="row"><span class="label">% TC</span><input type="range" id="p-tc" min="0" max="10" step="1" value="4"><span class="val" id="v-tc">4</span></div>
+  <div class="row"><span class="label">% MdC</span><input type="range" id="p-mdc" min="0" max="10" step="1" value="2"><span class="val" id="v-mdc">2</span></div>
+  <div class="row"><span class="label">Pack Confort PM</span><input type="range" id="p-pmpc" min="0" max="10" step="1" value="2"><span class="val" id="v-pmpc">2</span></div>
+  <div class="row"><span class="label">Pack Confort %</span><input type="range" id="p-pack" min="0" max="10" step="1" value="3"><span class="val" id="v-pack">3</span></div>
+  <div class="row"><span class="label">LUKKAS</span><input type="range" id="p-luk" min="0" max="10" step="1" value="1"><span class="val" id="v-luk">1</span></div>
+  <div class="row"><span class="label">PM 1ère paire</span><input type="range" id="p-pm1" min="0" max="10" step="1" value="1"><span class="val" id="v-pm1">1</span></div>
+</div>
+
+<div class="card">
+  <div class="group-label">Audio</div>
+  <div class="row"><span class="label">Prothèses</span><input type="range" id="p-proth" min="0" max="10" step="1" value="6"><span class="val" id="v-proth">6</span></div>
+  <div class="row"><span class="label">PM vente</span><input type="range" id="p-pm_aud" min="0" max="10" step="1" value="3"><span class="val" id="v-pm_aud">3</span></div>
+  <div class="row"><span class="label">Tx réussite essai</span><input type="range" id="p-txe" min="0" max="10" step="1" value="5"><span class="val" id="v-txe">5</span></div>
+  <div class="row"><span class="label">% Assurance</span><input type="range" id="p-assur" min="0" max="10" step="1" value="4"><span class="val" id="v-assur">4</span></div>
+  <div class="row"><span class="label">% Test auditif</span><input type="range" id="p-ta" min="0" max="10" step="1" value="3"><span class="val" id="v-ta">3</span></div>
+  <div class="row"><span class="label">% Vente add.</span><input type="range" id="p-tva" min="0" max="10" step="1" value="3"><span class="val" id="v-tva">3</span></div>
+  <div class="row"><span class="label">PM prothèse</span><input type="range" id="p-pm_app" min="0" max="10" step="1" value="2"><span class="val" id="v-pm_app">2</span></div>
+</div>
+
+<div class="actions">
+  <button class="btn secondary" onclick="resetDefaut()">Défaut</button>
+  <button class="btn primary" onclick="genererFichier()">⬇ Générer pour_etre_dans_le_vert.html</button>
+  <button class="btn ghost" onclick="telechargerConfig()" title="Télécharger cette page de config">⬇ Config</button>
+</div>
+<div class="status" id="status"></div>
+
+<script>
+const KEYS = ['ca','nb','pm','sop','tc','pack','pmpc','mdc','pm1','luk','proth','pm_aud','txe','assur','ta','tva','pm_app'];
+const DEFAUT = {ca:4,nb:3,pm:3,sop:3,tc:3,pack:3,pmpc:2,mdc:2,pm1:1,luk:1,proth:3,pm_aud:3,txe:3,assur:3,ta:3,tva:3,pm_app:2};
+const LABELS = {
+  ca:'CA généré', nb:'Nb ventes', pm:'Panier moyen', sop:'% SOP', tc:'% TC',
+  mdc:'% MdC', pmpc:'Pack Confort PM', pack:'Pack Confort %', luk:'LUKKAS', pm1:'PM 1ère paire',
+  proth:'Prothèses', pm_aud:'PM vente', txe:'Tx réussite essai', assur:'% Assurance',
+  ta:'% Test auditif', tva:'% Vente add.', pm_app:'PM prothèse'
+};
+
+// Brancher les sliders
+KEYS.forEach(k => {
+  const el = document.getElementById('p-' + k);
+  const valEl = document.getElementById('v-' + k);
+  if (el) el.oninput = () => { if (valEl) valEl.textContent = el.value; };
+});
+
+function getVals() {
+  const v = {};
+  KEYS.forEach(k => {
+    const el = document.getElementById('p-' + k);
+    v[k] = el ? parseInt(el.value) : DEFAUT[k];
+  });
+  return v;
+}
+
+function resetDefaut() {
+  Object.entries(DEFAUT).forEach(([k, v]) => {
+    const el = document.getElementById('p-' + k);
+    const valEl = document.getElementById('v-' + k);
+    if (el) { el.value = v; if (valEl) valEl.textContent = v; }
+  });
+}
+
+function setStatus(msg, cls='') {
+  const s = document.getElementById('status');
+  s.textContent = msg; s.className = 'status ' + cls;
+}
+
+function genererFichier() {
+  setStatus('Chargement du fichier source...');
+  const url = 'pour_etre_dans_le_vert.html?v=' + Date.now();
+  fetch(url, {cache: 'no-store'})
+    .then(r => r.ok ? r.text() : Promise.reject('Erreur ' + r.status))
+    .then(src => {
+      const vals = getVals();
+
+      // 1. Remplacer le bloc POIDS
+      const newPoids =
+        '  const POIDS = { // @@POIDS@@\n' +
+        '    // Commun\n' +
+        '    ca: ' + vals.ca + ',\n' +
+        '    // Optique\n' +
+        '    nb: ' + vals.nb + ', pm: ' + vals.pm + ', sop: ' + vals.sop +
+        ', tc: ' + vals.tc + ', pack: ' + vals.pack +
+        ', pmpc: ' + vals.pmpc + ', mdc: ' + vals.mdc +
+        ', pm1: ' + vals.pm1 + ', luk: ' + vals.luk + ',\n' +
+        '    // Audio\n' +
+        '    proth: ' + vals.proth + ', pm_aud: ' + vals.pm_aud +
+        ', txe: ' + vals.txe + ', assur: ' + vals.assur +
+        ', ta: ' + vals.ta + ', tva: ' + vals.tva +
+        ', pm_app: ' + vals.pm_app + '\n' +
+        '  }';
+      src = src.replace(/  const POIDS = \{ \/\/ @@POIDS@@[\s\S]*?\}/, newPoids);
+
+      // 2. Vérifier que le remplacement a fonctionné
+      if (!src.includes('@@POIDS@@')) {
+        setStatus('Erreur : marqueur @@POIDS@@ introuvable.', 'err');
+        return;
+      }
+
+      // 3. Télécharger
+      const blob = new Blob([src], {type: 'text/html;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pour_etre_dans_le_vert.html';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      setStatus('Fichier généré — push sur GitHub pour déployer.', 'ok');
+
+      // 4. Mettre à jour cette page de config avec les nouveaux poids
+      setTimeout(() => telechargerConfigAvecVals(vals), 800);
+    })
+    .catch(err => {
+      setStatus('Erreur fetch : ' + err + '. Vérifiez que les deux fichiers sont sur le même domaine GitHub Pages.', 'err');
+    });
+}
+
+function buildConfigHtml(vals) {
+  // Reconstruire cette page avec les poids mis à jour
+  let html = document.documentElement.outerHTML;
+  KEYS.forEach(k => {
+    html = html.replace(
+      new RegExp('(id="p-' + k + '"[^>]*?)value="\\d+"', 'g'),
+      '$1value="' + vals[k] + '"'
+    );
+    html = html.replace(
+      new RegExp('(id="v-' + k + '">)\\d+', 'g'),
+      '$1' + vals[k]
+    );
+  });
+  // Mettre à jour POIDS_ACTUELS dans le script si présent
+  html = html.replace(
+    /const POIDS_ACTUELS = \{[^}]+\}/,
+    'const POIDS_ACTUELS = {ca:7,nb:6,pm:4,sop:5,tc:4,pack:3,pmpc:2,mdc:2,pm1:1,luk:1,proth:6,pm_aud:3,txe:5,assur:4,ta:3,tva:3,pm_app:2}'
+  );
+  return '<!DOCTYPE html>\n' + html;
+}
+
+function telechargerConfigAvecVals(vals) {
+  const html = buildConfigHtml(vals);
+  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'config_poids.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function telechargerConfig() {
+  telechargerConfigAvecVals(getVals());
+  setStatus('Page de config téléchargée.', 'ok');
+}
+</script>
+
+</body></html>
