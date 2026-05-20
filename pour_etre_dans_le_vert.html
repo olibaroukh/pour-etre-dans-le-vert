@@ -2663,7 +2663,7 @@ ${podiumHTML ? `<div class="podium-section">
 
 ${'<'+'script>'}
 // Données injectées via JSON sécurisé
-window.__rapportData={opts:${JSON.stringify(d.opts)},anoms:${JSON.stringify(d.anoms)},auds:${JSON.stringify(d.auds)},magasins:${JSON.stringify(d.magasins)}};
+window.__rapportData={opts:${JSON.stringify(opts)},anoms:${JSON.stringify(d.anoms)},auds:${JSON.stringify(auds)},magasins:${JSON.stringify(d.magasins)}};
 // Génération automatique des actions prioritaires — exécuté après chargement DOM
 (function runWhenReady() {
   if (document.readyState === 'loading') {
