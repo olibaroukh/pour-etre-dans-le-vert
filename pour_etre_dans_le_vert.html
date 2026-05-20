@@ -671,8 +671,15 @@
           <div class="settings-field-row">
             <div class="settings-field"><label>Objectif CA collaborateur (en k)</label><input type="number" id="s-obj-ca" min="1"></div>
             <div class="settings-field"><label>Seuil alerte RAF/jour (k€) — auto si vide</label><input type="number" id="s-raf-seuil" min="0" step="0.5" placeholder="auto"></div>
-            <div class="settings-field"><label>Nb max d'actions prioritaires <span id="max-prio-val" style="color:#CC1719;font-weight:700">9</span></label><input type="range" id="s-max-prio" min="3" max="9" step="1" value="9" oninput="document.getElementById('max-prio-val').textContent=this.value" style="width:100%;accent-color:#CC1719"></div>
             <select class="prio-select" id="sp-obj-ca" title="Priorité"><option value="1">P1</option><option value="2" selected="">P2</option><option value="3">P3</option></select>
+          </div>
+          <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:12px;color:#888780">Nb max d'actions prioritaires</span>
+              <span id="max-prio-val" style="font-size:15px;font-weight:700;color:#CC1719">9</span>
+            </div>
+            <input type="range" id="s-max-prio" min="3" max="9" step="1" value="9" oninput="document.getElementById('max-prio-val').textContent=this.value" style="width:100%;accent-color:#CC1719">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#3a3937;margin-top:3px"><span>3</span><span>6</span><span>9</span></div>
           </div>
         </div>
       </div>
@@ -2238,13 +2245,24 @@ function buildReportHTML(d) {
     flex:1; border-radius:9px; text-align:center;
     position:relative; overflow:hidden;
   }
-  .podium-card.r2 { padding:10px 8px 8px; background:#1E1E1C; border:0.5px solid #3C3C3A; }
-  .podium-card.r3 { padding:10px 8px 8px; background:#1E1E1C; border:0.5px solid #3C3C3A; }
+  /* Argent */
+  .podium-card.r2 {
+    padding:10px 8px 8px; background:#1E1E1C;
+    border:4px solid #8C9199;
+    box-shadow:0 0 16px rgba(140,145,153,0.25), inset 0 0 0 2px rgba(140,145,153,0.08);
+  }
+  /* Bronze */
+  .podium-card.r3 {
+    padding:10px 8px 8px; background:#1E1E1C;
+    border:4px solid #8C5E2A;
+    box-shadow:0 0 16px rgba(140,94,42,0.25), inset 0 0 0 2px rgba(140,94,42,0.08);
+  }
+  /* Or */
   .podium-card.r1 {
     padding:14px 10px 10px;
     background:linear-gradient(165deg,#2A2A28 0%,#161614 100%);
-    border:1px solid #CC1719;
-    box-shadow:0 0 18px rgba(204,23,25,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    border:4px solid #B8960C;
+    box-shadow:0 0 24px rgba(184,150,12,0.4), inset 0 0 0 2px rgba(184,150,12,0.1);
   }
   /* Reflet haut */
   .podium-card::after {
