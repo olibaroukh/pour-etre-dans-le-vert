@@ -671,6 +671,7 @@
           <div class="settings-field-row">
             <div class="settings-field"><label>Objectif CA collaborateur (en k)</label><input type="number" id="s-obj-ca" min="1"></div>
             <div class="settings-field"><label>Seuil alerte RAF/jour (k€) — auto si vide</label><input type="number" id="s-raf-seuil" min="0" step="0.5" placeholder="auto"></div>
+            <div class="settings-field"><label>Nb max d'actions prioritaires <span id="max-prio-val" style="color:#CC1719;font-weight:700">9</span></label><input type="range" id="s-max-prio" min="3" max="9" step="1" value="9" oninput="document.getElementById('max-prio-val').textContent=this.value" style="width:100%;accent-color:#CC1719"></div>
             <select class="prio-select" id="sp-obj-ca" title="Priorité"><option value="1">P1</option><option value="2" selected="">P2</option><option value="3">P3</option></select>
           </div>
         </div>
@@ -805,7 +806,8 @@ const DEFAULTS = { lang:'fr', currency:'€',
   obj_ca:20, raf_seuil:0, nb:50, pm:450, sop:40, tc:95, pack:50, mdc:66, luk:12, pmpc:80, pm1:120,
   proth:30, txc:95, txe:95, assur:70, ta:30, tva:50, pm_aud:2350, pm_app:1250,
   p_obj_ca:1, p_nb:1, p_pm:2, p_pm1:2, p_tva:3, p_sop:2, p_tc:2, p_pack:2, p_mdc:2, p_luk:2, p_pmpc:2,
-  p_proth:3, p_txc:3, p_txe:3, p_assur:3, p_ta:2, p_pm_aud:2, p_pm_app:2
+  p_proth:3, p_txc:3, p_txe:3, p_assur:3, p_ta:2, p_pm_aud:2, p_pm_app:2,
+  max_prio:9
 }
 function loadSettings() {
   try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('oc_settings')||'{}')) }
@@ -817,6 +819,7 @@ function openSettings() {
   if (animEl) animEl.value = s.animateur || ''
   document.getElementById('s-obj-ca').value   = s.obj_ca
   document.getElementById('s-raf-seuil').value = s.raf_seuil || ''
+  const mpEl = document.getElementById('s-max-prio'); if(mpEl){ mpEl.value = s.max_prio || 9; document.getElementById('max-prio-val').textContent = s.max_prio || 9; }
   // Synchro jours (depuis la page d'accueil)
   const je = parseInt(document.getElementById('jours-ecoules').value) || s.jours_ecoules
   const jm = parseInt(document.getElementById('jours-mois').value)    || s.jours_mois
@@ -865,6 +868,7 @@ function saveSettings() {
   const s = {
     animateur: (document.getElementById('s-animateur')?.value || '').trim(),
     obj_ca:   parseInt(document.getElementById('s-obj-ca').value) || DEFAULTS.obj_ca,
+    max_prio: parseInt(document.getElementById('s-max-prio').value) || DEFAULTS.max_prio,
     raf_seuil: parseFloat(document.getElementById('s-raf-seuil').value) || 0,
     jours_ecoules: parseInt(document.getElementById('jours-ecoules').value) || DEFAULTS.jours_ecoules,
     jours_mois:    parseInt(document.getElementById('jours-mois').value)    || DEFAULTS.jours_mois,
@@ -1557,6 +1561,7 @@ function generateReport() {
       obj_ca: _s.obj_ca,
       tauxMap: tauxMap,
       excluded: [...excludedCollabs],
+      max_prio: _s.max_prio || 9,
       note: _isNetworkMode ? noteReseau : note,
       animateur: _s.animateur || '',
       isNetworkMode,
@@ -2682,6 +2687,7 @@ const magasins=window.__rapportData.magasins;
 const OBJ=${JSON.stringify(OBJ)};
 const joursRest=${d.joursRest};
 const TA_TOT=${d.taTot !== null && d.taTot !== undefined ? d.taTot : -1};
+const MAX_PRIO=${d.max_prio || 9};
 const TAUX=${JSON.stringify(d.tauxMap||{})};
 const CUR='${d.currency}';
 const IS_RESEAU=${isNetworkMode ? 'true' : 'false'};
@@ -2724,7 +2730,7 @@ function listNoms(arr, maxN, valFn) {
 let _prioScore = 0;
 function addPrio(p, titre, detail, score, tag) {
   const entry = {p, titre, detail, score: score||(_prioScore++), tag: tag||titre.split('—')[0].trim().replace(/[^a-zA-Z%]/g,'').toLowerCase()};
-  if (prios.length < 12) {
+  if (prios.length < MAX_PRIO) {
     prios.push(entry);
   } else {
     // Si plein, remplacer la carte la moins urgente (p le plus élevé) si la nouvelle est plus urgente
@@ -2982,13 +2988,13 @@ if (auds.length > 0 && auds.every(a=>a.proth >= OBJ.proth)) {
 }
 
 // ─── COMPLÉTER JUSQU'À 9 AVEC FÉLICITATIONS ──────────────────────────────────
-const slotsRestants = 12 - prios.length;
+const slotsRestants = MAX_PRIO - prios.length;
 for (let i = 0; i < Math.min(slotsRestants, felicitations.length); i++) {
   prios.push(felicitations[i]);
 }
 
 // Si encore des slots vides (magasin au top sur tout)
-while (prios.length < 12) {
+while (prios.length < MAX_PRIO) {
   const msgs = [
     {p:4, titre:"🌟 Équipe au top — continuez comme ça !", detail:"Tous les indicateurs sont dans le vert ce mois-ci. C'est le résultat d'un travail d'équipe remarquable. Maintenez le cap jusqu'à la fin du mois !"},
     {p:4, titre:"💪 Belle performance collective !", detail:"Le magasin est bien positionné. Profitez de cette dynamique pour viser l'excellence sur les jours restants et finir le mois en beauté."},
