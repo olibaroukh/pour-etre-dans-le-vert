@@ -2286,18 +2286,18 @@ function buildReportHTML(d) {
 
   .podium-score-wrap { margin:4px 0 6px; }
   .podium-score { font-size:26px; font-weight:800; color:#D3D1C7; line-height:1; }
-  .podium-card.r1 .podium-score { font-size:36px; color:#CC1719; }
+  .podium-card.r1 .podium-score { font-size:36px; color:#D3D1C7; }
   .podium-pct { font-size:12px; color:#5F5E5A; font-weight:600; }
-  .podium-card.r1 .podium-pct { color:#FF6666; }
+  .podium-card.r1 .podium-pct { color:#888780; }
 
   .podium-bar-wrap {
     height:4px; background:rgba(255,255,255,0.06);
     border-radius:2px; margin:0 0 6px; overflow:hidden;
   }
   .podium-bar { height:100%; border-radius:2px; }
-  .podium-card.r1 .podium-bar { background:linear-gradient(90deg,#CC1719,#FF5555); }
-  .podium-card.r2 .podium-bar,
-  .podium-card.r3 .podium-bar { background:linear-gradient(90deg,#3B6D11,#7DC850); }
+  .podium-card.r1 .podium-bar { background:linear-gradient(90deg,#8A6E00,#E8C84A); }
+  .podium-card.r2 .podium-bar { background:linear-gradient(90deg,#555A61,#B8BEC6); }
+  .podium-card.r3 .podium-bar { background:linear-gradient(90deg,#5C3A10,#C47C30); }
 
   .podium-tags { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
   .podium-tag {
@@ -3045,7 +3045,12 @@ const introTone = avgPosVal >= 100
   : "🔴 Magasin à "+avgPosVal.toFixed(1)+"% — mobilisation nécessaire sur tous les fronts.";
 pg.innerHTML = '<div class="prio-intro">'+introTone+'</div>';
 
-prios.sort((a,b)=>a.p-b.p||a.score-b.score).slice(0,9).forEach(function(item){
+// Adapter la grille selon le nombre de prios
+const _cols = MAX_PRIO <= 4 ? 2 : 3;
+const _pgGrid = document.getElementById('prio-grid-auto');
+if (_pgGrid) _pgGrid.style.gridTemplateColumns = 'repeat('+_cols+',1fr)';
+
+prios.sort((a,b)=>a.p-b.p||a.score-b.score).slice(0,MAX_PRIO).forEach(function(item){
   var p=item.p, titre=item.titre, detail=item.detail, tag=item.tag||'';
   var badge = p <= 3 ? '<div class="pcard-badge p'+p+'-badge">P'+p+'</div>' : '';
   var recurrent = p <= 3 && tag && _prevActions[tag] ? '<span class="pcard-recurrent">↩ récurrent</span>' : '';
