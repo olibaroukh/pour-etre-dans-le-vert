@@ -2701,6 +2701,7 @@ ${podiumHTML ? `<div class="podium-section">
 
 ${'<'+'script>'}
 // Données injectées via JSON sécurisé
+var DARK_MODE=${d.dark_mode ? 'true' : 'false'};
 window.__rapportData={opts:${JSON.stringify(opts)},anoms:${JSON.stringify(d.anoms)},auds:${JSON.stringify(auds)},magasins:${JSON.stringify(d.magasins)}};
 // Génération automatique des actions prioritaires — exécuté après chargement DOM
 (function runWhenReady() {
@@ -2721,8 +2722,7 @@ const OBJ=${JSON.stringify(OBJ)};
 const joursRest=${d.joursRest};
 const TA_TOT=${d.taTot !== null && d.taTot !== undefined ? d.taTot : -1};
 const MAX_PRIO=${d.max_prio || 9};
-const DARK_MODE=${d.dark_mode ? 'true' : 'false'};
-console.log('DARK_MODE:', DARK_MODE, 'd.dark_mode:', ${JSON.stringify(d.dark_mode)});
+
 const TAUX=${JSON.stringify(d.tauxMap||{})};
 const CUR='${d.currency}';
 const IS_RESEAU=${isNetworkMode ? 'true' : 'false'};
