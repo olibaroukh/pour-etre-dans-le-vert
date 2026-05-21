@@ -681,6 +681,17 @@
             <input type="range" id="s-max-prio" min="3" max="9" step="1" value="9" oninput="document.getElementById('max-prio-val').textContent=this.value" style="width:100%;accent-color:#CC1719">
             <div style="display:flex;justify-content:space-between;font-size:10px;color:#3a3937;margin-top:3px"><span>3</span><span>6</span><span>9</span></div>
           </div>
+          <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:#888780">Mode rapport</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:#5F5E5A" id="dark-mode-label">Clair</span>
+              <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
+                <input type="checkbox" id="s-dark-mode" style="opacity:0;width:0;height:0" onchange="document.getElementById('dark-mode-label').textContent=this.checked?'Sombre':'Clair';var k=document.getElementById('dark-toggle-knob');var bg=document.getElementById('dark-toggle-bg');if(k){k.style.transform=this.checked?'translateX(18px)':'';k.style.background=this.checked?'#CC1719':'#888780';}if(bg){bg.style.background=this.checked?'rgba(204,23,25,0.2)':'#2C2C2A';}">
+                <span id="dark-toggle-bg" style="position:absolute;inset:0;background:#2C2C2A;border-radius:22px;transition:.3s;border:1px solid #3C3C3A"></span>
+                <span id="dark-toggle-knob" style="position:absolute;height:16px;width:16px;left:3px;top:3px;background:#888780;border-radius:50%;transition:.3s"></span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
       <div class="settings-group">
@@ -814,7 +825,8 @@ const DEFAULTS = { lang:'fr', currency:'€',
   proth:30, txc:95, txe:95, assur:70, ta:30, tva:50, pm_aud:2350, pm_app:1250,
   p_obj_ca:1, p_nb:1, p_pm:2, p_pm1:2, p_tva:3, p_sop:2, p_tc:2, p_pack:2, p_mdc:2, p_luk:2, p_pmpc:2,
   p_proth:3, p_txc:3, p_txe:3, p_assur:3, p_ta:2, p_pm_aud:2, p_pm_app:2,
-  max_prio:9
+  max_prio:9,
+  dark_mode:false
 }
 function loadSettings() {
   try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('oc_settings')||'{}')) }
@@ -827,6 +839,7 @@ function openSettings() {
   document.getElementById('s-obj-ca').value   = s.obj_ca
   document.getElementById('s-raf-seuil').value = s.raf_seuil || ''
   const mpEl = document.getElementById('s-max-prio'); if(mpEl){ mpEl.value = s.max_prio || 9; document.getElementById('max-prio-val').textContent = s.max_prio || 9; }
+  const dmEl = document.getElementById('s-dark-mode'); if(dmEl){ dmEl.checked = !!s.dark_mode; document.getElementById('dark-mode-label').textContent = s.dark_mode ? 'Sombre' : 'Clair'; var k=document.getElementById('dark-toggle-knob'); if(k){k.style.transform=s.dark_mode?'translateX(18px)':'';k.style.background=s.dark_mode?'#CC1719':'#888780';} }
   // Synchro jours (depuis la page d'accueil)
   const je = parseInt(document.getElementById('jours-ecoules').value) || s.jours_ecoules
   const jm = parseInt(document.getElementById('jours-mois').value)    || s.jours_mois
@@ -876,6 +889,7 @@ function saveSettings() {
     animateur: (document.getElementById('s-animateur')?.value || '').trim(),
     obj_ca:   parseInt(document.getElementById('s-obj-ca').value) || DEFAULTS.obj_ca,
     max_prio: parseInt(document.getElementById('s-max-prio').value) || DEFAULTS.max_prio,
+    dark_mode: document.getElementById('s-dark-mode').checked,
     raf_seuil: parseFloat(document.getElementById('s-raf-seuil').value) || 0,
     jours_ecoules: parseInt(document.getElementById('jours-ecoules').value) || DEFAULTS.jours_ecoules,
     jours_mois:    parseInt(document.getElementById('jours-mois').value)    || DEFAULTS.jours_mois,
@@ -1569,6 +1583,7 @@ function generateReport() {
       tauxMap: tauxMap,
       excluded: [...excludedCollabs],
       max_prio: _s.max_prio || 9,
+      dark_mode: !!_s.dark_mode,
       note: _isNetworkMode ? noteReseau : note,
       animateur: _s.animateur || '',
       isNetworkMode,
@@ -2706,6 +2721,8 @@ const OBJ=${JSON.stringify(OBJ)};
 const joursRest=${d.joursRest};
 const TA_TOT=${d.taTot !== null && d.taTot !== undefined ? d.taTot : -1};
 const MAX_PRIO=${d.max_prio || 9};
+const DARK_MODE=${d.dark_mode ? 'true' : 'false'};
+console.log('DARK_MODE:', DARK_MODE, 'd.dark_mode:', ${JSON.stringify(d.dark_mode)});
 const TAUX=${JSON.stringify(d.tauxMap||{})};
 const CUR='${d.currency}';
 const IS_RESEAU=${isNetworkMode ? 'true' : 'false'};
@@ -3067,6 +3084,38 @@ _saveCurrentActions();
 })(); // fin runWhenReady
 
 // Scale wrappers
+// Appliquer le dark mode
+if (DARK_MODE) {
+  var styleEl = document.createElement('style');
+  var css = [
+    'html,body{background:linear-gradient(160deg,#1A1210 0%,#0D0D0D 40%,#111010 70%,#0A0A0A 100%)!important;background-attachment:fixed!important}',
+    '#wrapper{background:transparent!important;color:#D3D1C7!important}',
+    '.kpi-box{background:rgba(255,255,255,0.04)!important;border-color:rgba(255,255,255,0.08)!important}',
+    '.kpi-val{color:#F0EDE6!important}',
+    '.kpi-label{color:#888780!important}',
+    '.kpi-sub{color:#5F5E5A!important}',
+    '#left-col{background:rgba(255,255,255,0.03)!important;border-color:rgba(255,255,255,0.08)!important}',
+    '#collab-table thead th{background:#1C1C1A!important;color:#888780!important;border-color:rgba(255,255,255,0.08)!important}',
+    '#collab-table tbody td{color:#D3D1C7!important;border-color:rgba(255,255,255,0.06)!important}',
+    '#collab-table tbody tr:nth-child(even) td{background:rgba(255,255,255,0.02)!important}',
+    '#collab-table tbody tr:nth-child(odd) td{background:transparent!important}',
+    '.collab-name{color:#F0EDE6!important}',
+    '.sec-label{color:#888780!important}',
+    '.prio-intro{background:rgba(255,255,255,0.04)!important;color:#D3D1C7!important;border-color:rgba(255,255,255,0.1)!important}',
+    '.pcard{background:#1E1E1C!important;border-color:rgba(255,255,255,0.08)!important}',
+    '.pcard-detail{color:#888780!important}',
+    '.pcard-title{color:#D3D1C7!important}',
+    '.podium-card{background:#141412!important}',
+    '.podium-prenom,.podium-nom{color:#D3D1C7!important}',
+    '.leg-note{color:#5F5E5A!important}',
+    '.divider{border-color:rgba(255,255,255,0.08)!important}',
+    '.chip{background:rgba(204,23,25,0.15)!important}',
+    'thead th{background:#1C1C1A!important;color:#888780!important}'
+  ].join(' ');
+  styleEl.textContent = css;
+  document.head.appendChild(styleEl);
+}
+
 function scaleWrapper(){
   const w=document.getElementById('wrapper');
   const scale=Math.min(window.innerWidth/1122,1);
