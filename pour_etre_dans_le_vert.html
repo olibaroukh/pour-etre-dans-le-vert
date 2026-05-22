@@ -1767,6 +1767,14 @@ function buildReportHTML(d) {
   let collabHeader = `<th style="text-align:left">Collaborateur</th>`
   if (!d.isNetworkMode) collabHeader += th('Tps trav.', 'temps travail')
   collabHeader += th('CA généré', `en k${d.currency}`)
+  // Colonne RAF individuel — juste après CA généré
+  const objIndivMap = d.obj_indiv_map || {}
+  const hasObjIndiv = Object.keys(objIndivMap).length > 0
+  if (hasObjIndiv) {
+    collabHeader += th('RAF/jour', 'objectif indiv.', '#FFF8E8')
+  } else {
+    collabHeader += `<th style="background:#FFF8E8;color:#B8860B;font-size:7px;font-style:italic;text-align:center;padding:2px 2px;white-space:normal;line-height:1.1">Pas d'objectifs indiv. CA</th>`
+  }
   collabHeader += th('Nb ventes', isNetworkMode ? 'par effectif' : `obj. ${OBJ.nb}`)
   if (d.cols_opt.includes('pm'))   collabHeader += th('PM', `obj. ${OBJ.pm}${d.currency}`)
   if (d.cols_opt.includes('sop'))  collabHeader += th('% SOP', `obj. ${OBJ.sop}%`)
@@ -1776,14 +1784,6 @@ function buildReportHTML(d) {
   if (d.cols_opt.includes('pm1'))  collabHeader += th('PM 1ère paire', `obj. ${OBJ.pm1}${d.currency}`)
   if (d.cols_opt.includes('mdc'))  collabHeader += th('% MdC', `obj. ${OBJ.mdc}%`)
   if (d.cols_opt.includes('luk'))  collabHeader += th('% LUKKAS', `obj. ${OBJ.luk}%`)
-  // Colonne RAF individuel — uniquement si objectifs chargés
-  const objIndivMap = d.obj_indiv_map || {}
-  const hasObjIndiv = Object.keys(objIndivMap).length > 0
-  if (hasObjIndiv) {
-    collabHeader += th('RAF/jour', 'objectif indiv.', '#FFF8E8')
-  } else {
-    collabHeader += `<th style="background:#FFF8E8;color:#B8860B;font-size:7px;font-style:italic;text-align:center;padding:2px 2px;white-space:normal;line-height:1.1" colspan="1">Pas d'objectifs indiv. CA</th>`
-  }
   collabHeader += th('Test auditif', `obj. ${OBJ.ta}%`, '#F3F7EF')
   collabHeader += th('Prothèses', `obj. ${OBJ.proth}`, '#E8F1FA')
   collabHeader += th('PM vente', `obj. ${OBJ.pm_aud}${d.currency}`, '#E8F1FA')
@@ -1815,19 +1815,9 @@ function buildReportHTML(d) {
       <td>${r.nom}</td>
       ${!isNetworkMode ? `<td style="text-align:center;color:#888780;font-size:8px">${(tauxMap[r.nom]||100)+'%'}</td>` : ''}
       <td style="text-align:right;font-weight:500">${((aud ? r.ca_total : r.ca)/1000).toFixed(1)}k${d.currency}</td>
-      <td>${pill(r.nb, oNb)}</td>
-      ${d.cols_opt.includes('pm') ? `<td>${pill(r.pm, OBJ.pm, d.currency)}</td>` : ''}
-      ${d.cols_opt.includes('sop') ? `<td>${pill(r.sop, OBJ.sop, '%')}</td>` : ''}
-      ${d.cols_opt.includes('tc') ? `<td>${pill(r.tc, OBJ.tc, '%')}</td>` : ''}
-      ${d.cols_opt.includes('pack') ? `<td>${pill(r.pack, OBJ.pack, '%')}</td>` : ''}
-      ${d.cols_opt.includes('pmpc') ? `<td>${r.pmpc > 0 ? pill(r.pmpc, OBJ.pmpc, d.currency) : na_val()}</td>` : ''}
-      ${d.cols_opt.includes('pm1') ? `<td>${r.pm1 > 0 ? pill(r.pm1, OBJ.pm1, d.currency) : na_val()}</td>` : ''}
-      ${d.cols_opt.includes('mdc') ? `<td>${pill(r.mdc, OBJ.mdc, '%')}</td>` : ''}
-      ${d.cols_opt.includes('luk') ? `<td>${pill(r.luk, OBJ.luk, '%')}</td>` : ''}
       ${(function() {
         if (!hasObjIndiv) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
         const nomUp = r.nom.toUpperCase().replace(/\s+/g, ' ');
-        // Essayer le nom exact puis prénom+nom inversé
         const objMois = objIndivMap[nomUp] || 0;
         if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
         const caAct = (aud ? r.ca_total : r.ca);
@@ -1844,6 +1834,15 @@ function buildReportHTML(d) {
         const col = pct >= 85 ? '#8C6A00' : pct >= 70 ? '#8C4A00' : '#CC1719';
         return '<td style="background:'+bg+';color:'+col+';font-weight:600;text-align:center;font-size:8px">'+rafJour.toFixed(1)+'k</td>';
       })()}
+      <td>${pill(r.nb, oNb)}</td>
+      ${d.cols_opt.includes('pm') ? `<td>${pill(r.pm, OBJ.pm, d.currency)}</td>` : ''}
+      ${d.cols_opt.includes('sop') ? `<td>${pill(r.sop, OBJ.sop, '%')}</td>` : ''}
+      ${d.cols_opt.includes('tc') ? `<td>${pill(r.tc, OBJ.tc, '%')}</td>` : ''}
+      ${d.cols_opt.includes('pack') ? `<td>${pill(r.pack, OBJ.pack, '%')}</td>` : ''}
+      ${d.cols_opt.includes('pmpc') ? `<td>${r.pmpc > 0 ? pill(r.pmpc, OBJ.pmpc, d.currency) : na_val()}</td>` : ''}
+      ${d.cols_opt.includes('pm1') ? `<td>${r.pm1 > 0 ? pill(r.pm1, OBJ.pm1, d.currency) : na_val()}</td>` : ''}
+      ${d.cols_opt.includes('mdc') ? `<td>${pill(r.mdc, OBJ.mdc, '%')}</td>` : ''}
+      ${d.cols_opt.includes('luk') ? `<td>${pill(r.luk, OBJ.luk, '%')}</td>` : ''}
       <td class="ta-bg">${aud && aud.ta > 0 ? pill(aud.ta, OBJ.ta, '%') : r.ta > 0 ? pill(r.ta, OBJ.ta, '%') : '<span style="color:#D3D1C7">–</span>'}</td>
       <td class="aud-bg">${aud ? pill(aud.proth, oProth) : '<span style="color:#D3D1C7">–</span>'}</td>
       <td class="aud-bg">${aud ? pill(aud.pm_aud, OBJ.pm_aud, d.currency) : '<span style="color:#D3D1C7">–</span>'}</td>
