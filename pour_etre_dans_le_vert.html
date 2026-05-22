@@ -1863,10 +1863,9 @@ function buildReportHTML(d) {
         <td>${r.nom}</td>
         ${!d.isNetworkMode ? `<td style="text-align:center;color:#888780;font-size:8px">${(tauxMap[r.nom]||100)+'%'}</td>` : ''}
         <td style="text-align:right;font-weight:500">${(r.ca/1000).toFixed(1)}k${d.currency}</td>
-        ${na('')}${''}${['pm','tc','sop','pack','pmpc','pm1','mdc','luk'].map(k=>d.cols_opt.includes(k)?na(''):'').join('')}
         ${(function() {
           if (!hasObjIndiv) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
-          const nomUp = r.nom.toUpperCase();
+          const nomUp = r.nom.toUpperCase().replace(/\s+/g, ' ');
           const objMois = objIndivMap[nomUp] || 0;
           if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
           const caAct = r.ca;
@@ -1883,6 +1882,7 @@ function buildReportHTML(d) {
           const col = pct >= 85 ? '#8C6A00' : pct >= 70 ? '#8C4A00' : '#CC1719';
           return '<td style="background:'+bg+';color:'+col+';font-weight:600;text-align:center;font-size:8px">'+rafJour.toFixed(1)+'k</td>';
         })()}
+        ${na('')}${''}${['pm','tc','sop','pack','pmpc','pm1','mdc','luk'].map(k=>d.cols_opt.includes(k)?na(''):'').join('')}
         <td class="ta-bg">${pill(r.ta, OBJ.ta, '%')}</td>
         <td class="aud-bg">${pill(r.proth, objPro(r.nom, OBJ.proth, true))}</td>
         <td class="aud-bg">${r.pm_aud > 0 ? pill(r.pm_aud, OBJ.pm_aud, d.currency) : '<span style="color:#D3D1C7">–</span>'}</td>
