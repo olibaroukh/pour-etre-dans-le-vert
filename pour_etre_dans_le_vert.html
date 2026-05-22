@@ -1778,7 +1778,7 @@ function buildReportHTML(d) {
   if (hasObjIndiv) {
     collabHeader += th('RAF/jour', 'objectif indiv.', '#FFF8E8')
   } else {
-    collabHeader += `<th style="background:#FFF8E8;color:#888780;font-size:7px;font-style:italic;text-align:center;padding:2px 2px;white-space:normal;line-height:1.1">Objectifs CA<br>individuels</th>`
+    collabHeader += `<th style="background:#FFF8E8;color:#B8860B;font-size:7px;font-style:italic;text-align:center;padding:2px 2px;white-space:normal;line-height:1.1" colspan="1">Pas d'objectifs indiv. CA</th>`
   }
   collabHeader += th('Test auditif', `obj. ${OBJ.ta}%`, '#F3F7EF')
   collabHeader += th('Prothèses', `obj. ${OBJ.proth}`, '#E8F1FA')
@@ -1825,13 +1825,12 @@ function buildReportHTML(d) {
         const nomUp = r.nom.toUpperCase();
         const objMois = objIndivMap[nomUp] || 0;
         if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
-        const taux = (tauxMap[r.nom] || 100) / 100;
         const caAct = (aud ? r.ca_total : r.ca);
         const joursEc = d.joursEcoules || 0;
         const joursTot = d.jourstotal || 22;
-        const objPro = objMois * taux * (joursEc / joursTot);
+        const objPro = objMois * (joursEc / joursTot);
         const caManquant = objPro - caAct;
-        if (caManquant <= 0) return '<td style="background:#F2F8F0;color:#3B6D11;font-weight:600;text-align:center;font-size:8px">✓</td>';
+        if (caManquant <= 0) return '<td style="background:#F2F8F0;text-align:center;font-size:11px">✅</td>';
         const joursRestants = joursTot - joursEc;
         const pmRef = r.pm > OBJ.pm ? r.pm : OBJ.pm;
         const rafJour = joursRestants > 0 ? caManquant / joursRestants / 1000 : 0;
@@ -1866,13 +1865,12 @@ function buildReportHTML(d) {
           const nomUp = r.nom.toUpperCase();
           const objMois = objIndivMap[nomUp] || 0;
           if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
-          const taux = (tauxMap[r.nom] || 100) / 100;
           const caAct = r.ca;
           const joursEc = d.joursEcoules || 0;
           const joursTot = d.jourstotal || 22;
-          const objPro = objMois * taux * (joursEc / joursTot);
+          const objPro = objMois * (joursEc / joursTot);
           const caManquant = objPro - caAct;
-          if (caManquant <= 0) return '<td style="background:#F2F8F0;color:#3B6D11;font-weight:600;text-align:center;font-size:8px">✓</td>';
+          if (caManquant <= 0) return '<td style="background:#F2F8F0;text-align:center;font-size:11px">✅</td>';
           const joursRestants = joursTot - joursEc;
           const pmRef = OBJ.pm_aud;
           const rafJour = joursRestants > 0 ? caManquant / joursRestants / 1000 : 0;
@@ -2983,9 +2981,8 @@ if (Object.keys(OBJ_INDIV_MAP).length > 0 && joursEcoules >= 3) {
     const nomUp = r.nom.toUpperCase();
     const objMois = OBJ_INDIV_MAP[nomUp];
     if (!objMois) return false;
-    const taux = (TAUX[r.nom] || 100) / 100;
     const caAct = r.ca_total !== undefined ? r.ca_total : r.ca;
-    const objPro = objMois * taux * (joursEcoules / JOURS_TOTAL);
+    const objPro = objMois * (joursEcoules / JOURS_TOTAL);
     return caAct < objPro * 0.7; // < 70% objectif proratisé
   });
   if (retardIndiv.length > 0) {
@@ -2994,9 +2991,8 @@ if (Object.keys(OBJ_INDIV_MAP).length > 0 && joursEcoules >= 3) {
     const details = retardIndiv.slice(0, 3).map(r => {
       const nomUp = r.nom.toUpperCase();
       const objMois = OBJ_INDIV_MAP[nomUp];
-      const taux = (TAUX[r.nom] || 100) / 100;
       const caAct = r.ca_total !== undefined ? r.ca_total : r.ca;
-      const objPro = objMois * taux * (joursEcoules / JOURS_TOTAL);
+      const objPro = objMois * (joursEcoules / JOURS_TOTAL);
       const pct = Math.round(caAct / objPro * 100);
       return prenom(r.nom) + ' à ' + (caAct/1000).toFixed(1) + 'k (' + pct + '% obj.)';
     }).join(' — ');
