@@ -1827,8 +1827,8 @@ function buildReportHTML(d) {
         if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
         const taux = (tauxMap[r.nom] || 100) / 100;
         const caAct = (aud ? r.ca_total : r.ca);
-        const joursEc = ${d.joursEcoules||0};
-        const joursTot = ${d.jourstotal||22};
+        const joursEc = JOURS_ECOULES;
+        const joursTot = JOURS_TOTAL;
         const objPro = objMois * taux * (joursEc / joursTot);
         const caManquant = objPro - caAct;
         if (caManquant <= 0) return '<td style="background:#F2F8F0;color:#3B6D11;font-weight:600;text-align:center;font-size:8px">✓</td>';
@@ -1869,8 +1869,8 @@ function buildReportHTML(d) {
           if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
           const taux = (tauxMap[r.nom] || 100) / 100;
           const caAct = r.ca;
-          const joursEc = ${d.joursEcoules||0};
-          const joursTot = ${d.jourstotal||22};
+          const joursEc = JOURS_ECOULES;
+          const joursTot = JOURS_TOTAL;
           const objPro = objMois * taux * (joursEc / joursTot);
           const caManquant = objPro - caAct;
           if (caManquant <= 0) return '<td style="background:#F2F8F0;color:#3B6D11;font-weight:600;text-align:center;font-size:8px">✓</td>';
