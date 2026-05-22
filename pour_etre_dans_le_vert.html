@@ -1773,7 +1773,8 @@ function buildReportHTML(d) {
   if (d.cols_opt.includes('mdc'))  collabHeader += th('% MdC', `obj. ${OBJ.mdc}%`)
   if (d.cols_opt.includes('luk'))  collabHeader += th('% LUKKAS', `obj. ${OBJ.luk}%`)
   // Colonne RAF individuel — uniquement si objectifs chargés
-  const hasObjIndiv = Object.keys(OBJ_INDIV_MAP).length > 0
+  const objIndivMap = d.obj_indiv_map || {}
+  const hasObjIndiv = Object.keys(objIndivMap).length > 0
   if (hasObjIndiv) {
     collabHeader += th('RAF/jour', 'objectif indiv.', '#FFF8E8')
   } else {
@@ -1822,11 +1823,13 @@ function buildReportHTML(d) {
       ${(function() {
         if (!hasObjIndiv) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
         const nomUp = r.nom.toUpperCase();
-        const objMois = OBJ_INDIV_MAP[nomUp] || 0;
+        const objMois = objIndivMap[nomUp] || 0;
         if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
         const taux = (tauxMap[r.nom] || 100) / 100;
         const caAct = (aud ? r.ca_total : r.ca);
-        const objPro = objMois * taux * (JOURS_ECOULES / JOURS_TOTAL);
+        const joursEc = ${d.joursEcoules||0};
+        const joursTot = ${d.jourstotal||22};
+        const objPro = objMois * taux * (joursEc / joursTot);
         const caManquant = objPro - caAct;
         if (caManquant <= 0) return '<td style="background:#F2F8F0;color:#3B6D11;font-weight:600;text-align:center;font-size:8px">✓</td>';
         const joursRestants = JOURS_TOTAL - JOURS_ECOULES;
@@ -1862,11 +1865,13 @@ function buildReportHTML(d) {
         ${(function() {
           if (!hasObjIndiv) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
           const nomUp = r.nom.toUpperCase();
-          const objMois = OBJ_INDIV_MAP[nomUp] || 0;
+          const objMois = objIndivMap[nomUp] || 0;
           if (!objMois) return '<td style="background:#FFF8E8;font-size:7px;font-style:italic;color:#B8860B;text-align:center">—</td>';
           const taux = (tauxMap[r.nom] || 100) / 100;
           const caAct = r.ca;
-          const objPro = objMois * taux * (JOURS_ECOULES / JOURS_TOTAL);
+          const joursEc = ${d.joursEcoules||0};
+          const joursTot = ${d.jourstotal||22};
+          const objPro = objMois * taux * (joursEc / joursTot);
           const caManquant = objPro - caAct;
           if (caManquant <= 0) return '<td style="background:#F2F8F0;color:#3B6D11;font-weight:600;text-align:center;font-size:8px">✓</td>';
           const joursRestants = JOURS_TOTAL - JOURS_ECOULES;
