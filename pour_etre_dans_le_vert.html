@@ -670,7 +670,7 @@
           </div>
           <div class="settings-field-row">
             <div class="settings-field"><label>Objectif CA collaborateur (en k)</label><input type="number" id="s-obj-ca" min="1"></div>
-            <div class="settings-field"><label>Seuil alerte RAF/jour — auto si vide</label><input type="number" id="s-raf-seuil" min="0" step="0.5" placeholder="auto"></div>
+            <div class="settings-field"><label>Seuil alerte RAF/jour (k€) — auto si vide</label><input type="number" id="s-raf-seuil" min="0" step="0.5" placeholder="auto"></div>
             <select class="prio-select" id="sp-obj-ca" title="Priorité"><option value="1">P1</option><option value="2" selected="">P2</option><option value="3">P3</option></select>
           </div>
           <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07)">
@@ -2598,7 +2598,7 @@ ${podiumHTML ? `<div class="podium-section">
     </tr>
     <tr>
       <th class="ch-act">Nb ventes<span>réalisées</span></th>
-      <th class="ch-act">PM actuel<span>${CUR}/vente</span></th>
+      <th class="ch-act">PM actuel<span>${d.currency}/vente</span></th>
       <th class="ch-todo">Nb ventes<span>à ajouter</span></th>
       <th class="ch-todo">Dont avec SOP</th>
       <th class="ch-todo"><strong>% Pack Confort</strong><span>%</span></th>
@@ -2642,8 +2642,8 @@ ${podiumHTML ? `<div class="podium-section">
       </tr>
       <tr>
         <th class="ach-act">Prothèses<span>réalisées</span></th>
-        <th class="ach-act">PM vente<span>${CUR}/vente</span></th>
-        <th class="ach-act">PM prothèse<span>${CUR}/app.</span></th>
+        <th class="ach-act">PM vente<span>${d.currency}/vente</span></th>
+        <th class="ach-act">PM prothèse<span>${d.currency}/app.</span></th>
         <th class="ach-todo">Essais en cours<span>à concrétiser</span></th>
         <th class="ach-todo">Nouveaux dossiers<span>à lancer</span></th>
         <th class="ach-todo">Tx réussite<span>cible</span></th>
@@ -2910,10 +2910,10 @@ actionIndicateur('% SOP', optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop, PRIO
   'Faire un point équipe sur la présentation de la garantie SOP — objectif : 100% des ventes.');
 actionIndicateur('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, PRIO.pm,
   'Orienter systématiquement vers les montures premium et les verres progressifs haut de gamme.',
-  'Travailler la montée en gamme : montures créateur, verres Transitions, add-ons SOP.', CUR);
+  'Travailler la montée en gamme : montures créateur, verres Transitions, add-ons SOP.', '€');
 actionIndicateur('PM Pack Confort', optsOpt.filter(r=>r.pmpc>0).map(r=>({nom:r.nom,val:r.pmpc})), OBJ.pmpc, PRIO.pmpc,
   'Proposer le Pack Confort sur toutes les ventes restantes.',
-  'Rappeler le pitch Pack Confort en réunion — objectif : proposition sur chaque vente de progressifs.', CUR);
+  'Rappeler le pitch Pack Confort en réunion — objectif : proposition sur chaque vente de progressifs.', '€');
 actionIndicateur('% MdC', optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, PRIO.mdc,
   'Orienter vers les marques exclusives et intemporelles sur chaque vente.',
   'Valoriser les collections exclusives en vitrine et en conseil — cible : 2 paires sur marque excl./intemp.');
@@ -3001,8 +3001,8 @@ checkFelicitation('% SOP', optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop, '�
   (moy,t)=>"Toute l'équipe au-dessus de l'objectif ! Moyenne à "+moy+'%, avec '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%. Félicitations à tous.');
 
 checkFelicitation('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, '💎',
-  t=>''+prenom(t.nom)+' affiche un PM exceptionnel à '+Math.round(t.val)+CUR+". La montée en gamme fonctionne — partager la méthode avec l'équipe !",
-  (moy,t)=>'PM magasin à '+moy+CUR+' pour un objectif de '+OBJ.pm+CUR+'. '+prenom(t.nom)+' mène la danse à '+Math.round(t.val)+CUR+'. Excellente performance collective !', CUR);
+  t=>''+prenom(t.nom)+' affiche un PM exceptionnel à '+Math.round(t.val)+"€. La montée en gamme fonctionne — partager la méthode avec l'équipe !",
+  (moy,t)=>'PM magasin à '+moy+'€ pour un objectif de '+OBJ.pm+'€. '+prenom(t.nom)+' mène la danse à '+Math.round(t.val)+'€. Excellente performance collective !', '€');
 
 checkFelicitation('% TC', optsOpt.map(r=>({nom:r.nom,val:r.tc})), OBJ.tc, '🎯',
   t=>''+prenom(t.nom)+' concrétise à '+Math.round(t.val)+"%. Chaque essai devient une vente — c'est du grand art commercial !",
