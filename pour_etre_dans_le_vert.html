@@ -3357,7 +3357,7 @@ function buildReportHTML(d) {
 <div class="header">
   <div>
     <div class="header-title">${d.isNetworkMode ? "Performance Réseau — " : "Performance — "}${nomMagasin}</div>
-    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} j. ouvrés / ${d.jourstotal} &nbsp;·&nbsp; Objectifs proratisés &nbsp;·&nbsp; ${isNetworkMode ? 'Magasins actifs' : tr('actifs_uniquement')}${d.animateur ? '  ·  ✍ '+d.animateur : '' }</div>
+    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} ${tr('leg_jours_ouvres')} / ${d.jourstotal} &nbsp;·&nbsp; ${tr('obj_proratises')} &nbsp;·&nbsp; ${isNetworkMode ? 'Magasins actifs' : tr('actifs_uniquement')}${d.animateur ? '  ·  ✍ '+d.animateur : '' }</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
 </div>
@@ -3370,22 +3370,22 @@ function buildReportHTML(d) {
   <div>
     ${magasins.length > 1 ? `<div class="sec-label">${tr("ca_total")||"CA Magasins"}</div>
     <table>
-      <thead><tr><th style="text-align:left">Magasin</th><th>% obj.</th><th>CA</th><th>RAF/j</th></tr></thead>
+      <thead><tr><th style="text-align:left">${tr("col_collaborateur")}</th><th>% obj.</th><th>CA</th><th>RAF/j</th></tr></thead>
       <tbody>${magRows}</tbody>
     </table>` : ''}
     <div style="margin-top:5px">
       <div style="background:#2C2C2A;border-radius:7px;padding:5px 8px 6px;margin-top:5px">
-        <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">Objectif mensuel total</div>
+        <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">${tr('obj_mensuel')}</div>
         <div style="font-size:14px;font-weight:600;color:#fff;line-height:1">${d.objTotal}k${d.currency}</div>
         <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${magasins.length} magasin${magasins.length > 1 ? 's' : ''} · ${d.moisLabel}</div>
       </div>
       <div style="background:#2C2C2A;border-radius:7px;padding:5px 8px 6px;margin-top:5px">
-        <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">CA total généré</div>
+        <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">${tr('ca_total')}</div>
         <div style="font-size:14px;font-weight:600;color:#fff;line-height:1">${Math.round(d.totCa)}k${d.currency}</div>
-        <div style="font-size:7px;color:#5F5E5A;margin-top:2px">réseau optique + audio</div>
+        <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${tr('ca_total_sub')}</div>
       </div>
       <div style="background:#2C2C2A;border-radius:7px;padding:5px 8px 6px;margin-top:5px">
-        <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">CA Audio</div>
+        <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">${tr('ca_audio')}</div>
         <div style="font-size:14px;font-weight:600;color:#fff;line-height:1">${Math.round(d.totCaAud)}k${d.currency}</div>
         <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${auds.length} ${tr("kpi_proth_sub")||"audioprothésiste"}</div>
       </div>
@@ -3508,14 +3508,14 @@ ${podiumHTML ? `<div class="podium-section">
     <thead>
       <tr>
         <th rowspan="2"></th>
-        <th colspan="3" class="agrp-act">Situation actuelle</th>
+        <th colspan="3" class="agrp-act">${tr('sit_actuelle').charAt(0)+tr('sit_actuelle').slice(1).toLowerCase()}</th>
         <th colspan="3" class="agrp-todo">${tr('a_realiser').charAt(0)+tr('a_realiser').slice(1).toLowerCase()}</th>
-        <th colspan="2" class="agrp-res">Résultat</th>
+        <th colspan="2" class="agrp-res">${tr('resultat').charAt(0)+tr('resultat').slice(1).toLowerCase()}</th>
       </tr>
       <tr>
         <th class="ach-act">${tr('col_proth_real')||'Prothèses réalisées'}</th>
-        <th class="ach-act">PM vente<span>${d.currency}/vente</span></th>
-        <th class="ach-act">PM prothèse<span>${d.currency}/app.</span></th>
+        <th class="ach-act">${tr('col_pm_aud').split(' ')[0]}<span>${d.currency}/vente</span></th>
+        <th class="ach-act">${tr('col_pm_app').split(' ')[0]}<span>${d.currency}/app.</span></th>
         <th class="ach-todo">${tr('col_essais')}</th>
         <th class="ach-todo">${tr('col_nvx_dossiers')}</th>
         <th class="ach-todo">${tr('col_tx_reussite')}</th>
@@ -3549,9 +3549,10 @@ ${podiumHTML ? `<div class="podium-section">
     <thead>
       <tr>
         <th rowspan="2"></th>
-        <th colspan="3" class="ggrp-act">Situation actuelle</th>
-        <th colspan="2" class="ggrp-obj">Objectifs atteints</th>
-        <th colspan="1" class="ggrp-res">Projection</th>
+        <th colspan="3" class="ggrp-act">${tr('sit_actuelle').charAt(0)+tr('sit_actuelle').slice(1).toLowerCase()}</th>
+        <th colspan="2" class="ggrp-obj">${tr('obj_atteints').charAt(0)+tr('obj_atteints').slice(1).toLowerCase()}</th>
+        <th colspan="1" class="ggrp-res">${tr('projection').charAt(0)+tr('projection').slice(1).toLowerCase()}</th>
+        <th colspan="1" class="ggrp-res">${tr('projection').charAt(0)+tr('projection').slice(1).toLowerCase()}</th>
       </tr>
       <tr>
         <th class="gch-act">CA<span>k${d.currency}</span></th>
@@ -3565,7 +3566,7 @@ ${podiumHTML ? `<div class="podium-section">
     <tbody>${greenRows}${greenTotal}</tbody>
   </table>
   <div class="legend" style="margin-top:5px">
-    <div class="leg-item" style="color:#5F5E5A;font-size:7px">CA projeté · PM cible calculé sur les nouvelles ventes</div>
+    <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('col_ca_proj')||'CA projeté'} · PM cible calculé sur les nouvelles ventes</div>
   </div>
 </div>
 
@@ -3911,7 +3912,7 @@ checkFelicitation('% TC', optsOpt.map(r=>({nom:r.nom,val:r.tc})), OBJ.tc, '🎯'
 
 checkFelicitation(tr('kpi_mdc'), optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, '⭐',
   t=>''+prenom(t.nom)+' à '+Math.round(t.val)+'% de MdC — excellente valorisation des marques exclusives et intemporelles.',
-  (moy,t)=>"L'équipe maîtrise parfaitement la mise en avant des marques exclusives — moy. à "+moy+'%. '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%.');
+  (moy,t)=>"L'équipe maîtrise parfaitement la mise en avant des marques exclusives — avg. à "+moy+'%. '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%.');
 
 checkFelicitation('Positionnement', magasins.map(m=>({nom:m.nom,val:m.pos})), 100, '🚀',
   t=>''+cap(t.nom)+' dépasse son objectif à '+Math.round(t.val)+'% — objectif atteint, garder le rythme !',
