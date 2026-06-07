@@ -3864,7 +3864,8 @@ if (audTxeBad.length > 0) {
   const detail = audTxeBad.length === 1
     ? prenom(audTxeBad[0].nom)+' à '+audTxeBad[0].txe.toFixed(0)+'% (obj. '+OBJ.txe+'%). Soigner le suivi des essais et relancer avant expiration. '
     : listNoms(audTxeBad, 3, a=>a.txe.toFixed(0)+'%')+'. Analyser les blocages à la concrétisation. ';
-  addPrio(PRIO.txe, tr('prio_ta_title',{pct:Math.round(avgTxe||0),obj:OBJ.txe}), detail);
+  const avgTxeVal = auds.length ? Math.round(auds.reduce((s,a)=>s+a.txe,0)/auds.length) : 0;
+  addPrio(PRIO.txe, tr('prio_txe_title')||('Tx réussite essai — sous objectif '+OBJ.txe+'%'), detail);
 }
 
 // Assurance audio
