@@ -964,8 +964,8 @@ const TRANSLATIONS = {
     'felicitation_sop': 'au top',
     'felicitation_pm': 'toute l\'équipe au vert',
     'nouveau_mois': 'Nouveau mois — nouveau depart !',
-    'obj_en_bonne_voie': 'Objectifs en bonne voie',
-    'trajectoire_positive': 'La trajectoire est positive. Restez concentrés sur les indicateurs qualitatifs pour transformer cette bonne performance en excellence.',
+    'obj_en_bonne_voie': tr('obj_en_bonne_voie'),
+    'trajectoire_positive': tr('trajectoire_positive'),
     'settings_title': 'Paramètres objectifs',
     'settings_animateur': 'Animateur réseau',
     'settings_nom_label': 'Votre nom (affiché sur le rapport)',
@@ -3610,7 +3610,7 @@ const audNoms=new Set(auds.map(a=>a.nom.toLowerCase().trim()));
 const optsOpt=opts.filter(r=>!audNoms.has(r.nom.toLowerCase().trim()));
 const prios=[];
 const felicitations=[];
-const jL=joursRest<=0?'dernier jour':joursRest===1?'dernier jour':joursRest+' jours restants';
+const jL=joursRest<=0?'dernier jour':joursRest===1?'dernier jour':joursRest+' '+tr('jours_restants');
 const urgence=joursRest<=5;
 const debut=joursRest>=18;
 const n=optsOpt.length||1;
@@ -3698,7 +3698,7 @@ if (ventesManquantes.length > 0) {
   const detail = ventesManquantes.length === 1
     ? prenom(ventesManquantes[0].nom)+' à seulement '+ventesManquantes[0].nb+' ventes (obj. proratisé : '+objEx+'). Identifier les blocages et mettre en place un accompagnement terrain.'
     : ventesManquantes.map(r => prenom(r.nom)+' '+r.nb+' v.').join(' — ')+'. Obj. proratisé : '+objEx+' ventes.';
-  addPrio(PRIO.nb, 'Retard ventes — '+nomsV+surplus+' sous 50% objectif', detail);
+  addPrio(PRIO.nb, tr('prio_retard_ventes_title',{nom:nomsV+surplus}), detail);
 }
 
 // ─── CA COLLABORATEUR ─────────────────────────────────────────────────────────
@@ -3743,7 +3743,7 @@ if (Object.keys(OBJ_INDIV_MAP).length > 0 && joursEcoules >= 3) {
       const pct = Math.round(caAct / objPro * 100);
       return prenom(r.nom) + ' à ' + (caAct/1000).toFixed(1) + 'k (' + pct + '% obj.)';
     }).join(' — ');
-    addPrio(PRIO_CA_INDIV, 'Retard CA individuel — ' + noms + surplus,
+    addPrio(PRIO_CA_INDIV, tr('prio_ca_indiv',{noms:noms+surplus})+','+
       details + '. Relancer les devis en attente et concentrer sur les ventes à fort panier.',
       0, 'ca_indiv');
   }
@@ -3754,10 +3754,10 @@ if (Object.keys(OBJ_INDIV_MAP).length > 0 && joursEcoules >= 3) {
 if (OBJ.proth > 0 && joursEcoules >= 3) {
   const nomsAud = auds.length > 0 ? ' — '+auds.map(a => prenom(a.nom)).join(' et ') : '';
   if (TOT_CA_AUD === 0) {
-    addPrio(1, 'CA audio nul'+nomsAud+' : aucune vente facturee',
+    addPrio(1, tr('prio_ca_audio_nul'),
       'Aucun CA audio depuis le debut du mois. Facturer les dossiers en attente sans delai. Lancer ou relancer les tests auditifs.');
   } else if (TOT_PROTH === 0) {
-    addPrio(1, 'Aucune prothese vendue'+nomsAud+' — relancer les dossiers',
+    addPrio(1, tr('prio_proth_zero'),
       'Aucune prothese ce mois. Actions : rappeler les clients sans prothese depuis 4 ans, relancer les devis audio en attente, proposer des essais sur les depistages recents.');
   }
 }
@@ -3809,10 +3809,10 @@ actionIndicateur(tr('kpi_sop'), optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop
   tr('conseil_sop'));
 actionIndicateur('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, PRIO.pm,
   'Orienter systématiquement vers les montures premium et les verres progressifs haut de gamme.',
-  tr('conseil_pm'), '€');
+  tr('conseil_pm'), CUR);
 actionIndicateur('PM Pack Confort', optsOpt.filter(r=>r.pmpc>0).map(r=>({nom:r.nom,val:r.pmpc})), OBJ.pmpc, PRIO.pmpc,
   'Proposer le Pack Confort sur toutes les ventes restantes.',
-  tr('conseil_pack'), '€');
+  tr('conseil_pack'), CUR);
 actionIndicateur(tr('kpi_mdc'), optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, PRIO.mdc,
   'Orienter vers les marques exclusives et intemporelles sur chaque vente.',
   tr('conseil_mdc'));
@@ -3854,7 +3854,7 @@ if (avgTa < OBJ.ta-10) {
   const detail = ta0.length === allCollabs.length
     ? "Aucun test réalisé ce mois. Intégrer le dépistage auditif à l'accueil — à proposer à chaque client. "+(urgence?"Objectif : au moins un test par jour jusqu'à la fin du mois.":ctxDebut||"Poser l'habitude dès maintenant.")
     : ta0.slice(0,3).map(a=>prenom(a.nom)).join(', ')+" à 0%. Intégrer le test auditif à l'accueil client de manière systématique.";
-  addPrio(PRIO.ta, 'Test auditif — '+Math.round(avgTa)+'% magasin vs obj. '+OBJ.ta+'%', detail);
+  addPrio(PRIO.ta, tr('prio_ta_title',{pct:Math.round(avgTa),obj:OBJ.ta}), detail);
 }
 
 // Tx réussite audio
@@ -3863,14 +3863,14 @@ if (audTxeBad.length > 0) {
   const detail = audTxeBad.length === 1
     ? prenom(audTxeBad[0].nom)+' à '+audTxeBad[0].txe.toFixed(0)+'% (obj. '+OBJ.txe+'%). Soigner le suivi des essais et relancer avant expiration. '
     : listNoms(audTxeBad, 3, a=>a.txe.toFixed(0)+'%')+'. Analyser les blocages à la concrétisation. ';
-  addPrio(PRIO.txe, 'Taux réussite essai audio — sous objectif '+OBJ.txe+'%', detail);
+  addPrio(PRIO.txe, tr('prio_ta_title',{pct:Math.round(avgTxe||0),obj:OBJ.txe}), detail);
 }
 
 // Assurance audio
 const audAssurBad=auds.filter(a=>a.assur<OBJ.assur*0.5);
 if (audAssurBad.length > 0) {
   const noms = audAssurBad.map(a=>prenom(a.nom)+(a.assur===0?' (0%)':' '+a.assur.toFixed(0)+'%')).join(', ');
-  addPrio(PRIO.assur, 'Assurance audio — très en deçà obj. '+OBJ.assur+'%',
+  addPrio(PRIO.assur, tr('prio_assur_title',{obj:OBJ.assur}),
     noms+". Systématiser la présentation d'AudioPrev à chaque adaptation prothétique. ");
 }
 
