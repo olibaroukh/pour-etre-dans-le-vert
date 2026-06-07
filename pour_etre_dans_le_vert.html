@@ -2909,7 +2909,7 @@ function buildReportHTML(d) {
   })
 
   const greenTotal = '<tr class="total-row">'
-    + '<td>TOTAL RÉSEAU</td>'
+    + '<td>'+tr('total_reseau')+'</td>'
     + '<td class="gtd-act">' + Math.round(totalCaActuel*10)/10 + 'k' + d.currency + '</td>'
     + '<td class="gtd-act">' + totalVActuel + '</td>'
     + '<td class="gtd-act">' + totalProthActuel + '</td>'
@@ -3392,7 +3392,7 @@ function buildReportHTML(d) {
       <div style="background:${d.rafTotal>d.rafSeuil?'#3D0A0A':d.joursRest>0&&d.rafTotal===0?'#0D2D0D':'#2C2C2A'};border-radius:7px;padding:5px 8px 6px;margin-top:5px;${d.rafTotal>d.rafSeuil?'border:1px solid #CC1719;animation:raf-pulse 1.5s ease-in-out infinite;':d.joursRest>0&&d.rafTotal===0?'border:1px solid #3B6D11;':''}">
         <div style="font-size:7.5px;font-weight:500;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#888780'};margin-bottom:2px">RAF / jour global${d.rafTotal>d.rafSeuil?' 🚨':d.joursRest>0&&d.rafTotal===0?' 🎯':''}</div>
         <div style="font-size:14px;font-weight:600;color:${d.rafTotal>d.rafSeuil?'#FF4444':d.joursRest>0&&d.rafTotal===0?'#7DC850':'#fff'};line-height:1">${d.rafTotal.toFixed(1)}k${d.currency}</div>
-        <div style="font-size:7px;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#5F5E5A'};margin-top:2px">magasin · ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''}</div>
+        <div style="font-size:7px;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#5F5E5A'};margin-top:2px">magasin · ${d.joursRest} ${tr('jours_restants')}</div>
       </div>
     </div>
   </div>
@@ -3440,14 +3440,14 @@ ${podiumHTML ? `<div class="podium-section">
 
 <div class="header">
   <div>
-    <div class="header-title">${nomMagasin} — Que faire pour passer au vert ?</div>
-    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''} &nbsp;·&nbsp; ${isNetworkMode ? 'Objectifs par magasin' : 'Ventes supplémentaires nécessaires par indicateur'}</div>
+    <div class="header-title">${nomMagasin} — ${tr('page2_title')}</div>
+    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''} &nbsp;·&nbsp; ${isNetworkMode ? tr('obj_proratises') : tr('ventes_supp').toLowerCase()}</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
 </div>
 <hr class="divider">
 
-<div class="opt-section-title">Optique — Que faire pour passer au vert ?</div>
+<div class="opt-section-title">${tr('opt_section').charAt(0)+tr('opt_section').slice(1).toLowerCase().replace('que faire','Que faire')}</div>
 <table id="obj-table" style="margin-top:12px">
   <colgroup>
     <col style="width:130px"> <!-- Nom -->
@@ -3464,35 +3464,35 @@ ${podiumHTML ? `<div class="podium-section">
   <thead>
     <tr>
       <th rowspan="2"></th>
-      <th colspan="2" class="grp-act">Situation actuelle</th>
-      <th colspan="5" class="grp-todo">Ventes supplémentaires à réaliser</th>
-      <th colspan="2" class="grp-res">Résultat</th>
+      <th colspan="2" class="grp-act">${tr('sit_actuelle').charAt(0)+tr('sit_actuelle').slice(1).toLowerCase()}</th>
+      <th colspan="5" class="grp-todo">${tr('ventes_supp').charAt(0)+tr('ventes_supp').slice(1).toLowerCase()}</th>
+      <th colspan="2" class="grp-res">${tr('resultat').charAt(0)+tr('resultat').slice(1).toLowerCase()}</th>
     </tr>
     <tr>
-      <th class="ch-act">Nb ventes<span>réalisées</span></th>
+      <th class="ch-act">${tr('col_nb_ventes_real')}</th>
       <th class="ch-act">PM actuel<span>${d.currency}/vente</span></th>
-      <th class="ch-todo">Nb ventes<span>à ajouter</span></th>
-      <th class="ch-todo">Dont avec SOP</th>
+      <th class="ch-todo">${tr('col_nb_a_ajouter')}</th>
+      <th class="ch-todo">${tr('col_sop_garanti')}</th>
       <th class="ch-todo"><strong>% Pack Confort</strong><span>%</span></th>
       <th class="ch-todo"><strong>PM Pack Confort</strong><span>obj. ${OBJ.pmpc}${d.currency}</span></th>
-      <th class="ch-todo">Paires MdC<span>marques excl.+intemp.</span></th>
-      <th class="ch-res">PM cible<span>sur nv. ventes</span></th>
-      <th class="ch-res">Total ventes<span>conséquence</span></th>
+      <th class="ch-todo">${tr('col_paires_mdc')}</th>
+      <th class="ch-res">${tr('col_pm_cible')}</th>
+      <th class="ch-res">${tr('col_total_ventes')}</th>
     </tr>
   </thead>
   <tbody>${objRows}</tbody>
 </table>
 
 <div class="legend" style="margin-top:5px">
-  <div class="leg-item"><div class="leg-dot" style="background:#EAF3DE;border:0.5px solid #3B6D11"></div><span style="color:#3B6D11">Tous objectifs atteints</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#EAF3DE;border:0.5px solid #3B6D11"></div><span style="color:#3B6D11">${tr('tous_obj_atteints')}</span></div>
   <div class="leg-sep"></div>
-  <div class="leg-item"><div class="leg-dot" style="background:#FFF2F2;border:0.5px solid #CC1719"></div><span style="color:#854F0B">Ventes à réaliser</span></div>
+  <div class="leg-item"><div class="leg-dot" style="background:#FFF2F2;border:0.5px solid #CC1719"></div><span style="color:#854F0B">${tr('ventes_a_realiser')}</span></div>
   <div class="leg-sep"></div>
-  <div class="leg-item" style="color:#5F5E5A;font-size:7px">Le nombre de ventes total est une conséquence, non un objectif · MdC = 2 paires par vente · SOP = garantie incluse dans le PM · Objectifs de volume proratisés selon le temps de travail</div>
+  <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('leg_prio_note')}</div>
 </div>
 
 <div class="aud-section">
-  <div class="aud-section-title">Audioprothèse — Que faire pour passer au vert ?</div>
+  <div class="aud-section-title">${tr('aud_section').charAt(0)+tr('aud_section').slice(1).toLowerCase().replace('que faire','Que faire')}</div>
   <table id="aud-table">
     <colgroup>
       <col style="width:130px">
@@ -3509,18 +3509,18 @@ ${podiumHTML ? `<div class="podium-section">
       <tr>
         <th rowspan="2"></th>
         <th colspan="3" class="agrp-act">Situation actuelle</th>
-        <th colspan="3" class="agrp-todo">À réaliser</th>
+        <th colspan="3" class="agrp-todo">${tr('a_realiser').charAt(0)+tr('a_realiser').slice(1).toLowerCase()}</th>
         <th colspan="2" class="agrp-res">Résultat</th>
       </tr>
       <tr>
-        <th class="ach-act">Prothèses<span>réalisées</span></th>
+        <th class="ach-act">${tr('col_proth_real')||'Prothèses réalisées'}</th>
         <th class="ach-act">PM vente<span>${d.currency}/vente</span></th>
         <th class="ach-act">PM prothèse<span>${d.currency}/app.</span></th>
-        <th class="ach-todo">Essais en cours<span>à concrétiser</span></th>
-        <th class="ach-todo">Nouveaux dossiers<span>à lancer</span></th>
-        <th class="ach-todo">Tx réussite<span>cible</span></th>
-        <th class="ach-res">PM vente<span>cible nv. ventes</span></th>
-        <th class="ach-res">Total<span>prothèses</span></th>
+        <th class="ach-todo">${tr('col_essais')}</th>
+        <th class="ach-todo">${tr('col_nvx_dossiers')}</th>
+        <th class="ach-todo">${tr('col_tx_reussite')}</th>
+        <th class="ach-res">${tr('col_pm_vente_cible')||'PM vente cible nv. ventes'}</th>
+        <th class="ach-res">${tr('col_total_proth')}</th>
       </tr>
     </thead>
     <tbody>${audRows}</tbody>
@@ -3530,7 +3530,7 @@ ${podiumHTML ? `<div class="podium-section">
     <div class="leg-sep"></div>
     <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span style="color:#185FA5">Actions à réaliser</span></div>
     <div class="leg-sep"></div>
-    <div class="leg-item" style="color:#5F5E5A;font-size:7px">Essais en cours à concrétiser = dossiers déjà lancés à amener à 95% · Nouveaux dossiers = 1 dossier = 2 prothèses à 95% · PM cible calculé sur les nouveaux dossiers</div>
+    <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('col_essais')} = dossiers déjà lancés à amener à 95% · ${tr('col_nvx_dossiers')} = 1 dossier = 2 prothèses à 95% · PM cible calculé sur les nouveaux dossiers</div>
   </div>
 </div>
 
@@ -3555,11 +3555,11 @@ ${podiumHTML ? `<div class="podium-section">
       </tr>
       <tr>
         <th class="gch-act">CA<span>k${d.currency}</span></th>
-        <th class="gch-act">Ventes opt.<span>réalisées</span></th>
+        <th class="gch-act">${tr('col_ventes_obj')||'Ventes opt. réalisées'}</th>
         <th class="gch-act">Prothèses<span>réalisées</span></th>
-        <th class="gch-obj">Ventes opt.<span>objectif final</span></th>
-        <th class="gch-obj">Prothèses<span>objectif final</span></th>
-        <th class="gch-res">CA projeté<span>tous objectifs verts</span></th>
+        <th class="gch-obj">${tr('col_ventes_obj')||'Ventes opt. objectif final'}</th>
+        <th class="gch-obj">${tr('col_proth_obj')||'Prothèses objectif final'}</th>
+        <th class="gch-res">${tr('col_ca_proj')||'CA projeté tous objectifs verts'}</th>
       </tr>
     </thead>
     <tbody>${greenRows}${greenTotal}</tbody>
