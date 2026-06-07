@@ -863,6 +863,7 @@ var TRANSLATIONS = {
     'ca_audio': 'CA Audio',
     'raf_jour': 'RAF / jour global',
     'jours_restants': 'j. restants',
+    'dernier_jour': 'dernier jour',
     'col_collaborateur': 'Collaborateur',
     'col_tps_trav': 'Tps trav.',
     'col_tps_trav_sub': 'temps travail',
@@ -871,6 +872,7 @@ var TRANSLATIONS = {
     'col_raf_indiv': 'RAF/jour',
     'col_raf_indiv_sub': 'objectif indiv.',
     'col_nb': 'Nb ventes',
+    'col_nb_net': 'par effectif',
     'col_pm': 'PM',
     'col_sop': '% SOP',
     'col_tc': '% TC',
@@ -879,6 +881,9 @@ var TRANSLATIONS = {
     'col_proth': 'Prothèses',
     'col_pm_aud': 'PM vente',
     'col_pm_app': 'PM prothèse',
+    'col_txc': 'Tx concret.',
+    'col_raf_no_indiv': 'Pas d\'objectifs indiv. CA',
+    'kpi_pos_n': 'moy. {n} magasin{s}',
     'col_txe': 'Tx réussite',
     'col_assur': '% Assur.',
     'col_tva': '% Vente Add.',
@@ -891,9 +896,14 @@ var TRANSLATIONS = {
     'leg_obj0': '< 70%',
     'leg_commun': 'Indicateur commun',
     'leg_audio': 'Colonnes audio',
+    'leg_aud_note': '{essais} = dossiers déjà lancés à amener à 95% · {nvx} = 1 dossier = 2 prothèses à 95% · PM cible calculé sur les nouveaux dossiers',
+    'leg_proj_note': '{ca_proj} · PM cible calculé sur les nouvelles ventes',
     'leg_prio_note': 'P1 Urgent · P2 À traiter · P3 À surveiller · Objectifs proratisés sur',
     'leg_jours_ouvres': 'j. ouvrés',
     'actifs_uniquement': 'Collaborateurs actifs uniquement',
+    'magasins_actifs': 'Magasins actifs',
+    'col_pct_obj': '% obj.',
+    'col_raf_j': 'RAF/j',
     'obj_proratises': 'Objectifs proratisés',
     'audio_uniquement': 'Audio uniquement',
     'top3_title': 'TOP 3 — SCORE GLOBAL',
@@ -1041,6 +1051,7 @@ var TRANSLATIONS = {
     'ca_audio': 'Audio revenue',
     'raf_jour': 'Daily target remaining',
     'jours_restants': 'days remaining',
+    'dernier_jour': 'last day',
     'col_collaborateur': 'Staff member',
     'col_tps_trav': 'Work time',
     'col_tps_trav_sub': 'work time',
@@ -1049,6 +1060,7 @@ var TRANSLATIONS = {
     'col_raf_indiv': 'Daily target',
     'col_raf_indiv_sub': 'indiv. target',
     'col_nb': 'Sales',
+    'col_nb_net': 'per headcount',
     'col_pm': 'Avg. basket',
     'col_sop': '% Warranty',
     'col_tc': '% Conv.',
@@ -1057,6 +1069,9 @@ var TRANSLATIONS = {
     'col_proth': 'Hearing aids',
     'col_pm_aud': 'Sale avg.',
     'col_pm_app': 'Device avg.',
+    'col_txc': 'Conv. rate',
+    'col_raf_no_indiv': 'No indiv. revenue targets',
+    'kpi_pos_n': '{n} store avg.',
     'col_txe': 'Trial rate',
     'col_assur': '% Insurance',
     'col_tva': '% Add-on',
@@ -1069,9 +1084,14 @@ var TRANSLATIONS = {
     'leg_obj0': '< 70%',
     'leg_commun': 'Common indicator',
     'leg_audio': 'Audio columns',
+    'leg_aud_note': '{essais} = ongoing trials to bring to 95% · {nvx} = 1 file = 2 hearing aids at 95% · Target avg. calculated on new files',
+    'leg_proj_note': '{ca_proj} · Target avg. calculated on new sales',
     'leg_prio_note': 'P1 Urgent · P2 To action · P3 Monitor · Prorated targets over',
     'leg_jours_ouvres': 'working days',
     'actifs_uniquement': 'Active staff only',
+    'magasins_actifs': 'Active stores',
+    'col_pct_obj': '% target',
+    'col_raf_j': 'Daily target',
     'obj_proratises': 'Prorated targets',
     'audio_uniquement': 'Audio only',
     'top3_title': 'TOP 3 — OVERALL SCORE',
@@ -1219,6 +1239,7 @@ var TRANSLATIONS = {
     'ca_audio': 'Facturación audio',
     'raf_jour': 'RAF / día global',
     'jours_restants': 'días restantes',
+    'dernier_jour': 'último día',
     'col_collaborateur': 'Colaborador',
     'col_tps_trav': 'T. trabajo',
     'col_tps_trav_sub': 'tiempo trabajo',
@@ -1227,6 +1248,7 @@ var TRANSLATIONS = {
     'col_raf_indiv': 'RAF/día',
     'col_raf_indiv_sub': 'obj. indiv.',
     'col_nb': 'Nº ventas',
+    'col_nb_net': 'por efectivo',
     'col_pm': 'PM',
     'col_sop': '% Garantía',
     'col_tc': '% Conv.',
@@ -1235,6 +1257,9 @@ var TRANSLATIONS = {
     'col_proth': 'Audífonos',
     'col_pm_aud': 'PM venta',
     'col_pm_app': 'PM audífono',
+    'col_txc': 'Tasa concr.',
+    'col_raf_no_indiv': 'Sin objetivos CA indiv.',
+    'kpi_pos_n': 'prom. {n} tienda{s}',
     'col_txe': 'Tasa éxito',
     'col_assur': '% Seguro',
     'col_tva': '% Venta Ad.',
@@ -1247,9 +1272,14 @@ var TRANSLATIONS = {
     'leg_obj0': '< 70%',
     'leg_commun': 'Indicador común',
     'leg_audio': 'Columnas audio',
+    'leg_aud_note': '{essais} = ensayos en curso a llevar al 95% · {nvx} = 1 expediente = 2 audífonos al 95% · PM cible calculada sobre los nuevos expedientes',
+    'leg_proj_note': '{ca_proj} · PM objetivo calculada sobre las nuevas ventas',
     'leg_prio_note': 'P1 Urgente · P2 Atender · P3 Vigilar · Objetivos prorrateados',
     'leg_jours_ouvres': 'días hábiles',
     'actifs_uniquement': 'Solo colaboradores activos',
+    'magasins_actifs': 'Tiendas activas',
+    'col_pct_obj': '% obj.',
+    'col_raf_j': 'RAF/día',
     'obj_proratises': 'Objetivos prorrateados',
     'audio_uniquement': 'Solo audio',
     'top3_title': 'TOP 3 — PUNTUACIÓN GLOBAL',
@@ -1397,6 +1427,7 @@ var TRANSLATIONS = {
     'ca_audio': 'מחזור שמע',
     'raf_jour': 'יעד יומי נותר',
     'jours_restants': 'ימים נותרו',
+    'dernier_jour': 'יום אחרון',
     'col_collaborateur': 'עובד',
     'col_tps_trav': 'זמן עבודה',
     'col_tps_trav_sub': 'זמן עבודה',
@@ -1405,6 +1436,7 @@ var TRANSLATIONS = {
     'col_raf_indiv': 'יעד יומי',
     'col_raf_indiv_sub': 'יעד אישי',
     'col_nb': 'מכירות',
+    'col_nb_net': 'לנפש',
     'col_pm': 'ממוצע סל',
     'col_sop': '% אחריות',
     'col_tc': '% המרה',
@@ -1413,6 +1445,9 @@ var TRANSLATIONS = {
     'col_proth': 'מכשירי שמיעה',
     'col_pm_aud': 'ממוצע מכירה',
     'col_pm_app': 'ממוצע מכשיר',
+    'col_txc': 'שיעור מימוש',
+    'col_raf_no_indiv': 'ללא יעדי מחזור אישיים',
+    'kpi_pos_n': 'ממוצע {n} חנות',
     'col_txe': 'שיעור הצלחה',
     'col_assur': '% ביטוח',
     'col_tva': '% מכירה נלווית',
@@ -1425,9 +1460,14 @@ var TRANSLATIONS = {
     'leg_obj0': '< 70%',
     'leg_commun': 'מדד משותף',
     'leg_audio': 'עמודות שמע',
+    'leg_aud_note': '{essais} = ניסיונות פעילים להביא ל-95% · {nvx} = תיק 1 = 2 מכשירים ב-95% · ממוצע יעד מחושב על תיקים חדשים',
+    'leg_proj_note': '{ca_proj} · ממוצע יעד מחושב על מכירות חדשות',
     'leg_prio_note': 'P1 דחוף · P2 לטיפול · P3 למעקב · יעדים יחסיים לפי',
     'leg_jours_ouvres': 'ימי עבודה',
     'actifs_uniquement': 'עובדים פעילים בלבד',
+    'magasins_actifs': 'חנויות פעילות',
+    'col_pct_obj': '% יעד',
+    'col_raf_j': 'יעד/יום',
     'obj_proratises': 'יעדים יחסיים',
     'audio_uniquement': 'שמע בלבד',
     'top3_title': 'TOP 3 — ציון כולל',
@@ -2380,7 +2420,9 @@ function generateReport() {
     const extractDateObj = lastDateParts.length === 3
       ? new Date(parseInt(lastDateParts[2]), parseInt(lastDateParts[1])-1, parseInt(lastDateParts[0]))
       : new Date()
-    const moisLabel = extractDateObj.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+    const langLocale = {fr:'fr-FR', en:'en-GB', es:'es-ES', he:'he-IL'}
+    const locale = langLocale[settings.lang] || 'fr-FR'
+    const moisLabel = extractDateObj.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
     const dateLabel = extractDate
 
     // ── Build HTML ─────────────────────────────────────────────────────────
@@ -2508,34 +2550,34 @@ function buildReportHTML(d) {
     const sc = bg === '#E8F1FA' ? 'color:#185FA5' : bg === '#F3F7EF' ? 'color:#639922' : 'color:#888780'
     return `<th${s}>${label}<br><span style="font-weight:400;${sc}">${sub}</span></th>`
   }
-  let collabHeader = `<th style="text-align:left">Collaborateur</th>`
+  let collabHeader = `<th style="text-align:left">${tr('col_collaborateur')}</th>`
   if (!d.isNetworkMode) collabHeader += th(tr('col_tps_trav'), tr('col_tps_trav_sub'))
-  collabHeader += th('CA généré', `en k${d.currency}`)
+  collabHeader += th(tr('col_ca'), `en k${d.currency}`)
   // Colonne RAF individuel — juste après CA généré
   const objIndivMap = d.obj_indiv_map || {}
   const hasObjIndiv = Object.keys(objIndivMap).length > 0
   if (hasObjIndiv) {
-    collabHeader += th('RAF/jour', 'objectif indiv.', '#FFF8E8')
+    collabHeader += th(tr('col_raf_indiv'), tr('col_raf_indiv_sub'), '#FFF8E8')
   } else {
-    collabHeader += `<th style="background:#FFF8E8;color:#B8860B;font-size:7px;font-style:italic;text-align:center;padding:2px 2px;white-space:normal;line-height:1.1">Pas d'objectifs indiv. CA</th>`
+    collabHeader += `<th style="background:#FFF8E8;color:#B8860B;font-size:7px;font-style:italic;text-align:center;padding:2px 2px;white-space:normal;line-height:1.1">${tr('col_raf_no_indiv')}</th>`
   }
-  collabHeader += th(tr('col_nb'), isNetworkMode ? 'par effectif' : `obj. ${OBJ.nb}`)
-  if (d.cols_opt.includes('pm'))   collabHeader += th('PM', `obj. ${OBJ.pm}${d.currency}`)
+  collabHeader += th(tr('col_nb'), isNetworkMode ? tr('col_nb_net') : `obj. ${OBJ.nb}`)
+  if (d.cols_opt.includes('pm'))   collabHeader += th(tr('col_pm'), `obj. ${OBJ.pm}${d.currency}`)
   if (d.cols_opt.includes('sop'))  collabHeader += th(tr('kpi_sop'), `obj. ${OBJ.sop}%`)
-  if (d.cols_opt.includes('tc'))   collabHeader += th('% TC', `obj. ${OBJ.tc}%`)
-  if (d.cols_opt.includes('pack')) collabHeader += th('% Pack C.', `obj. ${OBJ.pack}%`)
-  if (d.cols_opt.includes('pmpc')) collabHeader += th('PM Pack', `obj. ${OBJ.pmpc}${d.currency}`)
-  if (d.cols_opt.includes('pm1'))  collabHeader += th('PM 1ère paire', `obj. ${OBJ.pm1}${d.currency}`)
+  if (d.cols_opt.includes('tc'))   collabHeader += th(tr('col_tc'), `obj. ${OBJ.tc}%`)
+  if (d.cols_opt.includes('pack')) collabHeader += th(tr('col_pack'), `obj. ${OBJ.pack}%`)
+  if (d.cols_opt.includes('pmpc')) collabHeader += th(tr('col_pmpc'), `obj. ${OBJ.pmpc}${d.currency}`)
+  if (d.cols_opt.includes('pm1'))  collabHeader += th(tr('col_pm1'), `obj. ${OBJ.pm1}${d.currency}`)
   if (d.cols_opt.includes('mdc'))  collabHeader += th(tr('kpi_mdc'), `obj. ${OBJ.mdc}%`)
-  if (d.cols_opt.includes('luk'))  collabHeader += th('% LUKKAS', `obj. ${OBJ.luk}%`)
+  if (d.cols_opt.includes('luk'))  collabHeader += th(tr('col_luk'), `obj. ${OBJ.luk}%`)
   collabHeader += th(tr('col_ta'), `obj. ${OBJ.ta}%`, '#F3F7EF')
   collabHeader += th(tr('col_proth'), `obj. ${OBJ.proth}`, '#E8F1FA')
-  collabHeader += th('PM vente', `obj. ${OBJ.pm_aud}${d.currency}`, '#E8F1FA')
-  collabHeader += th('PM prothèse', `obj. ${OBJ.pm_app}${d.currency}`, '#E8F1FA')
-  if (d.cols_aud.includes('txc'))   collabHeader += th('Tx concret.', `obj. ${OBJ.txc}%`, '#E8F1FA')
+  collabHeader += th(tr('col_pm_aud'), `obj. ${OBJ.pm_aud}${d.currency}`, '#E8F1FA')
+  collabHeader += th(tr('col_pm_app'), `obj. ${OBJ.pm_app}${d.currency}`, '#E8F1FA')
+  if (d.cols_aud.includes('txc'))   collabHeader += th(tr('col_txc'), `obj. ${OBJ.txc}%`, '#E8F1FA')
   if (d.cols_aud.includes('txe'))   collabHeader += th(tr('col_txe'), `obj. ${OBJ.txe}%`, '#E8F1FA')
   if (d.cols_aud.includes('assur')) collabHeader += th(tr('col_assur'), `obj. ${OBJ.assur}%`, '#E8F1FA')
-  if (d.cols_aud.includes('tva'))   collabHeader += th('% Vente Add.', `obj. ${OBJ.tva}%`, '#E8F1FA')
+  if (d.cols_aud.includes('tva'))   collabHeader += th(tr('col_tva'), `obj. ${OBJ.tva}%`, '#E8F1FA')
 
   // Collab rows — fusion opt+audio pour les collaborateurs dans les deux listes
   const audMap = {}
@@ -2644,7 +2686,7 @@ function buildReportHTML(d) {
   // Taux vente additionnelle : depuis la ligne TOTAL du fichier CA audio
   const avgTvaDisp = d.tvaTot !== null ? d.tvaTot.toFixed(2) : '–'
   const kpis = [
-    { label: tr('kpi_pos'), value: `${d.avgPos}%`, sub: `moy. ${magasins.length} magasin${magasins.length > 1 ? 's' : ''}` },
+    { label: tr('kpi_pos'), value: `${d.avgPos}%`, sub: tr('kpi_pos_n', {n: magasins.length, s: magasins.length > 1 ? 's' : ''}) },
     { label: tr('kpi_pm'), value: `${d.avgPm}${d.currency}`, sub: tr('kpi_pm_sub') },
     { label: tr('kpi_tc'), value: `${d.avgTc}%`, sub: tr('kpi_tc_sub') },
     { label: tr('kpi_sop'), value: `${d.avgSop}%`, sub: tr('kpi_pm_sub') },
@@ -3357,7 +3399,7 @@ function buildReportHTML(d) {
 <div class="header">
   <div>
     <div class="header-title">${d.isNetworkMode ? "Performance Réseau — " : "Performance — "}${nomMagasin}</div>
-    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} ${tr('leg_jours_ouvres')} / ${d.jourstotal} &nbsp;·&nbsp; ${tr('obj_proratises')} &nbsp;·&nbsp; ${isNetworkMode ? 'Magasins actifs' : tr('actifs_uniquement')}${d.animateur ? '  ·  ✍ '+d.animateur : '' }</div>
+    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} ${tr('leg_jours_ouvres')} / ${d.jourstotal} &nbsp;·&nbsp; ${tr('obj_proratises')} &nbsp;·&nbsp; ${isNetworkMode ? tr('magasins_actifs') : tr('actifs_uniquement')}${d.animateur ? '  ·  ✍ '+d.animateur : '' }</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
 </div>
@@ -3370,14 +3412,14 @@ function buildReportHTML(d) {
   <div>
     ${magasins.length > 1 ? `<div class="sec-label">${tr("ca_total")||"CA Magasins"}</div>
     <table>
-      <thead><tr><th style="text-align:left">${tr("col_collaborateur")}</th><th>% obj.</th><th>CA</th><th>RAF/j</th></tr></thead>
+      <thead><tr><th style="text-align:left">${tr("col_collaborateur")}</th><th>${tr('col_pct_obj')}</th><th>${tr('col_ca')}</th><th>${tr('col_raf_j')}</th></tr></thead>
       <tbody>${magRows}</tbody>
     </table>` : ''}
     <div style="margin-top:5px">
       <div style="background:#2C2C2A;border-radius:7px;padding:5px 8px 6px;margin-top:5px">
         <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">${tr('obj_mensuel')}</div>
         <div style="font-size:14px;font-weight:600;color:#fff;line-height:1">${d.objTotal}k${d.currency}</div>
-        <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${magasins.length} magasin${magasins.length > 1 ? 's' : ''} · ${d.moisLabel}</div>
+        <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${tr('kpi_pos_n', {n: magasins.length, s: magasins.length > 1 ? 's' : ''})} · ${d.moisLabel}</div>
       </div>
       <div style="background:#2C2C2A;border-radius:7px;padding:5px 8px 6px;margin-top:5px">
         <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">${tr('ca_total')}</div>
@@ -3392,7 +3434,7 @@ function buildReportHTML(d) {
       <div style="background:${d.rafTotal>d.rafSeuil?'#3D0A0A':d.joursRest>0&&d.rafTotal===0?'#0D2D0D':'#2C2C2A'};border-radius:7px;padding:5px 8px 6px;margin-top:5px;${d.rafTotal>d.rafSeuil?'border:1px solid #CC1719;animation:raf-pulse 1.5s ease-in-out infinite;':d.joursRest>0&&d.rafTotal===0?'border:1px solid #3B6D11;':''}">
         <div style="font-size:7.5px;font-weight:500;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#888780'};margin-bottom:2px">${tr('raf_jour')}${d.rafTotal>d.rafSeuil?' 🚨':d.joursRest>0&&d.rafTotal===0?' 🎯':''}</div>
         <div style="font-size:14px;font-weight:600;color:${d.rafTotal>d.rafSeuil?'#FF4444':d.joursRest>0&&d.rafTotal===0?'#7DC850':'#fff'};line-height:1">${d.rafTotal.toFixed(1)}k${d.currency}</div>
-        <div style="font-size:7px;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#5F5E5A'};margin-top:2px">magasin · ${d.joursRest} ${tr('jours_restants')}</div>
+        <div style="font-size:7px;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#5F5E5A'};margin-top:2px">${tr('kpi_proth_sub')} · ${d.joursRest} ${tr('jours_restants')}</div>
       </div>
     </div>
   </div>
@@ -3423,7 +3465,7 @@ function buildReportHTML(d) {
 <hr class="divider">
 
 ${podiumHTML ? `<div class="podium-section">
-  <div class="sec-label">🏆 Top 3 — Score global</div>
+  <div class="sec-label">🏆 ${tr('top3_title')}</div>
   <div class="podium-wrap">${podiumHTML}</div>
 </div>
 <hr class="divider">` : ''}
@@ -3441,7 +3483,7 @@ ${podiumHTML ? `<div class="podium-section">
 <div class="header">
   <div>
     <div class="header-title">${nomMagasin} — ${tr('page2_title')}</div>
-    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursRest} j. restant${d.joursRest > 1 ? 's' : ''} &nbsp;·&nbsp; ${isNetworkMode ? tr('obj_proratises') : tr('ventes_supp').toLowerCase()}</div>
+    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursRest} ${tr('jours_restants')} &nbsp;·&nbsp; ${isNetworkMode ? tr('obj_proratises') : tr('ventes_supp').toLowerCase()}</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
 </div>
@@ -3474,7 +3516,7 @@ ${podiumHTML ? `<div class="podium-section">
       <th class="ch-todo">${tr('col_nb_a_ajouter')}</th>
       <th class="ch-todo">${tr('col_sop_garanti')}</th>
       <th class="ch-todo"><strong>% Pack Confort</strong><span>%</span></th>
-      <th class="ch-todo"><strong>PM Pack Confort</strong><span>obj. ${OBJ.pmpc}${d.currency}</span></th>
+      <th class="ch-todo"><strong>${tr('col_pm_pack')}</strong><span>obj. ${OBJ.pmpc}${d.currency}</span></th>
       <th class="ch-todo">${tr('col_paires_mdc')}</th>
       <th class="ch-res">${tr('col_pm_cible')}</th>
       <th class="ch-res">${tr('col_total_ventes')}</th>
@@ -3514,8 +3556,8 @@ ${podiumHTML ? `<div class="podium-section">
       </tr>
       <tr>
         <th class="ach-act">${tr('col_proth_real')||'Prothèses réalisées'}</th>
-        <th class="ach-act">${tr('col_pm_aud').split(' ')[0]}<span>${d.currency}/vente</span></th>
-        <th class="ach-act">${tr('col_pm_app').split(' ')[0]}<span>${d.currency}/app.</span></th>
+        <th class="ach-act">${tr('col_pm_vente_aud', {currency: d.currency})}</th>
+        <th class="ach-act">${tr('col_pm_proth', {currency: d.currency})}</th>
         <th class="ach-todo">${tr('col_essais')}</th>
         <th class="ach-todo">${tr('col_nvx_dossiers')}</th>
         <th class="ach-todo">${tr('col_tx_reussite')}</th>
@@ -3530,12 +3572,12 @@ ${podiumHTML ? `<div class="podium-section">
     <div class="leg-sep"></div>
     <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span style="color:#185FA5">${tr("ventes_a_realiser")}</span></div>
     <div class="leg-sep"></div>
-    <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('col_essais')} = dossiers déjà lancés à amener à 95% · ${tr('col_nvx_dossiers')} = 1 dossier = 2 prothèses à 95% · PM cible calculé sur les nouveaux dossiers</div>
+    <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('leg_aud_note', {essais: tr('col_essais'), nvx: tr('col_nvx_dossiers')})}</div>
   </div>
 </div>
 
 <div class="green-section">
-  <div class="green-section-title">Projection CA — Tous les objectifs au vert</div>
+  <div class="green-section-title">${tr('proj_section')}</div>
   <table id="green-table">
     <colgroup>
       <col style="width:130px">
@@ -3566,7 +3608,7 @@ ${podiumHTML ? `<div class="podium-section">
     <tbody>${greenRows}${greenTotal}</tbody>
   </table>
   <div class="legend" style="margin-top:5px">
-    <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('col_ca_proj')||'CA projeté'} · PM cible calculé sur les nouvelles ventes</div>
+    <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('leg_proj_note', {ca_proj: tr('col_ca_proj')||'CA projeté'})}</div>
   </div>
 </div>
 
@@ -3612,7 +3654,7 @@ const audNoms=new Set(auds.map(a=>a.nom.toLowerCase().trim()));
 const optsOpt=opts.filter(r=>!audNoms.has(r.nom.toLowerCase().trim()));
 const prios=[];
 const felicitations=[];
-const jL=joursRest<=0?'dernier jour':joursRest===1?'dernier jour':joursRest+' '+tr('jours_restants');
+const jL=joursRest<=0?tr('dernier_jour'):joursRest===1?tr('dernier_jour'):joursRest+' '+tr('jours_restants');
 const urgence=joursRest<=5;
 const debut=joursRest>=18;
 const n=optsOpt.length||1;
@@ -3809,16 +3851,16 @@ function actionIndicateur(label, vals, objVal, pBase, conseilUrgent, conseilNorm
 actionIndicateur(tr('kpi_sop'), optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop, PRIO.sop,
   'Systématiser la présentation de la garantie SOP sur chaque paire vendue ce sprint.',
   tr('conseil_sop'));
-actionIndicateur('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, PRIO.pm,
+actionIndicateur(tr('kpi_pm'), optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, PRIO.pm,
   'Orienter systématiquement vers les montures premium et les verres progressifs haut de gamme.',
   tr('conseil_pm'), CUR);
-actionIndicateur('PM Pack Confort', optsOpt.filter(r=>r.pmpc>0).map(r=>({nom:r.nom,val:r.pmpc})), OBJ.pmpc, PRIO.pmpc,
+actionIndicateur(tr('col_pm_pack'), optsOpt.filter(r=>r.pmpc>0).map(r=>({nom:r.nom,val:r.pmpc})), OBJ.pmpc, PRIO.pmpc,
   'Proposer le Pack Confort sur toutes les ventes restantes.',
   tr('conseil_pack'), CUR);
 actionIndicateur(tr('kpi_mdc'), optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, PRIO.mdc,
   'Orienter vers les marques exclusives et intemporelles sur chaque vente.',
   tr('conseil_mdc'));
-actionIndicateur('% LUKKAS', optsOpt.map(r=>({nom:r.nom,val:r.luk})), OBJ.luk, PRIO.luk,
+actionIndicateur(tr('col_luk'), optsOpt.map(r=>({nom:r.nom,val:r.luk})), OBJ.luk, PRIO.luk,
   'Rappeler LUKKAS à chaque vente — engagement à prendre avec chaque collaborateur.',
   tr('conseil_luk'));
 
