@@ -3671,7 +3671,7 @@ magasins.filter(m=>m.pos<85).sort((a,b)=>a.pos-b.pos).forEach(m=>{
 // ─── RAF RÉSEAU CRITIQUE ──────────────────────────────────────────────────────
 const magRafCrit=[...magasins].filter(m=>m.raf>5&&m.pos<100&&!prios.find(p=>p.titre.includes(cap(m.nom)))).sort((a,b)=>b.raf-a.raf)[0];
 if (magRafCrit) {
-  addPrio(1, cap(magRafCrit.nom)+' — '+magRafCrit.raf.toFixed(1)+'k'+CUR+'/jour à générer',
+  addPrio(1, tr('prio_raf_title',{magasin:cap(magRafCrit.nom),raf:magRafCrit.raf.toFixed(1)}),
     'Positionnement '+magRafCrit.pos.toFixed(1)+'%. '+(urgence?'Dernier sprint : ':'')+"Relancer les devis en attente et concentrer l'énergie sur les ventes à fort panier.");
 }
 
@@ -3719,7 +3719,7 @@ if (caBad.length > 0) {
   const detail = caBad.length <= 2
     ? caBad.map(r => prenom(r.nom)+' à '+(r.ca/1000).toFixed(1)+'k'+CUR+' (obj. '+(OBJ_CA*(TAUX[r.nom]||100)/100).toFixed(0)+'k'+CUR+')').join(' et ')+''
     : listNoms(caBad, 3, r => (r.ca/1000).toFixed(1)+'k'+CUR)+'. Obj. '+OBJ_CA+'k'+CUR+'';
-  addPrio(PRIO.obj_ca, 'CA — '+caBad.length+' '+COLLAB_LABEL+(caBad.length>1?'s':'')+' sous '+seuilAff+'k'+CUR, detail);
+  addPrio(PRIO.obj_ca, tr('prio_ca_zero_title',{n:caBad.length,obj:seuilAff}), detail);
 }
 
 // ─── RETARD CA INDIVIDUEL ────────────────────────────────────────────────────
@@ -3827,7 +3827,7 @@ if (tcBad.length > 0) {
   const detail = tcBad.length === 1
     ? prenom(tcBad[0].nom)+' concrétise à '+tcBad[0].tc.toFixed(0)+'% (obj. '+OBJ.tc+'%). Analyser les freins à la décision et proposer un accompagnement sur les essais en cours.'
     : tcBad.map(r => prenom(r.nom)+' '+r.tc.toFixed(0)+'%').join(' — ')+'. Obj. '+OBJ.tc+'%. Travailler les techniques de concrétisation et le suivi des essais.';
-  addPrio(PRIO.tc, '% TC — '+tcBad.length+' '+COLLAB_LABEL+(tcBad.length>1?'s':'')+' sous '+(OBJ.tc*0.85).toFixed(0)+'%', detail, tcBad[0].tc);
+  addPrio(PRIO.tc, tr('prio_tc_title')||('% TC — '+tcBad.length+' '+COLLAB_LABEL+' sous '+(OBJ.tc*0.85).toFixed(0)+'%'), detail, tcBad[0].tc);
 }
 
 // Double levier SOP + PM : si même vendeur sous les deux → une seule carte croisée
@@ -3879,8 +3879,8 @@ if (audAssurBad.length > 0) {
 // Magasins entre 85 et 95%
 magasins.filter(m=>m.pos>=85&&m.pos<95).sort((a,b)=>a.pos-b.pos).forEach(m=>{
   if (!prios.find(p=>p.titre.includes(cap(m.nom))))
-    addPrio(PRIO.nb, cap(m.nom)+' — '+m.pos.toFixed(1)+'% — à surveiller',
-      'RAF '+m.raf.toFixed(1)+'k'+CUR+'/jour sur '+jL+". À la frontière de l'objectif — maintenir la dynamique et sécuriser chaque vente.");
+    addPrio(PRIO.nb, cap(m.nom)+' — '+m.pos.toFixed(1)+'% — '+tr('p3_label'),
+      'RAF '+m.raf.toFixed(1)+'k'+CUR+'/jour sur '+jL+". "+tr('intro_jaune',{pct:m.pos.toFixed(1)}));
 });
 
 // ─── FÉLICITATIONS (si slots disponibles) ─────────────────────────────────────
@@ -3957,10 +3957,10 @@ function _saveCurrentActions() {
 // Intro contextuelle
 const avgPosVal = magasins.reduce((s,m)=>s+m.pos,0)/(magasins.length||1);
 const introTone = avgPosVal >= 100
-  ? "🟢 Magasin au-dessus de l'objectif ("+avgPosVal.toFixed(1)+"%) — focus sur les indicateurs qualitatifs."
+  ? "🟢 "+tr('intro_vert',{pct:avgPosVal.toFixed(1)})
   : avgPosVal >= 85
-  ? "🟡 Magasin à "+avgPosVal.toFixed(1)+"% de l'objectif — maintenir la dynamique et sécuriser chaque vente."
-  : "🔴 Magasin à "+avgPosVal.toFixed(1)+"% — mobilisation nécessaire sur tous les fronts.";
+  ? "🟡 "+tr('intro_jaune',{pct:avgPosVal.toFixed(1)})
+  : "🔴 "+tr('intro_rouge',{pct:avgPosVal.toFixed(1)});
 pg.innerHTML = '<div class="prio-intro">'+introTone+'</div>';
 
 // Adapter la grille selon le nombre de prios
