@@ -1537,13 +1537,14 @@ var TRANSLATIONS = {
 };
 
 function tr(key, vars) {
+  if (!TRANSLATIONS) return key;
   let lang = 'fr';
   try {
     const s = JSON.parse(localStorage.getItem('oc_settings') || '{}');
     lang = s.lang || 'fr';
   } catch(e) {}
-  const dict = TRANSLATIONS[lang] || TRANSLATIONS['fr'];
-  let text = dict[key] || TRANSLATIONS['fr'][key] || key;
+  const dict = (TRANSLATIONS[lang] || TRANSLATIONS['fr']) || {};
+  let text = dict[key] || (TRANSLATIONS['fr'] && TRANSLATIONS['fr'][key]) || key;
   if (vars) {
     Object.entries(vars).forEach(([k, v]) => {
       text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v);
