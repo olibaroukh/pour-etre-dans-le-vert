@@ -3368,7 +3368,7 @@ function buildReportHTML(d) {
 
 <div class="top-grid">
   <div>
-    ${magasins.length > 1 ? `<div class="sec-label">CA Magasins</div>
+    ${magasins.length > 1 ? `<div class="sec-label">${tr("ca_total")||"CA Magasins"}</div>
     <table>
       <thead><tr><th style="text-align:left">Magasin</th><th>% obj.</th><th>CA</th><th>RAF/j</th></tr></thead>
       <tbody>${magRows}</tbody>
@@ -3387,7 +3387,7 @@ function buildReportHTML(d) {
       <div style="background:#2C2C2A;border-radius:7px;padding:5px 8px 6px;margin-top:5px">
         <div style="font-size:7.5px;font-weight:500;color:#888780;margin-bottom:2px">CA Audio</div>
         <div style="font-size:14px;font-weight:600;color:#fff;line-height:1">${Math.round(d.totCaAud)}k${d.currency}</div>
-        <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${auds.length} audioprothésiste${auds.length > 1 ? 's' : ''}</div>
+        <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${auds.length} ${tr("kpi_proth_sub")||"audioprothésiste"}</div>
       </div>
       <div style="background:${d.rafTotal>d.rafSeuil?'#3D0A0A':d.joursRest>0&&d.rafTotal===0?'#0D2D0D':'#2C2C2A'};border-radius:7px;padding:5px 8px 6px;margin-top:5px;${d.rafTotal>d.rafSeuil?'border:1px solid #CC1719;animation:raf-pulse 1.5s ease-in-out infinite;':d.joursRest>0&&d.rafTotal===0?'border:1px solid #3B6D11;':''}">
         <div style="font-size:7.5px;font-weight:500;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#888780'};margin-bottom:2px">RAF / jour global${d.rafTotal>d.rafSeuil?' 🚨':d.joursRest>0&&d.rafTotal===0?' 🎯':''}</div>
@@ -3411,11 +3411,11 @@ function buildReportHTML(d) {
       <div class="leg-sep"></div>
       <div class="leg-item"><div class="leg-dot" style="background:#FCEBEB;border:0.5px solid #A32D2D"></div><span>&lt; 70%</span></div>
       <div class="leg-sep"></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#F1EFE8;border:0.5px solid #D3D1C7"></div><span>Indicateur commun</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#F1EFE8;border:0.5px solid #D3D1C7"></div><span>${tr("leg_commun")}</span></div>
       <div class="leg-sep"></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span>Colonnes audio</span></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span>${tr("leg_audio")}</span></div>
       <div class="leg-sep"></div>
-      <div class="leg-note">P1 Urgent · P2 À traiter · P3 À surveiller &nbsp;·&nbsp; Objectifs proratisés sur ${d.joursEcoules}/${d.jourstotal} j. ouvrés</div>
+      <div class="leg-note">${tr("p1_label")} · ${tr("p2_label")} · ${tr("p3_label")} &nbsp;·&nbsp; ${tr("obj_proratises")} sur ${d.joursEcoules}/${d.jourstotal} j. ouvrés</div>
     </div>
   </div>
 </div>
@@ -3470,7 +3470,7 @@ ${podiumHTML ? `<div class="podium-section">
     </tr>
     <tr>
       <th class="ch-act">${tr('col_nb_ventes_real')}</th>
-      <th class="ch-act">PM actuel<span>${d.currency}/vente</span></th>
+      <th class="ch-act">${tr('col_pm_actuel').replace('{currency}',d.currency)}</th>
       <th class="ch-todo">${tr('col_nb_a_ajouter')}</th>
       <th class="ch-todo">${tr('col_sop_garanti')}</th>
       <th class="ch-todo"><strong>% Pack Confort</strong><span>%</span></th>
@@ -3526,9 +3526,9 @@ ${podiumHTML ? `<div class="podium-section">
     <tbody>${audRows}</tbody>
   </table>
   <div class="legend" style="margin-top:5px">
-    <div class="leg-item"><div class="leg-dot" style="background:#EAF3DE;border:0.5px solid #3B6D11"></div><span style="color:#3B6D11">Tous objectifs atteints</span></div>
+    <div class="leg-item"><div class="leg-dot" style="background:#EAF3DE;border:0.5px solid #3B6D11"></div><span style="color:#3B6D11">${tr("tous_obj_atteints")}</span></div>
     <div class="leg-sep"></div>
-    <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span style="color:#185FA5">Actions à réaliser</span></div>
+    <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span style="color:#185FA5">${tr("ventes_a_realiser")}</span></div>
     <div class="leg-sep"></div>
     <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('col_essais')} = dossiers déjà lancés à amener à 95% · ${tr('col_nvx_dossiers')} = 1 dossier = 2 prothèses à 95% · PM cible calculé sur les nouveaux dossiers</div>
   </div>
@@ -3556,7 +3556,7 @@ ${podiumHTML ? `<div class="podium-section">
       <tr>
         <th class="gch-act">CA<span>k${d.currency}</span></th>
         <th class="gch-act">${tr('col_ventes_obj')||'Ventes opt. réalisées'}</th>
-        <th class="gch-act">Prothèses<span>réalisées</span></th>
+        <th class="gch-act">${tr('col_proth_real')||'Prothèses réalisées'}</th>
         <th class="gch-obj">${tr('col_ventes_obj')||'Ventes opt. objectif final'}</th>
         <th class="gch-obj">${tr('col_proth_obj')||'Prothèses objectif final'}</th>
         <th class="gch-res">${tr('col_ca_proj')||'CA projeté tous objectifs verts'}</th>
@@ -3565,7 +3565,7 @@ ${podiumHTML ? `<div class="podium-section">
     <tbody>${greenRows}${greenTotal}</tbody>
   </table>
   <div class="legend" style="margin-top:5px">
-    <div class="leg-item" style="color:#5F5E5A;font-size:7px">CA projeté optique = nb ventes final × max(PM actuel, obj. PM) · CA projeté audio = nb prothèses final × max(PM prothèse actuel, obj. PM prothèse) · Le CA actuel inclut optique + audio pour les audioprothésistes</div>
+    <div class="leg-item" style="color:#5F5E5A;font-size:7px">CA projeté · PM cible calculé sur les nouvelles ventes</div>
   </div>
 </div>
 
@@ -3662,9 +3662,9 @@ magasins.filter(m=>m.pos<85).sort((a,b)=>a.pos-b.pos).forEach(m=>{
   if (!prios.find(p=>p.titre.includes(cap(m.nom)))) {
     const raf = m.raf.toFixed(1);
     const detail = urgence
-      ? 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". Mobiliser toute l'équipe sur les dossiers en attente et maximiser chaque opportunité client."
-      : 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". Relancer les devis en attente, prioriser les ventes à forte valeur et bloquer du temps avec l'équipe cette semaine.";
-    addPrio(1, cap(m.nom)+' — '+m.pos.toFixed(1)+"% de l'objectif ("+m.obj+'k'+CUR+')', detail);
+      ? 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". "+tr('conseil_raf')
+      : 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". "+tr('conseil_raf');
+    addPrio(1, cap(m.nom)+' — '+m.pos.toFixed(1)+'% '+tr('obj_proratises').toLowerCase()+'... ('+m.obj+'k'+CUR+')', detail);
   }
 });
 
@@ -3719,7 +3719,7 @@ if (caBad.length > 0) {
   const detail = caBad.length <= 2
     ? caBad.map(r => prenom(r.nom)+' à '+(r.ca/1000).toFixed(1)+'k'+CUR+' (obj. '+(OBJ_CA*(TAUX[r.nom]||100)/100).toFixed(0)+'k'+CUR+')').join(' et ')+''
     : listNoms(caBad, 3, r => (r.ca/1000).toFixed(1)+'k'+CUR)+'. Obj. '+OBJ_CA+'k'+CUR+'';
-  addPrio(PRIO.obj_ca, tr('prio_ca_zero_title',{n:caBad.length,obj:seuilAff}), detail);
+  addPrio(PRIO.obj_ca, tr('prio_ca_zero_title',{n:caBad.length,obj:seuilAff,currency:CUR}), detail);
 }
 
 // ─── RETARD CA INDIVIDUEL ────────────────────────────────────────────────────
@@ -3769,7 +3769,7 @@ if (audProthBad.length > 0) {
   const detail = audProthBad.length === 1
     ? prenom(audProthBad[0].nom)+' à '+audProthBad[0].proth+' prothèses sur '+OBJ.proth+' attendues. Analyser le taux de concrétisation et les dossiers en cours. '
     : listNoms(audProthBad, 3, a=>a.proth+'/'+OBJ.proth)+'';
-  addPrio(PRIO.proth, 'Prothèses — '+audProthBad.length+' audioprothésiste'+(audProthBad.length>1?'s':'')+' en retard', detail);
+  addPrio(PRIO.proth, tr('prio_proth_title',{n:audProthBad.length}), detail);
 }
 
 // ─── INDICATEURS ADAPTATIFS ───────────────────────────────────────────────────
@@ -3793,12 +3793,12 @@ function actionIndicateur(label, vals, objVal, pBase, conseilUrgent, conseilNorm
     const nomsSeulsCrit = candidats.slice(0,3).map(v=>prenom(v.nom)).join(' et ');
     const surplusCrit = candidats.length > 3 ? ' +'+(candidats.length-3) : '';
     const noms = candidats.slice(0,3).map(v=>prenom(v.nom)+' '+Math.round(v.val)+u).join(' — ');
-    titre = label+' — '+nomsSeulsCrit+surplusCrit+' en zone critique (< '+Math.round(seuil70)+u+')';
+    titre = label+' — '+nomsSeulsCrit+surplusCrit+' '+tr('p1_label').toLowerCase()+' (< '+Math.round(seuil70)+u+')';
     detail = noms+'. Obj. '+objVal+u+' · Moy. magasin '+Math.round(moy)+u+'. '+(urgence?conseilUrgent:conseilNormal);
   } else {
     const nomsSeuls = candidats.slice(0,3).map(v=>prenom(v.nom)).join(' et ');
     const surplus = candidats.length > 3 ? ' +'+( candidats.length-3) : '';
-    titre = label+' — '+nomsSeuls+surplus+' sous la moyenne '+Math.round(moy)+u;
+    titre = label+' — '+nomsSeuls+surplus+' — avg '+Math.round(moy)+u;
     const noms = candidats.slice(0,3).map(v=>prenom(v.nom)+' '+Math.round(v.val)+u).join(' — ');
     detail = noms+'. Obj. '+objVal+u+' · Moy. '+Math.round(moy)+u+'. '+(urgence?conseilUrgent:conseilNormal);
   }
@@ -3827,7 +3827,7 @@ if (tcBad.length > 0) {
   const detail = tcBad.length === 1
     ? prenom(tcBad[0].nom)+' concrétise à '+tcBad[0].tc.toFixed(0)+'% (obj. '+OBJ.tc+'%). Analyser les freins à la décision et proposer un accompagnement sur les essais en cours.'
     : tcBad.map(r => prenom(r.nom)+' '+r.tc.toFixed(0)+'%').join(' — ')+'. Obj. '+OBJ.tc+'%. Travailler les techniques de concrétisation et le suivi des essais.';
-  addPrio(PRIO.tc, tr('prio_tc_title')||('% TC — '+tcBad.length+' '+COLLAB_LABEL+' sous '+(OBJ.tc*0.85).toFixed(0)+'%'), detail, tcBad[0].tc);
+  addPrio(PRIO.tc, '% TC — '+tcBad.length+' '+COLLAB_LABEL+(tcBad.length>1?'s':'')+' sous '+(OBJ.tc*0.85).toFixed(0)+'%', detail, tcBad[0].tc);
 }
 
 // Double levier SOP + PM : si même vendeur sous les deux → une seule carte croisée
@@ -3843,7 +3843,7 @@ if (doubleLeviers.length > 0 && prios.filter(p=>p.tag&&(p.tag.includes('sop')||p
     const detail = nomsD+' sont faibles sur les deux leviers de valeur : SOP '+doubleLeviers.map(r=>Math.round(r.sop)+'%').join('/')+' (obj. '+OBJ.sop+'%) et PM '+doubleLeviers.map(r=>Math.round(r.pm)+'€').join('/')+'€ (obj. '+OBJ.pm+'€). Travailler la montée en gamme ET la présentation SOP sur chaque vente — les deux se renforcent.';
     const minP = Math.min(prios[idxSop].p, prios[idxPm].p);
     prios.splice(Math.max(idxSop, idxPm), 1); // supprimer le 2e
-    prios[Math.min(idxSop, idxPm)] = {p: minP, titre: 'Double levier — '+nomsD+' : SOP + PM', detail, tag: 'soppm', score: 0};
+    prios[Math.min(idxSop, idxPm)] = {p: minP, titre: tr('prio_double_levier',{noms:nomsD}), detail, tag: 'soppm', score: 0};
   }
 }
 
@@ -3899,7 +3899,7 @@ function checkFelicitation(label, vals, objVal, emoji, msgTopFn, msgEquipeFn, un
 
 checkFelicitation(tr('kpi_sop'), optsOpt.map(r=>({nom:r.nom,val:r.sop})), OBJ.sop, '✅',
   t=>'Bravo '+prenom(t.nom)+' — '+Math.round(t.val)+"% de SOP, c'est un excellent travail de conseil client. Continue !",
-  (moy,t)=>"Toute l'équipe au-dessus de l'objectif ! Moyenne à "+moy+'%, avec '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%. Félicitations à tous.');
+  (moy,t)=>tr('intro_vert',{pct:moy})+' '+prenom(t.nom)+' en tête.');
 
 checkFelicitation('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,val:r.pm})), OBJ.pm, '💎',
   t=>''+prenom(t.nom)+' affiche un PM exceptionnel à '+Math.round(t.val)+"€. La montée en gamme fonctionne — partager la méthode avec l'équipe !",
@@ -3971,7 +3971,7 @@ if (_pgGrid) _pgGrid.style.gridTemplateColumns = 'repeat('+_cols+',1fr)';
 prios.sort((a,b)=>a.p-b.p||a.score-b.score).slice(0,MAX_PRIO).forEach(function(item){
   var p=item.p, titre=item.titre, detail=item.detail, tag=item.tag||'';
   var badge = p <= 3 ? '<div class="pcard-badge p'+p+'-badge">P'+p+'</div>' : '';
-  var recurrent = p <= 3 && tag && _prevActions[tag] ? '<span class="pcard-recurrent">↩ récurrent</span>' : '';
+  var recurrent = p <= 3 && tag && _prevActions[tag] ? '<span class="pcard-recurrent">↩ recurrent</span>' : '';
   pg.innerHTML+='<div class="pcard">'
     +'<div class="pcard-head p'+p+'-head-bg">'
     +badge
