@@ -821,7 +821,7 @@
 
 <script>
 
-const TRANSLATIONS = {
+var TRANSLATIONS = {
   fr: {
     'app_title': 'Synthèse réseau',
     'app_subtitle': 'Générez votre rapport mensuel en quelques secondes',
@@ -1560,7 +1560,7 @@ window.onerror = function(msg, src, line, col, err) {
     return false;
 };
 // ── Settings defaults ─────────────────────────────────────────────────────────
-const DEFAULTS = { lang:'fr', currency:'€',
+var DEFAULTS = { lang:'fr', currency:'€',
   jours_ecoules:23, jours_mois:25,
   cols_opt: ['pm','tc','sop','mdc'],
   cols_aud: ['txe','assur'],
