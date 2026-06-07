@@ -934,6 +934,8 @@ var TRANSLATIONS = {
     'col_total_ventes': 'Total ventes conséquence',
     'col_proth_real': 'Prothèses réalisées',
     'col_pm_vente_aud': 'PM vente {currency}/vente',
+    'unit_sale': 'vente',
+    'unit_device': 'app.',
     'col_pm_proth': 'PM prothèse {currency}/app.',
     'col_essais': 'Essais en cours à concrétiser',
     'col_nvx_dossiers': 'Nouveaux dossiers à lancer',
@@ -1122,6 +1124,8 @@ var TRANSLATIONS = {
     'col_total_ventes': 'Total sales (outcome)',
     'col_proth_real': 'Hearing aids achieved',
     'col_pm_vente_aud': 'Sale avg. {currency}/sale',
+    'unit_sale': 'sale',
+    'unit_device': 'device',
     'col_pm_proth': 'Device avg. {currency}/device',
     'col_essais': 'Trials to convert',
     'col_nvx_dossiers': 'New files to open',
@@ -1310,6 +1314,8 @@ var TRANSLATIONS = {
     'col_total_ventes': 'Total ventas (consecuencia)',
     'col_proth_real': 'Audífonos realizados',
     'col_pm_vente_aud': 'PM venta {currency}/venta',
+    'unit_sale': 'venta',
+    'unit_device': 'aparato',
     'col_pm_proth': 'PM audífono {currency}/aparato',
     'col_essais': 'Pruebas a concretar',
     'col_nvx_dossiers': 'Nuevos expedientes',
@@ -1498,6 +1504,8 @@ var TRANSLATIONS = {
     'col_total_ventes': 'סה"כ מכירות (תוצאה)',
     'col_proth_real': 'מכשירי שמיעה בוצעו',
     'col_pm_vente_aud': 'ממוצע מכירה {currency}/מכירה',
+    'unit_sale': 'מכירה',
+    'unit_device': 'מכשיר',
     'col_pm_proth': 'ממוצע מכשיר {currency}/מכשיר',
     'col_essais': 'ניסויים להמרה',
     'col_nvx_dossiers': 'תיקים חדשים לפתיחה',
@@ -3515,7 +3523,7 @@ ${podiumHTML ? `<div class="podium-section">
       <th class="ch-act">${tr('col_pm_actuel').replace('{currency}',d.currency)}</th>
       <th class="ch-todo">${tr('col_nb_a_ajouter')}</th>
       <th class="ch-todo">${tr('col_sop_garanti')}</th>
-      <th class="ch-todo"><strong>% Pack Confort</strong><span>%</span></th>
+      <th class="ch-todo"><strong>${tr('col_pack_pct').replace(' %','')}</strong><span>%</span></th>
       <th class="ch-todo"><strong>${tr('col_pm_pack')}</strong><span>obj. ${OBJ.pmpc}${d.currency}</span></th>
       <th class="ch-todo">${tr('col_paires_mdc')}</th>
       <th class="ch-res">${tr('col_pm_cible')}</th>
@@ -3556,8 +3564,8 @@ ${podiumHTML ? `<div class="podium-section">
       </tr>
       <tr>
         <th class="ach-act">${tr('col_proth_real')||'Prothèses réalisées'}</th>
-        <th class="ach-act">${tr('col_pm_vente_aud', {currency: d.currency})}</th>
-        <th class="ach-act">${tr('col_pm_proth', {currency: d.currency})}</th>
+        <th class="ach-act"><strong>${tr('col_pm_aud')}</strong><span>${d.currency}/${tr('unit_sale')}</span></th>
+        <th class="ach-act"><strong>${tr('col_pm_app')}</strong><span>${d.currency}/${tr('unit_device')}</span></th>
         <th class="ach-todo">${tr('col_essais')}</th>
         <th class="ach-todo">${tr('col_nvx_dossiers')}</th>
         <th class="ach-todo">${tr('col_tx_reussite')}</th>
@@ -3594,11 +3602,10 @@ ${podiumHTML ? `<div class="podium-section">
         <th colspan="3" class="ggrp-act">${tr('sit_actuelle').charAt(0)+tr('sit_actuelle').slice(1).toLowerCase()}</th>
         <th colspan="2" class="ggrp-obj">${tr('obj_atteints').charAt(0)+tr('obj_atteints').slice(1).toLowerCase()}</th>
         <th colspan="1" class="ggrp-res">${tr('projection').charAt(0)+tr('projection').slice(1).toLowerCase()}</th>
-        <th colspan="1" class="ggrp-res">${tr('projection').charAt(0)+tr('projection').slice(1).toLowerCase()}</th>
       </tr>
       <tr>
         <th class="gch-act">CA<span>k${d.currency}</span></th>
-        <th class="gch-act">${tr('col_ventes_obj')||'Ventes opt. réalisées'}</th>
+        <th class="gch-act">${tr('col_nb_ventes_real')}</th>
         <th class="gch-act">${tr('col_proth_real')||'Prothèses réalisées'}</th>
         <th class="gch-obj">${tr('col_ventes_obj')||'Ventes opt. objectif final'}</th>
         <th class="gch-obj">${tr('col_proth_obj')||'Prothèses objectif final'}</th>
