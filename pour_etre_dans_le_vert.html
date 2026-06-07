@@ -541,7 +541,7 @@
     <!-- Zone optionnelle objectifs CA individuels -->
     <div id="obj-indiv-zone" style="margin-top:8px">
       <div id="obj-indiv-msg" style="font-size:11px;color:#5F5E5A;text-align:center;padding:8px;cursor:pointer;border:1px dashed #2C2C2A;border-radius:8px;transition:all .2s" onclick="document.getElementById('obj-indiv-input').click()" onmouseover="this.style.borderColor='#888780';this.style.color='#888780'" onmouseout="this.style.borderColor='#2C2C2A';this.style.color='#5F5E5A'">
-        ${tr('obj_indiv_msg')} <span style="text-decoration:underline">${tr('obj_indiv_link')}</span> ou <span style="text-decoration:underline;cursor:pointer" onclick="event.stopPropagation();skipObjIndiv()">passer</span>
+        <span class="i18n" data-key="obj_indiv_msg">Pas d'objectifs individuels de CA ce mois-ci ?</span> <span style="text-decoration:underline"><span class="i18n" data-key="obj_indiv_link">Charger le fichier</span></span> ou <span style="text-decoration:underline;cursor:pointer" onclick="event.stopPropagation();skipObjIndiv()">passer</span>
       </div>
       <input type="file" id="obj-indiv-input" accept=".csv" style="display:none" onchange="loadObjIndiv(this.files[0])">
       <div id="obj-indiv-loaded" style="display:none;font-size:11px;color:#4CAF7D;padding:6px 10px;background:rgba(76,175,61,0.08);border-radius:8px;display:none;align-items:center;justify-content:space-between">
@@ -645,24 +645,24 @@
 <div class="modal-overlay" id="settings-modal">
   <div class="modal">
     <div class="modal-header">
-      <h3>⚙️ ${tr('settings_title')}</h3>
+      <h3>⚙️ <span class="i18n" data-key="settings_title">Paramètres objectifs</span></h3>
       <button class="modal-close" onclick="closeSettings()">×</button>
     </div>
     <div class="modal-body">
       <div class="settings-group">
-        <div class="settings-group-title">${tr('settings_animateur')}</div>
+        <div class="settings-group-title"><span class="i18n" data-key="settings_animateur">Animateur réseau</span></div>
         <div class="settings-grid">
           <div class="settings-field" style="grid-column:1/-1">
-            <label>${tr('settings_nom_label')}</label>
+            <label>Votre nom (affiché sur le rapport)</label>
             <input type="text" id="s-animateur" placeholder="Ex: Olivier Baroukh" style="width:100%">
           </div>
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title">${tr('settings_langue')}</div>
+        <div class="settings-group-title"><span class="i18n" data-key="settings_langue">Langue &amp; Devise</span></div>
         <div class="settings-grid">
           <div class="settings-field">
-            <label>${tr('settings_langue_label')}</label>
+            <label>Langue du rapport</label>
             <select id="s-lang">
               <option value="fr">🇫🇷 Français</option>
               <option value="en">🇬🇧 English</option>
@@ -671,7 +671,7 @@
             </select>
           </div>
           <div class="settings-field">
-            <label>${tr('settings_devise_label')}</label>
+            <label>Symbole devise</label>
             <select id="s-currency">
               <option value="€">€ — Euro</option>
               <option value="$">$ — Dollar</option>
@@ -681,20 +681,20 @@
             </select>
           </div>
           <div class="settings-field-row">
-            <div class="settings-field"><label>${tr('settings_obj_ca')}</label><input type="number" id="s-obj-ca" min="1"></div>
-            <div class="settings-field"><label>${tr('settings_raf_seuil')}</label><input type="number" id="s-raf-seuil" min="0" step="0.5" placeholder="auto"></div>
+            <div class="settings-field"><label>Objectif CA collaborateur (en k)</label><input type="number" id="s-obj-ca" min="1"></div>
+            <div class="settings-field"><label>Seuil alerte RAF/jour — auto si vide</label><input type="number" id="s-raf-seuil" min="0" step="0.5" placeholder="auto"></div>
             <select class="prio-select" id="sp-obj-ca" title="Priorité"><option value="1">P1</option><option value="2" selected="">P2</option><option value="3">P3</option></select>
           </div>
           <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07)">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <span style="font-size:12px;color:#888780">${tr('settings_max_prio')}</span>
+              <span style="font-size:12px;color:#888780">Nb max d'actions prioritaires</span>
               <span id="max-prio-val" style="font-size:15px;font-weight:700;color:#CC1719">9</span>
             </div>
             <input type="range" id="s-max-prio" min="3" max="9" step="1" value="9" oninput="document.getElementById('max-prio-val').textContent=this.value" style="width:100%;accent-color:#CC1719">
             <div style="display:flex;justify-content:space-between;font-size:10px;color:#3a3937;margin-top:3px"><span>3</span><span>6</span><span>9</span></div>
           </div>
           <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px;color:#888780">${tr('settings_mode')}</span>
+            <span style="font-size:12px;color:#888780">Mode rapport</span>
             <div style="display:flex;align-items:center;gap:8px">
               <span style="font-size:11px;color:#5F5E5A" id="dark-mode-label">Clair</span>
               <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
@@ -707,7 +707,7 @@
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title">${tr('settings_optique')}</div>
+        <div class="settings-group-title"><span class="i18n" data-key="settings_optique">Optique — objectifs</span></div>
         <div class="settings-grid">
           <div class="settings-field-row">
             <div class="settings-field"><label>Nb ventes (base mois)</label><input type="number" id="s-nb" min="1"></div>
@@ -748,7 +748,7 @@
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title">${tr('settings_audio')}</div>
+        <div class="settings-group-title"><span class="i18n" data-key="settings_audio">Audio — objectifs</span></div>
         <div class="settings-grid">
           <div class="settings-field-row">
             <div class="settings-field"><label>Prothèses (base mois)</label><input type="number" id="s-proth" min="1"></div>
@@ -786,7 +786,7 @@
       </div>
     </div>
       <div class="settings-group">
-        <div class="settings-group-title">${tr('settings_cols_opt')}</div>
+        <div class="settings-group-title"><span class="i18n" data-key="settings_cols_opt">Colonnes du tableau — Optique</span></div>
         <div style="font-size:10px;color:#5F5E5A;margin-bottom:8px">CA généré · Nb ventes · toujours visibles</div>
         <div class="settings-grid">
           <label class="col-check"><input type="checkbox" id="col-pm"> Panier moyen (PM)</label>
@@ -800,7 +800,7 @@
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title">${tr('settings_cols_aud')}</div>
+        <div class="settings-group-title"><span class="i18n" data-key="settings_cols_aud">Colonnes du tableau — Audio</span></div>
         <div style="font-size:10px;color:#5F5E5A;margin-bottom:8px">Prothèses · Test auditif · toujours visibles</div>
         <div class="settings-grid">
           <label class="col-check"><input type="checkbox" id="col-txc"> % Tx concrétisation</label>
@@ -844,7 +844,7 @@ const TRANSLATIONS = {
     'file_ca_audio': tr('ca_audio'),
     'file_pm1': 'PM 1ère paire',
     'obj_indiv_msg': 'Pas d\'objectifs individuels de CA ce mois-ci ?',
-    'obj_indiv_link': '${tr('obj_indiv_link')}',
+    'obj_indiv_link': 'Charger le fichier',
     'obj_indiv_skip': 'passer',
     'version_label': 'v3.1',
     'guide_label': 'Guide utilisateur',
