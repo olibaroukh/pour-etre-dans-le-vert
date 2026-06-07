@@ -541,7 +541,7 @@
     <!-- Zone optionnelle objectifs CA individuels -->
     <div id="obj-indiv-zone" style="margin-top:8px">
       <div id="obj-indiv-msg" style="font-size:11px;color:#5F5E5A;text-align:center;padding:8px;cursor:pointer;border:1px dashed #2C2C2A;border-radius:8px;transition:all .2s" onclick="document.getElementById('obj-indiv-input').click()" onmouseover="this.style.borderColor='#888780';this.style.color='#888780'" onmouseout="this.style.borderColor='#2C2C2A';this.style.color='#5F5E5A'">
-        <span class="i18n" data-key="obj_indiv_msg">Pas d'objectifs individuels de CA ce mois-ci ?</span> <span style="text-decoration:underline"><span class="i18n" data-key="obj_indiv_link">Charger le fichier</span></span> ou <span style="text-decoration:underline;cursor:pointer" onclick="event.stopPropagation();skipObjIndiv()">passer</span>
+        Pas d'objectifs individuels de CA ce mois-ci ? <span style="text-decoration:underline">Charger le fichier</span> ou <span style="text-decoration:underline;cursor:pointer" onclick="event.stopPropagation();skipObjIndiv()">passer</span>
       </div>
       <input type="file" id="obj-indiv-input" accept=".csv" style="display:none" onchange="loadObjIndiv(this.files[0])">
       <div id="obj-indiv-loaded" style="display:none;font-size:11px;color:#4CAF7D;padding:6px 10px;background:rgba(76,175,61,0.08);border-radius:8px;display:none;align-items:center;justify-content:space-between">
@@ -645,12 +645,12 @@
 <div class="modal-overlay" id="settings-modal">
   <div class="modal">
     <div class="modal-header">
-      <h3>⚙️ <span class="i18n" data-key="settings_title">Paramètres objectifs</span></h3>
+      <h3>⚙️ Paramètres objectifs</h3>
       <button class="modal-close" onclick="closeSettings()">×</button>
     </div>
     <div class="modal-body">
       <div class="settings-group">
-        <div class="settings-group-title"><span class="i18n" data-key="settings_animateur">Animateur réseau</span></div>
+        <div class="settings-group-title">Animateur réseau</div>
         <div class="settings-grid">
           <div class="settings-field" style="grid-column:1/-1">
             <label>Votre nom (affiché sur le rapport)</label>
@@ -659,7 +659,7 @@
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title"><span class="i18n" data-key="settings_langue">Langue &amp; Devise</span></div>
+        <div class="settings-group-title">Langue &amp; Devise</div>
         <div class="settings-grid">
           <div class="settings-field">
             <label>Langue du rapport</label>
@@ -707,7 +707,7 @@
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title"><span class="i18n" data-key="settings_optique">Optique — objectifs</span></div>
+        <div class="settings-group-title">Optique — objectifs</div>
         <div class="settings-grid">
           <div class="settings-field-row">
             <div class="settings-field"><label>Nb ventes (base mois)</label><input type="number" id="s-nb" min="1"></div>
@@ -748,7 +748,7 @@
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title"><span class="i18n" data-key="settings_audio">Audio — objectifs</span></div>
+        <div class="settings-group-title">Audio — objectifs</div>
         <div class="settings-grid">
           <div class="settings-field-row">
             <div class="settings-field"><label>Prothèses (base mois)</label><input type="number" id="s-proth" min="1"></div>
@@ -786,7 +786,7 @@
       </div>
     </div>
       <div class="settings-group">
-        <div class="settings-group-title"><span class="i18n" data-key="settings_cols_opt">Colonnes du tableau — Optique</span></div>
+        <div class="settings-group-title">Colonnes du tableau — Optique</div>
         <div style="font-size:10px;color:#5F5E5A;margin-bottom:8px">CA généré · Nb ventes · toujours visibles</div>
         <div class="settings-grid">
           <label class="col-check"><input type="checkbox" id="col-pm"> Panier moyen (PM)</label>
@@ -800,7 +800,7 @@
         </div>
       </div>
       <div class="settings-group">
-        <div class="settings-group-title"><span class="i18n" data-key="settings_cols_aud">Colonnes du tableau — Audio</span></div>
+        <div class="settings-group-title">Colonnes du tableau — Audio</div>
         <div style="font-size:10px;color:#5F5E5A;margin-bottom:8px">Prothèses · Test auditif · toujours visibles</div>
         <div class="settings-grid">
           <label class="col-check"><input type="checkbox" id="col-txc"> % Tx concrétisation</label>
@@ -821,14 +821,6 @@
 
 <script>
 
-window.onerror = function(msg, src, line, col, err) {
-    document.body.insertAdjacentHTML('afterbegin', 
-        '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:9999;font-size:12px">' +
-        'ERREUR JS: ' + msg + ' (ligne ' + line + ')' +
-        '</div>');
-    return false;
-};
-// ── Settings defaults ─────────────────────────────────────────────────────────
 const TRANSLATIONS = {
   fr: {
     'app_title': 'Synthèse réseau',
@@ -870,7 +862,7 @@ const TRANSLATIONS = {
     'ca_total_sub': tr('ca_total_sub'),
     'ca_audio': tr('ca_audio'),
     'raf_jour': tr('raf_jour'),
-    'jours_restants': tr('jours_restants'),
+    'jours_restants': 'j. restants',
     'col_collaborateur': tr('col_collaborateur'),
     'col_tps_trav': tr('col_tps_trav'),
     'col_tps_trav_sub': tr('col_tps_trav_sub'),
@@ -881,7 +873,7 @@ const TRANSLATIONS = {
     'col_nb': tr('col_nb'),
     'col_pm': 'PM',
     'col_sop': tr('kpi_sop'),
-    'col_tc': tr('col_tc'),
+    'col_tc': '% TC',
     'col_mdc': tr('kpi_mdc'),
     'col_ta': tr('col_ta'),
     'col_proth': tr('col_proth'),
@@ -899,7 +891,7 @@ const TRANSLATIONS = {
     'leg_obj0': tr('leg_obj0'),
     'leg_commun': tr('leg_commun'),
     'leg_audio': tr('leg_audio'),
-    'leg_prio_note': tr('leg_prio_note'),
+    'leg_prio_note': 'P1 Urgent · P2 À traiter · P3 À surveiller · Objectifs proratisés sur',
     'leg_jours_ouvres': 'j. ouvrés',
     'actifs_uniquement': tr('actifs_uniquement'),
     'obj_proratises': tr('obj_proratises'),
@@ -976,14 +968,14 @@ const TRANSLATIONS = {
     'trajectoire_positive': tr('trajectoire_positive'),
     'settings_title': 'Paramètres objectifs',
     'settings_animateur': 'Animateur réseau',
-    'settings_nom_label': tr('settings_nom_label'),
+    'settings_nom_label': 'Votre nom (affiché sur le rapport)',
     'settings_langue': 'Langue & Devise',
-    'settings_langue_label': tr('settings_langue_label'),
-    'settings_devise_label': tr('settings_devise_label'),
-    'settings_obj_ca': tr('settings_obj_ca'),
-    'settings_raf_seuil': tr('settings_raf_seuil'),
+    'settings_langue_label': 'Langue du rapport',
+    'settings_devise_label': 'Symbole devise',
+    'settings_obj_ca': 'Objectif CA collaborateur (en k)',
+    'settings_raf_seuil': 'Seuil alerte RAF/jour — auto si vide',
     'settings_max_prio': 'Nb max d\'actions prioritaires',
-    'settings_mode': tr('settings_mode'),
+    'settings_mode': 'Mode rapport',
     'settings_clair': 'Clair',
     'settings_sombre': 'Sombre',
     'settings_optique': 'Optique — objectifs',
@@ -993,7 +985,7 @@ const TRANSLATIONS = {
     'settings_nb_ventes': 'Nb ventes (base mois)',
     'settings_pm': 'Panier moyen (PM)',
     'settings_sop': tr('kpi_sop'),
-    'settings_tc': tr('col_tc'),
+    'settings_tc': '% TC',
     'settings_mdc': tr('kpi_mdc'),
     'settings_pack': '% Pack Confort',
     'settings_pmpc': 'PM Pack Confort',
@@ -1560,6 +1552,14 @@ function tr(key, vars) {
   return text;
 }
 
+window.onerror = function(msg, src, line, col, err) {
+    document.body.insertAdjacentHTML('afterbegin', 
+        '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:9999;font-size:12px">' +
+        'ERREUR JS: ' + msg + ' (ligne ' + line + ')' +
+        '</div>');
+    return false;
+};
+// ── Settings defaults ─────────────────────────────────────────────────────────
 const DEFAULTS = { lang:'fr', currency:'€',
   jours_ecoules:23, jours_mois:25,
   cols_opt: ['pm','tc','sop','mdc'],
@@ -2174,7 +2174,7 @@ function generateReport() {
     const joursRest    = Math.max(0, jourstotal - joursEcoules)
     const ratio        = joursEcoules / jourstotal
 
-    // ${tr('obj_proratises')}
+    // Objectifs proratisés
     const _s = loadSettings()
     const CURRENCY = _s.currency
     const OBJ = {
@@ -2326,7 +2326,7 @@ function generateReport() {
       nb: toNum(r['Nb Vente Opt']),
       pm: toNum(r['Panier Moyen']),
       sop: toNum(r['% Garantie']),
-      tc: toNum(r[tr('col_tc')]),
+      tc: toNum(r['% TC']),
       pack: toNum(r['% Pack Confort']),
       mdc: toNum(r['% Marque Excl. et Intemp.']),
       luk: toNum(r['% LUKKAS']),
@@ -2348,7 +2348,7 @@ function generateReport() {
                    : allOpt.reduce((s, r) => s + toNum(r['CA Généré Opt']), 0) / 1000
     const avgPm    = totalOptRow ? Math.round(toNum(totalOptRow['Panier Moyen']))
                    : (opts.length ? Math.round(opts.reduce((s, r) => s + r.pm, 0) / opts.length) : 0)
-    const avgTc    = totalOptRow ? toNum(totalOptRow[tr('col_tc')]).toFixed(0)
+    const avgTc    = totalOptRow ? toNum(totalOptRow['% TC']).toFixed(0)
                    : (opts.length ? (opts.reduce((s, r) => s + r.tc, 0) / opts.length).toFixed(0) : '0')
     const avgSop   = totalOptRow ? toNum(totalOptRow['% Garantie']).toFixed(0)
                    : (opts.length ? (opts.reduce((s, r) => s + r.sop, 0) / opts.length).toFixed(0) : '0')
@@ -2435,7 +2435,6 @@ function norm(s) {
 
 function buildReportHTML(d) {
   const nomMagasin = d.nomMagasin || 'Optical Center'
-  // Fonction tr() locale qui utilise d.lang
   function tr(key, vars) {
     const lang = d.lang || 'fr';
     const dict = TRANSLATIONS[lang] || TRANSLATIONS['fr'];
@@ -2522,7 +2521,7 @@ function buildReportHTML(d) {
   collabHeader += th(tr('col_nb'), isNetworkMode ? 'par effectif' : `obj. ${OBJ.nb}`)
   if (d.cols_opt.includes('pm'))   collabHeader += th('PM', `obj. ${OBJ.pm}${d.currency}`)
   if (d.cols_opt.includes('sop'))  collabHeader += th(tr('kpi_sop'), `obj. ${OBJ.sop}%`)
-  if (d.cols_opt.includes('tc'))   collabHeader += th(tr('col_tc'), `obj. ${OBJ.tc}%`)
+  if (d.cols_opt.includes('tc'))   collabHeader += th('% TC', `obj. ${OBJ.tc}%`)
   if (d.cols_opt.includes('pack')) collabHeader += th('% Pack C.', `obj. ${OBJ.pack}%`)
   if (d.cols_opt.includes('pmpc')) collabHeader += th('PM Pack', `obj. ${OBJ.pmpc}${d.currency}`)
   if (d.cols_opt.includes('pm1'))  collabHeader += th('PM 1ère paire', `obj. ${OBJ.pm1}${d.currency}`)
@@ -2546,7 +2545,7 @@ function buildReportHTML(d) {
   const nomsFusionnes = new Set()
 
   ;[...opts, ...anoms].forEach(r => {
-    // ${tr('obj_proratises')} par taux de travail
+    // Objectifs proratisés par taux de travail
     const oNb   = objPro(r.nom, OBJ.nb, false)
     const oProth = objPro(r.nom, OBJ.proth, true)
     if (r.anom) {
@@ -2677,7 +2676,7 @@ function buildReportHTML(d) {
 
   let objRows = ''
   opts.filter(r => d.isNetworkMode || !auds.find(a => a.nom === r.nom)).forEach(r => {
-    // ${tr('obj_proratises')} par taux de travail
+    // Objectifs proratisés par taux de travail
     const oNb   = objPro(r.nom, OBJ.nb, false)
     // Objectifs qualitatifs déjà atteints ?
     const ok_nb   = r.nb   >= oNb
@@ -3357,7 +3356,7 @@ function buildReportHTML(d) {
 <div class="header">
   <div>
     <div class="header-title">${d.isNetworkMode ? "Performance Réseau — " : "Performance — "}${nomMagasin}</div>
-    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} j. ouvrés / ${d.jourstotal} &nbsp;·&nbsp; ${tr('obj_proratises')} &nbsp;·&nbsp; ${isNetworkMode ? 'Magasins actifs' : tr('actifs_uniquement')}${d.animateur ? '  ·  ✍ '+d.animateur : '' }</div>
+    <div class="header-sub">${d.dateLabel} &nbsp;·&nbsp; ${d.joursEcoules} j. ouvrés / ${d.jourstotal} &nbsp;·&nbsp; Objectifs proratisés &nbsp;·&nbsp; ${isNetworkMode ? 'Magasins actifs' : tr('actifs_uniquement')}${d.animateur ? '  ·  ✍ '+d.animateur : '' }</div>
   </div>
   <span class="chip">${d.moisLabel.charAt(0).toUpperCase() + d.moisLabel.slice(1)}</span>
 </div>
@@ -3415,7 +3414,7 @@ function buildReportHTML(d) {
       <div class="leg-sep"></div>
       <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span>Colonnes audio</span></div>
       <div class="leg-sep"></div>
-      <div class="leg-note">P1 Urgent · P2 À traiter · P3 À surveiller &nbsp;·&nbsp; ${tr('obj_proratises')} sur ${d.joursEcoules}/${d.jourstotal} j. ouvrés</div>
+      <div class="leg-note">P1 Urgent · P2 À traiter · P3 À surveiller &nbsp;·&nbsp; Objectifs proratisés sur ${d.joursEcoules}/${d.jourstotal} j. ouvrés</div>
     </div>
   </div>
 </div>
@@ -3488,7 +3487,7 @@ ${podiumHTML ? `<div class="podium-section">
   <div class="leg-sep"></div>
   <div class="leg-item"><div class="leg-dot" style="background:#FFF2F2;border:0.5px solid #CC1719"></div><span style="color:#854F0B">Ventes à réaliser</span></div>
   <div class="leg-sep"></div>
-  <div class="leg-item" style="color:#5F5E5A;font-size:7px">${tr('leg_prio_note')}</div>
+  <div class="leg-item" style="color:#5F5E5A;font-size:7px">Le nombre de ventes total est une conséquence, non un objectif · MdC = 2 paires par vente · SOP = garantie incluse dans le PM · Objectifs de volume proratisés selon le temps de travail</div>
 </div>
 
 <div class="aud-section">
@@ -3611,7 +3610,7 @@ const audNoms=new Set(auds.map(a=>a.nom.toLowerCase().trim()));
 const optsOpt=opts.filter(r=>!audNoms.has(r.nom.toLowerCase().trim()));
 const prios=[];
 const felicitations=[];
-const jL=joursRest<=0?'dernier jour':joursRest===1?'dernier jour':joursRest+' '+tr('jours_restants');
+const jL=joursRest<=0?'dernier jour':joursRest===1?'dernier jour':joursRest+' jours restants';
 const urgence=joursRest<=5;
 const debut=joursRest>=18;
 const n=optsOpt.length||1;
@@ -3904,7 +3903,7 @@ checkFelicitation('Panier moyen', optsOpt.filter(r=>r.pm>0).map(r=>({nom:r.nom,v
   t=>''+prenom(t.nom)+' affiche un PM exceptionnel à '+Math.round(t.val)+"€. La montée en gamme fonctionne — partager la méthode avec l'équipe !",
   (moy,t)=>'PM magasin à '+moy+'€ pour un objectif de '+OBJ.pm+'€. '+prenom(t.nom)+' mène la danse à '+Math.round(t.val)+'€. Excellente performance collective !', '€');
 
-checkFelicitation(tr('col_tc'), optsOpt.map(r=>({nom:r.nom,val:r.tc})), OBJ.tc, '🎯',
+checkFelicitation('% TC', optsOpt.map(r=>({nom:r.nom,val:r.tc})), OBJ.tc, '🎯',
   t=>''+prenom(t.nom)+' concrétise à '+Math.round(t.val)+"%. Chaque essai devient une vente — c'est du grand art commercial !",
   (moy,t)=>"Taux de concrétisation magasin à "+moy+"% — au-dessus de l'objectif. "+prenom(t.nom)+" exemplaire à "+Math.round(t.val)+"%. Super travail d'équipe !");
 
