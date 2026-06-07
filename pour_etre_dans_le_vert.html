@@ -2693,9 +2693,9 @@ function buildReportHTML(d) {
         <td>${r.nom}</td>
         <td class="td-act" style="font-weight:600">${r.nb}</td>
         <td class="td-act">${Math.round(r.pm)}${d.currency}</td>
-        <td class="td-todo" colspan="5" style="text-align:center;color:#3B6D11;font-weight:600;font-size:8px;letter-spacing:.03em">🎉 &nbsp;Tous les objectifs sont atteints</td>
+        <td class="td-todo" colspan="5" style="text-align:center;color:#3B6D11;font-weight:600;font-size:8px;letter-spacing:.03em">🎉 &nbsp;${tr('tous_obj_atteints')}</td>
         <td class="td-res">–</td>
-        <td class="td-res"><span class="badge-ok">✓ Vert</span></td>
+        <td class="td-res"><span class="badge-ok">${tr("tous_obj_atteints").substring(0,4)}</span></td>
       </tr>`
       return
     }
@@ -2768,9 +2768,9 @@ function buildReportHTML(d) {
         + '<td class="atd-act">' + a.proth + '</td>'
         + '<td class="atd-act">' + (a.pm_aud > 0 ? Math.round(a.pm_aud)+d.currency : '–') + '</td>'
         + '<td class="atd-act">' + (a.pm_app > 0 ? Math.round(a.pm_app)+d.currency : '–') + '</td>'
-        + '<td class="atd-todo" colspan="4" style="text-align:center;font-style:italic;font-size:10px;color:#3B6D11">Tous les objectifs sont atteints 🎉</td>'
+        + '<td class="atd-todo" colspan="4" style="text-align:center;font-style:italic;font-size:10px;color:#3B6D11">'+tr('tous_obj_atteints')+'</td>'
         + '<td class="atd-res">–</td>'
-        + '<td class="atd-res"><span class="badge-aud-ok">✓ Vert</span></td>'
+        + '<td class="atd-res"><span class="badge-aud-ok">'+tr('tous_obj_atteints').substring(0,2)+'</span></td>'
         + '</tr>'
       return
     }
@@ -3348,8 +3348,8 @@ function buildReportHTML(d) {
 <body>
 
 <div id="print-bar">
-  <span>Rapport prêt</span>
-  <button onclick="window.print()">🖨 Imprimer / Enregistrer PDF</button>
+  <span>${tr('settings_animateur')||'Report ready'}</span>
+  <button onclick="window.print()">🖨 ${tr('btn_generate').includes('Generate') ? 'Print / Save PDF' : 'Imprimer / Enregistrer PDF'}</button>
 </div>
 
 <div id="wrapper">
@@ -3390,7 +3390,7 @@ function buildReportHTML(d) {
         <div style="font-size:7px;color:#5F5E5A;margin-top:2px">${auds.length} ${tr("kpi_proth_sub")||"audioprothésiste"}</div>
       </div>
       <div style="background:${d.rafTotal>d.rafSeuil?'#3D0A0A':d.joursRest>0&&d.rafTotal===0?'#0D2D0D':'#2C2C2A'};border-radius:7px;padding:5px 8px 6px;margin-top:5px;${d.rafTotal>d.rafSeuil?'border:1px solid #CC1719;animation:raf-pulse 1.5s ease-in-out infinite;':d.joursRest>0&&d.rafTotal===0?'border:1px solid #3B6D11;':''}">
-        <div style="font-size:7.5px;font-weight:500;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#888780'};margin-bottom:2px">RAF / jour global${d.rafTotal>d.rafSeuil?' 🚨':d.joursRest>0&&d.rafTotal===0?' 🎯':''}</div>
+        <div style="font-size:7.5px;font-weight:500;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#888780'};margin-bottom:2px">${tr('raf_jour')}${d.rafTotal>d.rafSeuil?' 🚨':d.joursRest>0&&d.rafTotal===0?' 🎯':''}</div>
         <div style="font-size:14px;font-weight:600;color:${d.rafTotal>d.rafSeuil?'#FF4444':d.joursRest>0&&d.rafTotal===0?'#7DC850':'#fff'};line-height:1">${d.rafTotal.toFixed(1)}k${d.currency}</div>
         <div style="font-size:7px;color:${d.rafTotal>d.rafSeuil?'#FF8888':d.joursRest>0&&d.rafTotal===0?'#8DC85A':'#5F5E5A'};margin-top:2px">magasin · ${d.joursRest} ${tr('jours_restants')}</div>
       </div>
@@ -3415,7 +3415,7 @@ function buildReportHTML(d) {
       <div class="leg-sep"></div>
       <div class="leg-item"><div class="leg-dot" style="background:#EBF4FF;border:0.5px solid #185FA5"></div><span>${tr("leg_audio")}</span></div>
       <div class="leg-sep"></div>
-      <div class="leg-note">${tr("p1_label")} · ${tr("p2_label")} · ${tr("p3_label")} &nbsp;·&nbsp; ${tr("obj_proratises")} sur ${d.joursEcoules}/${d.jourstotal} j. ouvrés</div>
+      <div class="leg-note">${tr("p1_label")} · ${tr("p2_label")} · ${tr("p3_label")} &nbsp;·&nbsp; ${tr("obj_proratises")} sur ${d.joursEcoules}/${d.jourstotal} ${tr('leg_jours_ouvres')}</div>
     </div>
   </div>
 </div>
@@ -3429,7 +3429,7 @@ ${podiumHTML ? `<div class="podium-section">
 <hr class="divider">` : ''}
 
 <div class="prio-section">
-  <div class="sec-label">Actions prioritaires — Générées automatiquement</div>
+  <div class="sec-label">${tr('actions_title').charAt(0)+tr('actions_title').slice(1).toLowerCase().replace('— g','— G')}</div>
   <div class="prio-grid" id="prio-grid-auto"></div>
 </div>
 
@@ -3662,8 +3662,8 @@ magasins.filter(m=>m.pos<85).sort((a,b)=>a.pos-b.pos).forEach(m=>{
   if (!prios.find(p=>p.titre.includes(cap(m.nom)))) {
     const raf = m.raf.toFixed(1);
     const detail = urgence
-      ? 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". "+tr('conseil_raf')
-      : 'RAF '+raf+'k'+CUR+'/jour sur '+jL+". "+tr('conseil_raf');
+      ? 'RAF '+raf+'k'+CUR+' '+tr('jours_restants')+' '+jL+". "+tr('conseil_raf')
+      : 'RAF '+raf+'k'+CUR+' '+tr('jours_restants')+' '+jL+". "+tr('conseil_raf');
     addPrio(1, cap(m.nom)+' — '+m.pos.toFixed(1)+'% '+tr('obj_proratises').toLowerCase()+'... ('+m.obj+'k'+CUR+')', detail);
   }
 });
@@ -3794,7 +3794,7 @@ function actionIndicateur(label, vals, objVal, pBase, conseilUrgent, conseilNorm
     const surplusCrit = candidats.length > 3 ? ' +'+(candidats.length-3) : '';
     const noms = candidats.slice(0,3).map(v=>prenom(v.nom)+' '+Math.round(v.val)+u).join(' — ');
     titre = label+' — '+nomsSeulsCrit+surplusCrit+' '+tr('p1_label').toLowerCase()+' (< '+Math.round(seuil70)+u+')';
-    detail = noms+'. Obj. '+objVal+u+' · Moy. magasin '+Math.round(moy)+u+'. '+(urgence?conseilUrgent:conseilNormal);
+    detail = noms+'. Obj. '+objVal+u+' · '+tr('kpi_pm_sub')+' '+Math.round(moy)+u+'. '+(urgence?conseilUrgent:conseilNormal);
   } else {
     const nomsSeuls = candidats.slice(0,3).map(v=>prenom(v.nom)).join(' et ');
     const surplus = candidats.length > 3 ? ' +'+( candidats.length-3) : '';
@@ -3825,9 +3825,9 @@ actionIndicateur('% LUKKAS', optsOpt.map(r=>({nom:r.nom,val:r.luk})), OBJ.luk, P
 const tcBad = optsOpt.filter(r => r.tc < OBJ.tc * 0.85 && r.tc > 0).sort((a,b) => a.tc - b.tc);
 if (tcBad.length > 0) {
   const detail = tcBad.length === 1
-    ? prenom(tcBad[0].nom)+' concrétise à '+tcBad[0].tc.toFixed(0)+'% (obj. '+OBJ.tc+'%). Analyser les freins à la décision et proposer un accompagnement sur les essais en cours.'
-    : tcBad.map(r => prenom(r.nom)+' '+r.tc.toFixed(0)+'%').join(' — ')+'. Obj. '+OBJ.tc+'%. Travailler les techniques de concrétisation et le suivi des essais.';
-  addPrio(PRIO.tc, '% TC — '+tcBad.length+' '+COLLAB_LABEL+(tcBad.length>1?'s':'')+' sous '+(OBJ.tc*0.85).toFixed(0)+'%', detail, tcBad[0].tc);
+    ? prenom(tcBad[0].nom)+' '+tcBad[0].tc.toFixed(0)+'% (obj. '+OBJ.tc+'%). '+tr('conseil_proth')
+    : tcBad.map(r => prenom(r.nom)+' '+r.tc.toFixed(0)+'%').join(' — ')+'. Obj. '+OBJ.tc+'%. '+tr('conseil_proth');
+  addPrio(PRIO.tc, '% TC — '+tcBad.length+' '+COLLAB_LABEL+(tcBad.length>1?'s':'')+' — avg '+(OBJ.tc*0.85).toFixed(0)+'%', detail, tcBad[0].tc);
 }
 
 // Double levier SOP + PM : si même vendeur sous les deux → une seule carte croisée
