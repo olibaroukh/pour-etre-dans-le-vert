@@ -2421,7 +2421,7 @@ function generateReport() {
       ? new Date(parseInt(lastDateParts[2]), parseInt(lastDateParts[1])-1, parseInt(lastDateParts[0]))
       : new Date()
     const langLocale = {fr:'fr-FR', en:'en-GB', es:'es-ES', he:'he-IL'}
-    const locale = langLocale[settings.lang] || 'fr-FR'
+    const locale = langLocale[_s.lang] || 'fr-FR'
     const moisLabel = extractDateObj.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
     const dateLabel = extractDate
 
