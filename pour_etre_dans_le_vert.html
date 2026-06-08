@@ -3273,7 +3273,7 @@ function buildReportHTML(d) {
   }
   .aud-section-title::before { content:'🦻'; font-size:18px; }
   .aud-section-title::after  { content:''; flex:1; height:1px; background:linear-gradient(90deg,#185FA540,transparent); }
-  #obj-table { width:668px; border-collapse:collapse; font-size:11px; table-layout:fixed; font-family:'Inter',-apple-system,sans-serif; }
+  #obj-table { width:1086px; border-collapse:collapse; font-size:11px; table-layout:fixed; font-family:'Inter',-apple-system,sans-serif; }
   #obj-table .grp-act  { background:#1C1C1A; color:#888780; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; border-right:2px solid #CC1719; }
   #obj-table .grp-todo { background:#CC1719;  color:#fff;    font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; border-right:2px solid #2C2C2A; }
   #obj-table .grp-res  { background:#2C2C2A;  color:#888780; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; }
@@ -3305,7 +3305,7 @@ function buildReportHTML(d) {
   .p2-sub   { color:#6B6966; font-size:9px; margin-left:2px; }
   .badge-ok   { display:inline-block; background:#EAF3DE; color:#3B6D11; border:0.5px solid #3B6D11; padding:3px 9px; border-radius:3px; font-size:10px; font-weight:700; }
   .badge-todo { display:inline-block; background:#1C1C1A; color:#D3D1C7; padding:3px 9px; border-radius:3px; font-size:10px; font-weight:600; }
-  #aud-table { width:668px; border-collapse:collapse; font-size:11px; table-layout:fixed; font-family:'Inter',-apple-system,sans-serif; }
+  #aud-table { width:1086px; border-collapse:collapse; font-size:11px; table-layout:fixed; font-family:'Inter',-apple-system,sans-serif; }
   #aud-table .agrp-act  { background:#0D3B6E; color:#A8C8E8; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; border-right:2px solid #185FA5; }
   #aud-table .agrp-todo { background:#185FA5; color:#fff;    font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; border-right:2px solid #0D3B6E; }
   #aud-table .agrp-res  { background:#0D3B6E; color:#A8C8E8; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; }
@@ -3345,7 +3345,7 @@ function buildReportHTML(d) {
   }
   .green-section-title::before { content:'🎯'; font-size:18px; }
   .green-section-title::after  { content:''; flex:1; height:1px; background:linear-gradient(90deg,#3B6D1140,transparent); }
-  #green-table { width:668px; border-collapse:collapse; font-size:11px; table-layout:fixed; font-family:'Inter',-apple-system,sans-serif; }
+  #green-table { width:1086px; border-collapse:collapse; font-size:11px; table-layout:fixed; font-family:'Inter',-apple-system,sans-serif; }
   #green-table .ggrp-act  { background:#1C3A0E; color:#A8D88A; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; border-right:2px solid #3B6D11; }
   #green-table .ggrp-obj  { background:#3B6D11; color:#fff;    font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; border-right:2px solid #1C3A0E; }
   #green-table .ggrp-res  { background:#1C3A0E; color:#A8D88A; font-size:9px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:5px 5px; }
@@ -3500,16 +3500,16 @@ ${podiumHTML ? `<div class="podium-section">
 <div class="opt-section-title">${tr('opt_section').charAt(0)+tr('opt_section').slice(1).toLowerCase().replace('que faire','Que faire')}</div>
 <table id="obj-table" style="margin-top:12px">
   <colgroup>
-    <col style="width:130px"> <!-- Nom -->
-    <col style="width:52px">  <!-- Ventes réalisées -->
-    <col style="width:52px">  <!-- PM actuel -->
-    <col style="width:52px">  <!-- Nb ventes à ajouter -->
-    <col style="width:68px">  <!-- Dont SOP -->
-    <col style="width:68px">  <!-- Dont Pack -->
-    <col style="width:54px">  <!-- PM Pack Confort -->
-    <col style="width:78px">  <!-- Paires MdC -->
-    <col style="width:68px">  <!-- PM cible -->
-    <col style="width:46px">  <!-- Total ventes -->
+    <col style="width:211px"> <!-- Nom -->
+    <col style="width:85px">  <!-- Ventes réalisées -->
+    <col style="width:85px">  <!-- PM actuel -->
+    <col style="width:85px">  <!-- Nb ventes à ajouter -->
+    <col style="width:111px"> <!-- Dont SOP -->
+    <col style="width:111px"> <!-- Dont Pack -->
+    <col style="width:88px">  <!-- PM Pack Confort -->
+    <col style="width:127px"> <!-- Paires MdC -->
+    <col style="width:111px"> <!-- PM cible -->
+    <col style="width:72px">  <!-- Total ventes -->
   </colgroup>
     <col style="width:56px">  <!-- Total ventes -->
   </colgroup>
@@ -3547,15 +3547,15 @@ ${podiumHTML ? `<div class="podium-section">
   <div class="aud-section-title">${tr('aud_section').charAt(0)+tr('aud_section').slice(1).toLowerCase().replace('que faire','Que faire')}</div>
   <table id="aud-table">
     <colgroup>
-      <col style="width:142px">
-      <col style="width:54px">
-      <col style="width:62px">
-      <col style="width:62px">
-      <col style="width:68px">
-      <col style="width:68px">
-      <col style="width:62px">
-      <col style="width:72px">
-      <col style="width:78px">
+      <col style="width:231px">
+      <col style="width:88px">
+      <col style="width:101px">
+      <col style="width:101px">
+      <col style="width:111px">
+      <col style="width:111px">
+      <col style="width:101px">
+      <col style="width:117px">
+      <col style="width:125px">
     </colgroup>
     <thead>
       <tr>
@@ -3590,13 +3590,13 @@ ${podiumHTML ? `<div class="podium-section">
   <div class="green-section-title">${tr('proj_section')}</div>
   <table id="green-table">
     <colgroup>
-      <col style="width:146px">
-      <col style="width:81px">
-      <col style="width:60px">
-      <col style="width:60px">
-      <col style="width:68px">
-      <col style="width:68px">
-      <col style="width:185px">
+      <col style="width:237px">
+      <col style="width:132px">
+      <col style="width:98px">
+      <col style="width:98px">
+      <col style="width:111px">
+      <col style="width:111px">
+      <col style="width:299px">
     </colgroup>
     <thead>
       <tr>
