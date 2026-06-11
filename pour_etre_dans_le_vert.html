@@ -2618,15 +2618,14 @@ function buildReportHTML(d) {
         const joursEc = d.joursEcoules || 0;
         const joursTot = d.jourstotal || 22;
         const caManquant = objMois - caAct;
-        if (caManquant <= 0) return '<td style="background:#F2F8F0;text-align:center;font-size:11px">✅</td>';
         const joursRestants = joursTot - joursEc;
-        const pmRef = r.pm > OBJ.pm ? r.pm : OBJ.pm;
-        const rafJour = joursRestants > 0 ? caManquant / joursRestants / 1000 : 0;
+        const rafJour = caManquant <= 0 ? 0 : (joursRestants > 0 ? caManquant / joursRestants / 1000 : 0);
         const objPro = objMois * (joursEc / joursTot);
         const pct = caAct / (objPro || 1) * 100;
-        const bg = pct >= 85 ? '#FFF8E8' : pct >= 70 ? '#FFF0D0' : '#FFEEEE';
-        const col = pct >= 85 ? '#8C6A00' : pct >= 70 ? '#8C4A00' : '#CC1719';
-        return '<td style="background:'+bg+';color:'+col+';font-weight:600;text-align:center;font-size:8px">'+rafJour.toFixed(1)+'k</td>';
+        const bg  = pct >= 100 ? '#F2F8F0' : pct >= 85 ? '#FFF8E8' : pct >= 70 ? '#FFF0D0' : '#FFEEEE';
+        const col = pct >= 100 ? '#2A7A1A' : pct >= 85 ? '#8C6A00' : pct >= 70 ? '#8C4A00' : '#CC1719';
+        const label = rafJour === 0 ? '0' : rafJour.toFixed(1)+'k';
+        return '<td style="background:'+bg+';color:'+col+';font-weight:600;text-align:center;font-size:8px">'+label+'</td>';
       })()}
       <td>${pill(r.nb, oNb)}</td>
       ${d.cols_opt.includes('pm') ? `<td>${pill(r.pm, OBJ.pm, d.currency)}</td>` : ''}
