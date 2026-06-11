@@ -2193,7 +2193,7 @@ function parseObjIndiv() {
   const lines = raw.split('\n').filter(l => l.trim());
   let headerIdx = lines.findIndex(l => l.includes('Nom Vendeur'));
   if (headerIdx === -1) headerIdx = 2;
-  const dataLines = lines.slice(headerIdx + 2);
+  const dataLines = lines.slice(headerIdx + 1);
   dataLines.forEach(l => {
     const parts = l.split(';');
     if (parts.length < 6) return;
@@ -3397,7 +3397,7 @@ function buildReportHTML(d) {
 <body>
 
 <div id="print-bar">
-  <span>${tr('settings_animateur')||'Report ready'}</span>
+  <span>${d.animateur ? '✍ '+d.animateur : tr('rapport_pret')||'Rapport prêt'}</span>
   <button onclick="window.print()">🖨 ${tr('btn_generate').includes('Generate') ? 'Print / Save PDF' : 'Imprimer / Enregistrer PDF'}</button>
 </div>
 
