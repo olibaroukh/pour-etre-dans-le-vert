@@ -863,6 +863,7 @@ var TRANSLATIONS = {
     'ca_audio': 'CA Audio',
     'raf_jour': 'RAF / jour global',
     'jours_restants': 'j. restants',
+    'avg_short': 'moy.',
     'dernier_jour': 'dernier jour',
     'col_collaborateur': 'Collaborateur',
     'col_tps_trav': 'Tps trav.',
@@ -1053,6 +1054,7 @@ var TRANSLATIONS = {
     'ca_audio': 'Audio revenue',
     'raf_jour': 'Daily target remaining',
     'jours_restants': 'days remaining',
+    'avg_short': 'avg.',
     'dernier_jour': 'last day',
     'col_collaborateur': 'Staff member',
     'col_tps_trav': 'Work time',
@@ -1243,6 +1245,7 @@ var TRANSLATIONS = {
     'ca_audio': 'Facturación audio',
     'raf_jour': 'RAF / día global',
     'jours_restants': 'días restantes',
+    'avg_short': 'med.',
     'dernier_jour': 'último día',
     'col_collaborateur': 'Colaborador',
     'col_tps_trav': 'T. trabajo',
@@ -1433,6 +1436,7 @@ var TRANSLATIONS = {
     'ca_audio': 'מחזור שמע',
     'raf_jour': 'יעד יומי נותר',
     'jours_restants': 'ימים נותרו',
+    'avg_short': 'ממוצע',
     'dernier_jour': 'יום אחרון',
     'col_collaborateur': 'עובד',
     'col_tps_trav': 'זמן עבודה',
@@ -3849,7 +3853,7 @@ function actionIndicateur(label, vals, objVal, pBase, conseilUrgent, conseilNorm
   } else {
     const nomsSeuls = candidats.slice(0,3).map(v=>prenom(v.nom)).join(' et ');
     const surplus = candidats.length > 3 ? ' +'+( candidats.length-3) : '';
-    titre = label+' — '+nomsSeuls+surplus+' — avg '+Math.round(moy)+u;
+    titre = label+' — '+nomsSeuls+surplus+' — '+tr('avg_short')+' '+Math.round(moy)+u;
     const noms = candidats.slice(0,3).map(v=>prenom(v.nom)+' '+Math.round(v.val)+u).join(' — ');
     detail = noms+'. Obj. '+objVal+u+' · Moy. '+Math.round(moy)+u+'. '+(urgence?conseilUrgent:conseilNormal);
   }
@@ -3878,7 +3882,7 @@ if (tcBad.length > 0) {
   const detail = tcBad.length === 1
     ? prenom(tcBad[0].nom)+' '+tcBad[0].tc.toFixed(0)+'% (obj. '+OBJ.tc+'%). '+tr('conseil_proth')
     : tcBad.map(r => prenom(r.nom)+' '+r.tc.toFixed(0)+'%').join(' — ')+'. Obj. '+OBJ.tc+'%. '+tr('conseil_proth');
-  addPrio(PRIO.tc, '% TC — '+tcBad.length+' '+COLLAB_LABEL+(tcBad.length>1?'s':'')+' — avg '+(OBJ.tc*0.85).toFixed(0)+'%', detail, tcBad[0].tc);
+  addPrio(PRIO.tc, '% TC — '+tcBad.length+' '+COLLAB_LABEL+(tcBad.length>1?'s':'')+' — '+tr('avg_short')+' '+(OBJ.tc*0.85).toFixed(0)+'%', detail, tcBad[0].tc);
 }
 
 // Double levier SOP + PM : si même vendeur sous les deux → une seule carte croisée
@@ -3962,7 +3966,7 @@ checkFelicitation('% TC', optsOpt.map(r=>({nom:r.nom,val:r.tc})), OBJ.tc, '🎯'
 
 checkFelicitation(tr('kpi_mdc'), optsOpt.map(r=>({nom:r.nom,val:r.mdc})), OBJ.mdc, '⭐',
   t=>''+prenom(t.nom)+' à '+Math.round(t.val)+'% de MdC — excellente valorisation des marques exclusives et intemporelles.',
-  (moy,t)=>"L'équipe maîtrise parfaitement la mise en avant des marques exclusives — avg. à "+moy+'%. '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%.');
+  (moy,t)=>"L'équipe maîtrise parfaitement la mise en avant des marques exclusives — moy. à "+moy+'%. '+prenom(t.nom)+' en tête à '+Math.round(t.val)+'%.');
 
 checkFelicitation('Positionnement', magasins.map(m=>({nom:m.nom,val:m.pos})), 100, '🚀',
   t=>''+cap(t.nom)+' dépasse son objectif à '+Math.round(t.val)+'% — objectif atteint, garder le rythme !',
