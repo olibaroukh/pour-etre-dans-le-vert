@@ -1904,7 +1904,28 @@ function checkReady() {
   if (allLoaded) {
     setStatus('5 fichiers chargés — cliquez pour configurer et générer', 'ok')
     autoDetectJours()
+    autoDetectMagasin()
   }
+}
+
+function autoDetectMagasin() {
+  try {
+    const posRows = parseCSV(state.raw['pos'] || '')
+    const noms = [...new Set(
+      posRows
+        .filter(r => r['Libelle Magasin'] && String(r['Libelle Magasin']).trim() !== '' && !String(r['Libelle Magasin']).includes('TOTAL'))
+        .map(r => cap(String(r['Libelle Magasin']).trim()))
+    )]
+    const champ = document.getElementById('nom-magasin')
+    if (noms.length === 1) {
+      // Un seul magasin détecté dans le CSV : on préremplit (l'utilisateur garde la main pour corriger)
+      champ.value = noms[0]
+      champ.placeholder = 'Détecté automatiquement — modifiable'
+    } else if (noms.length > 1) {
+      // Plusieurs magasins (mode réseau) : on laisse le champ en saisie libre, pas d'auto-remplissage fiable
+      champ.placeholder = `${noms.length} magasins détectés — saisie libre (ex : Réseau Sud Paris)`
+    }
+  } catch(e) { console.warn('autoDetectMagasin échouée:', e) }
 }
 
 function autoDetectJours() {
