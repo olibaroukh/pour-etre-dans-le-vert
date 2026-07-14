@@ -1769,6 +1769,8 @@ const FILE_TYPES = {
 }
 
 const state = { files: {}, raw: {} }
+const RELAY = 'https://zimbra-relay.oli-baroukh.workers.dev'
+const STORE_TOKEN = 'OC-bilan-store-2026'
 
 // ── Drag & Drop ───────────────────────────────────────────────────────────────
 const dz = document.getElementById('dropzone')
@@ -2467,8 +2469,42 @@ function generateReport() {
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
     const url  = URL.createObjectURL(blob)
-    window.open(url, '_blank')
+    const reportWin = window.open(url, '_blank')
     setStatus('Rapport ouvert dans un nouvel onglet — Ctrl+P pour imprimer en PDF', 'ok')
+
+    // Envoi automatique vers la base centrale (vignettes + cartes d'action déjà
+    // calculées par le rapport) — jamais bloquant, jamais visible pour l'utilisateur.
+    // Uniquement en mode magasin unique (le mode réseau agrège plusieurs magasins,
+    // pas pertinent pour une ligne store_stats).
+    if (!isNetworkMode && reportWin) {
+      const statsPayload = {
+        magasin: nomMagasin,
+        periode: moisLabel,
+        dateExtraction: dateLabel,
+        caTotal: totCa, caOpt: totCaOpt, caAudio: totCaAud,
+        panierMoyen: avgPm, tauxTc: Number(avgTc), tauxSop: Number(avgSop), tauxMdc: Number(avgMdc),
+        prothesesVendues: totProth, tauxEssai: Number(avgTxe),
+        objectif: objTotal, raf: rafTotal,
+      }
+      let tries = 0
+      const tryCapture = () => {
+        tries++
+        let cards = []
+        try { cards = reportWin.document.querySelectorAll('.pcard') } catch(e) { cards = [] }
+        if (!cards.length && tries < 40) { setTimeout(tryCapture, 150); return }
+        statsPayload.prios = Array.from(cards).map(c => ({
+          priorite: (c.querySelector('.pcard-badge')?.textContent || '').trim(),
+          titre: (c.querySelector('.pcard-title')?.textContent || '').trim(),
+          detail: (c.querySelector('.pcard-detail')?.textContent || '').trim(),
+        }))
+        fetch(RELAY + '/store-stats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Store-Token': STORE_TOKEN },
+          body: JSON.stringify(statsPayload)
+        }).catch(e => console.warn('store-stats échouée:', e))
+      }
+      setTimeout(tryCapture, 150)
+    }
 
   } catch(e) {
     setStatus('Erreur : ' + e.message, 'err')
