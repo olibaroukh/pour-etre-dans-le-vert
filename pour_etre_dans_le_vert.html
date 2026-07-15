@@ -2833,11 +2833,11 @@ function buildReportHTML(d) {
     const fmtV    = vTotal === 0
       ? `<span class="p2-check">✓</span>`
       : `<span class="p2-pill ${clV}">${vTotal}</span>`
-    const fmtSop  = ok_sop  ? `<span class="p2-check">✓</span>`
+    const fmtSop  = sopNew === 0  ? `<span class="p2-check">✓</span>`
       : `<span class="p2-pill p2-pill-todo">${sopNew}</span><span class="p2-sub">${vTotal>0?' ('+Math.round(sopNew/vTotal*100)+'%)':''}</span>`
-    const fmtPack = ok_pack ? `<span class="p2-check">✓</span>`
+    const fmtPack = packNew === 0 ? `<span class="p2-check">✓</span>`
       : `<span class="p2-pill p2-pill-todo">${packNew}</span><span class="p2-sub">${vTotal>0?' ('+Math.round(packNew/vTotal*100)+'%)':''}</span>`
-    const fmtMdc  = ok_mdc  ? `<span class="p2-check">✓</span>`
+    const fmtMdc  = mdcNew === 0  ? `<span class="p2-check">✓</span>`
       : `<span class="p2-pill p2-pill-todo">${pairesNew}</span><span class="p2-sub"> p. ${vTotal>0?'('+Math.round(mdcNew/vTotal*100)+'%)':''}</span>`
     const clPmpc = pmpcNew > OBJ.pmpc*1.3 ? 'p2-pill-crit' : pmpcNew > OBJ.pmpc ? 'p2-pill-warn' : 'p2-pill-ok'
     const fmtPmpc = ok_pmpc
