@@ -2436,6 +2436,10 @@ function generateReport() {
                    : (opts.length ? (opts.reduce((s, r) => s + r.sop, 0) / opts.length).toFixed(0) : '0')
     const avgMdc   = totalOptRow ? toNum(totalOptRow['% Marque Excl. et Intemp.']).toFixed(0)
                    : (opts.length ? (opts.reduce((s, r) => s + r.mdc, 0) / opts.length).toFixed(0) : '0')
+    const avgPack  = totalOptRow ? toNum(totalOptRow['% Pack Confort']).toFixed(0)
+                   : (opts.length ? (opts.reduce((s, r) => s + r.pack, 0) / opts.length).toFixed(0) : '0')
+    const avgPmpc  = totalOptRow ? Math.round(toNum(totalOptRow['PM Pack Confort']))
+                   : (opts.length ? Math.round(opts.reduce((s, r) => s + r.pmpc, 0) / opts.length) : 0)
 
     // stats_audio TOTAL
     const totalAudRow = audRows.find(r => String(r['Matricule Vendeur'] || '').includes('TOTAL'))
@@ -2504,6 +2508,30 @@ function generateReport() {
     // Uniquement en mode magasin unique (le mode réseau agrège plusieurs magasins,
     // pas pertinent pour une ligne store_stats).
     if (!isNetworkMode && reportWin) {
+      // Statut vert/orange/rouge calculé ici, avec les seuils réellement configurés
+      // au moment du calcul (mêmes seuils que les vignettes/cartes prio affichées à
+      // l'écran) — jamais recalculé côté Worker, pour ne pas risquer une divergence.
+      // Reprend le même barème que la légende du tableau collaborateurs :
+      // vert >= 100% obj., orange 70-99%, rouge < 70%.
+      const statusFor = (val, obj) => {
+        if (obj === undefined || obj === null || !obj || val === undefined || val === null || isNaN(val)) return null
+        const ratio = val / obj
+        if (ratio >= 1) return 'vert'
+        if (ratio >= 0.7) return 'orange'
+        return 'rouge'
+      }
+      const taVal = taTot !== null ? taTot : null
+      const tvaVal = tvaTot !== null ? tvaTot : null
+      const indicateurs = {
+        pm:   { valeur: avgPm,          objectif: OBJ.pm,   statut: statusFor(avgPm, OBJ.pm),                 categorie: 'optique' },
+        tc:   { valeur: Number(avgTc),  objectif: OBJ.tc,   statut: statusFor(Number(avgTc), OBJ.tc),         categorie: 'optique' },
+        sop:  { valeur: Number(avgSop), objectif: OBJ.sop,  statut: statusFor(Number(avgSop), OBJ.sop),       categorie: 'optique' },
+        mdc:  { valeur: Number(avgMdc), objectif: OBJ.mdc,  statut: statusFor(Number(avgMdc), OBJ.mdc),       categorie: 'optique' },
+        pack: { valeur: Number(avgPack),objectif: OBJ.pack, statut: statusFor(Number(avgPack), OBJ.pack),     categorie: 'optique' },
+        pmpc: { valeur: avgPmpc,        objectif: OBJ.pmpc, statut: statusFor(avgPmpc, OBJ.pmpc),             categorie: 'optique' },
+        ta:   { valeur: taVal,          objectif: OBJ.ta,   statut: statusFor(taVal, OBJ.ta),                 categorie: 'audio' },
+        tva:  { valeur: tvaVal,         objectif: OBJ.tva,  statut: statusFor(tvaVal, OBJ.tva),               categorie: 'audio' },
+      }
       const statsPayload = {
         magasin: nomMagasin,
         periode: moisLabel,
@@ -2512,6 +2540,9 @@ function generateReport() {
         panierMoyen: avgPm, tauxTc: Number(avgTc), tauxSop: Number(avgSop), tauxMdc: Number(avgMdc),
         prothesesVendues: totProth, tauxEssai: Number(avgTxe),
         objectif: objTotal, raf: rafTotal,
+        tauxTestAuditif: taVal, tauxVenteAddAudio: tvaVal,
+        tauxPackConfort: Number(avgPack), pmPackConfort: avgPmpc,
+        indicateurs,
       }
       let tries = 0
       const tryCapture = () => {
@@ -2550,7 +2581,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.07.18-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.08.04-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
