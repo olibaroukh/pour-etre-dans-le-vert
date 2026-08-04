@@ -1,10 +1,9 @@
 // Service Worker minimal — sert uniquement à permettre au navigateur de détecter
-// une nouvelle version du fichier pour_etre_dans_le_vert.html et à proposer un
-// rechargement propre. Ne met rien en cache pour offline (volontairement) afin
-// de toujours servir la dernière version disponible sur le réseau.
-// (Même principe que sw.js sur bilan-passage / observations-terrain.)
+// une nouvelle version du fichier index.html et à proposer un rechargement propre.
+// Ne met rien en cache pour offline (volontairement) afin de toujours servir
+// la dernière version disponible sur le réseau.
 
-const SW_VERSION = '2026.07.18-1';
+const SW_VERSION = '2026.08.04-1';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
