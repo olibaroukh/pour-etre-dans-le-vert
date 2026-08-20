@@ -597,6 +597,7 @@
           <div class="effectif-col"><div class="effectif-label">🦻 Audioproth.</div></div>
         </div>
       </div>
+      <div id="effectif-rh-hint" style="font-size:10px;color:#888780;margin:-4px 0 10px"></div>
       <div style="margin-bottom:12px">
         <label style="font-size:11px;color:#888780;display:block;margin-bottom:5px">📝 Note contextuelle (optionnel)</label>
         <textarea id="rapport-note-reseau" placeholder="Ex: Réunion réseau le 15/05, objectif commun semaine 21..." style="width:100%;background:#2C2C2A;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#D3D1C7;font-size:11px;padding:8px 10px;resize:vertical;min-height:48px;font-family:inherit;box-sizing:border-box"></textarea>
@@ -2047,6 +2048,54 @@ function showEffectifsPanel() {
   if (noteReseauEl) noteReseauEl.value = savedNoteReseau
   document.getElementById('btn-generate').style.display = 'none'
   document.getElementById('effectif-panel').style.display = 'block'
+  applyRhEffectifPrefillPedlv(magasins)
+}
+
+// Pré-remplissage effectif depuis l'import RH mensuel (phase 3, 20/08). Le
+// "Code Magasin" de cet export vient de la caisse, pas de magasins.csv — donc
+// la résolution se fait par nom côté Worker (même logique normalizeName() +
+// table d'alias déjà utilisée et validée pour store_stats, jamais dupliquée
+// ici). Jamais un champ verrouillé : on n'écrase que la valeur par défaut
+// (localStorage ou 1/0), pas une correction déjà saisie par l'utilisateur.
+async function applyRhEffectifPrefillPedlv(magasins) {
+  if (!magasins.length) return
+  const hintEl = document.getElementById('effectif-rh-hint')
+  try {
+    const r = await fetch(RELAY + '/rh-effectif?noms=' + encodeURIComponent(magasins.join(',')), {
+      headers: { 'X-Store-Token': STORE_TOKEN }
+    })
+    if (!r.ok) return
+    const data = await r.json()
+    if (!data || !data.magasins) return
+    const saved = JSON.parse(localStorage.getItem('oc_effectifs') || '{}')
+    let nbMagasins = 0
+    magasins.forEach(mag => {
+      const rh = data.magasins[mag]
+      if (!rh) return
+      const savedMag = saved[mag] || {}
+      const optDefault = savedMag.opt !== undefined ? savedMag.opt : 1
+      const audDefault = savedMag.aud !== undefined ? savedMag.aud : 0
+      const optEl = document.querySelector('#effectif-grid .effectif-input[data-mag="' + CSS.escape(mag) + '"][data-type="opt"]')
+      const audEl = document.querySelector('#effectif-grid .effectif-input[data-mag="' + CSS.escape(mag) + '"][data-type="aud"]')
+      let touched = false
+      if (optEl && rh.eff_opt !== undefined && parseFloat(optEl.value) === optDefault) { optEl.value = rh.eff_opt; touched = true }
+      if (audEl && rh.eff_audio !== undefined && parseFloat(audEl.value) === audDefault) { audEl.value = rh.eff_audio; touched = true }
+      if (touched) nbMagasins++
+    })
+    if (hintEl) {
+      const moisLabels = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']
+      let moisLabel = ''
+      if (data.mois) {
+        const [y, m] = data.mois.split('-')
+        moisLabel = moisLabels[parseInt(m, 10) - 1] + ' ' + y
+      }
+      hintEl.textContent = nbMagasins
+        ? ('Effectifs pré-remplis depuis l\'import RH de ' + moisLabel + ' pour ' + nbMagasins + ' magasin' + (nbMagasins > 1 ? 's' : '') + ' reconnus — modifiables ci-dessus.')
+        : ''
+    }
+  } catch (e) {
+    // Pré-remplissage optionnel, silencieux en cas d'échec réseau.
+  }
 }
 
 function getEffectifsMap() {
@@ -2581,7 +2630,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.08.04-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.08.20-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
