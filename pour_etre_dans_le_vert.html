@@ -622,14 +622,6 @@
       </button>
     </div>
 
-    <!-- EFFECTIFS RÉSEAU -->
-    <div id="effectif-panel" style="display:none;margin-top:16px;background:#1C1C1A;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px">
-      <h3 style="font-size:13px;font-weight:600;color:#D3D1C7;margin-bottom:4px">👥 Effectifs par magasin</h3>
-      <p style="font-size:11px;color:#5F5E5A;margin-bottom:12px">Renseignez le nombre d'opticiens 🕶 et d'audioprothésistes 🦻 par magasin. Les objectifs de volume seront multipliés par ces effectifs.</p>
-      <div class="effectif-grid" id="effectif-grid"></div>
-      <button class="btn-generate" onclick="generateReport()" style="margin-top:0">Générer le rapport</button>
-    </div>
-
     <!-- GENERATE -->
     <button class="btn-generate" id="btn-generate" disabled="" onclick="showTauxOrGenerate()">
       Configurer &amp; Générer →
@@ -2671,7 +2663,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.08.21-2'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.08.21-3'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
