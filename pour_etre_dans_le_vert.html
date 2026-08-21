@@ -564,7 +564,8 @@
 
       <div class="config-field">
         <label>Nom du magasin ou groupe</label>
-        <input type="text" id="nom-magasin" placeholder="ex : Réseau Sud Paris" value="">
+        <input type="text" id="nom-magasin" placeholder="ex : Réseau Sud Paris" value="" oninput="onNomMagasinInput()">
+        <div id="code-magasin-hint" style="font-size:10px;color:#888780;margin-top:4px"></div>
       </div>
 
       <div class="config-row">
@@ -1918,21 +1919,54 @@ function checkReady() {
 function autoDetectMagasin() {
   try {
     const posRows = parseCSV(state.raw['pos'] || '')
-    const noms = [...new Set(
+    // NB : sur l'export "Positionnement mensuel", la colonne "Nom Magasin" contient en réalité
+    // le CODE magasin (numérique), et le nom lisible est dans "Libelle Magasin". Intitulé
+    // trompeur mais confirmé par Olivier le 21/08 — ne pas "corriger" sans revérifier le fichier.
+    const paires = [...new Map(
       posRows
         .filter(r => r['Libelle Magasin'] && String(r['Libelle Magasin']).trim() !== '' && !String(r['Libelle Magasin']).includes('TOTAL'))
-        .map(r => cap(String(r['Libelle Magasin']).trim()))
+        .map(r => [cap(String(r['Libelle Magasin']).trim()), String(r['Nom Magasin'] || '').trim()])
     )]
+    const noms = paires.map(([nom]) => nom)
     const champ = document.getElementById('nom-magasin')
     if (noms.length === 1) {
       // Un seul magasin détecté dans le CSV : on préremplit (l'utilisateur garde la main pour corriger)
       champ.value = noms[0]
       champ.placeholder = 'Détecté automatiquement — modifiable'
+      state.codeMagasinDetecte = paires[0][1] || ''
+      state.codeMagasinNomDetecte = noms[0]
     } else if (noms.length > 1) {
       // Plusieurs magasins (mode réseau) : on laisse le champ en saisie libre, pas d'auto-remplissage fiable
       champ.placeholder = `${noms.length} magasins détectés — saisie libre (ex : Réseau Sud Paris)`
+      state.codeMagasinDetecte = ''
+      state.codeMagasinNomDetecte = ''
+    } else {
+      state.codeMagasinDetecte = ''
+      state.codeMagasinNomDetecte = ''
     }
+    updateCodeMagasinHint()
   } catch(e) { console.warn('autoDetectMagasin échouée:', e) }
+}
+
+// Le code magasin détecté n'est fiable que tant que le nom du champ correspond
+// exactement à ce qui a été lu dans le CSV — si l'utilisateur corrige le nom
+// (ex : "la MELO" non reconnu), on ne veut pas envoyer un code devenu faux.
+function onNomMagasinInput() { updateCodeMagasinHint() }
+
+function updateCodeMagasinHint() {
+  const hintEl = document.getElementById('code-magasin-hint')
+  if (!hintEl) return
+  const champ = document.getElementById('nom-magasin')
+  const valeurActuelle = (champ.value || '').trim()
+  if (state.codeMagasinDetecte && valeurActuelle === state.codeMagasinNomDetecte) {
+    hintEl.textContent = `Code magasin détecté : ${state.codeMagasinDetecte}`
+    hintEl.style.color = '#888780'
+  } else if (state.codeMagasinDetecte) {
+    hintEl.textContent = 'Code magasin non transmis — le nom a été modifié par rapport au fichier importé'
+    hintEl.style.color = '#CC1719'
+  } else {
+    hintEl.textContent = ''
+  }
 }
 
 function autoDetectJours() {
@@ -2300,6 +2334,10 @@ function generateReport() {
   setStatus('Analyse des données…')
   try {
     const nomMagasin   = document.getElementById('nom-magasin').value.trim() || 'Optical Center'
+    // Code magasin fiable uniquement si le champ nom n'a pas été modifié depuis la détection
+    // automatique (voir autoDetectMagasin/updateCodeMagasinHint) — jamais envoyé "au hasard".
+    const codeMagasin  = (state.codeMagasinDetecte && nomMagasin === state.codeMagasinNomDetecte)
+      ? state.codeMagasinDetecte : ''
     const joursEcoules = parseInt(document.getElementById('jours-ecoules').value) || 23
     const jourstotal   = parseInt(document.getElementById('jours-mois').value) || 25
     const joursRest    = Math.max(0, jourstotal - joursEcoules)
@@ -2583,6 +2621,7 @@ function generateReport() {
       }
       const statsPayload = {
         magasin: nomMagasin,
+        codeMagasin: codeMagasin || null,
         periode: moisLabel,
         dateExtraction: dateLabel,
         caTotal: totCa, caOpt: totCaOpt, caAudio: totCaAud,
@@ -2630,7 +2669,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.08.20-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.08.21-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
