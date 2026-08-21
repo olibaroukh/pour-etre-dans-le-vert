@@ -1,10 +1,9 @@
-
 // Service Worker minimal — sert uniquement à permettre au navigateur de détecter
 // une nouvelle version du fichier index.html et à proposer un rechargement propre.
 // Ne met rien en cache pour offline (volontairement) afin de toujours servir
 // la dernière version disponible sur le réseau.
  
-const SW_VERSION = '2026.08.21-2';
+const SW_VERSION = '2026.08.21-3';
  
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -18,4 +17,3 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(fetch(event.request));
 });
- 
