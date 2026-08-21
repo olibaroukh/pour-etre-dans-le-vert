@@ -1948,22 +1948,23 @@ function autoDetectMagasin() {
   } catch(e) { console.warn('autoDetectMagasin échouée:', e) }
 }
 
-// Le code magasin détecté n'est fiable que tant que le nom du champ correspond
-// exactement à ce qui a été lu dans le CSV — si l'utilisateur corrige le nom
-// (ex : "la MELO" non reconnu), on ne veut pas envoyer un code devenu faux.
+// Le code magasin vient directement de la colonne "Nom Magasin" du fichier
+// "Positionnement mensuel" (voir autoDetectMagasin) — il ne dépend pas du texte
+// tapé dans le champ "Nom du magasin". Donc même si l'utilisateur corrige ou
+// remplace le nom affiché (ex : "la MELO" non reconnu, ou un nom de groupe
+// personnalisé), le code détecté reste valable et doit continuer à être transmis :
+// c'est justement le cas où le rattachement par nom échouerait sans lui.
+// Modifié le 21/08 suite au retour d'Olivier : l'ancienne version arrêtait
+// d'envoyer le code dès que le nom changeait, ce qui annulait le bénéfice
+// dans exactement les cas où on en avait le plus besoin.
 function onNomMagasinInput() { updateCodeMagasinHint() }
 
 function updateCodeMagasinHint() {
   const hintEl = document.getElementById('code-magasin-hint')
   if (!hintEl) return
-  const champ = document.getElementById('nom-magasin')
-  const valeurActuelle = (champ.value || '').trim()
-  if (state.codeMagasinDetecte && valeurActuelle === state.codeMagasinNomDetecte) {
-    hintEl.textContent = `Code magasin détecté : ${state.codeMagasinDetecte}`
+  if (state.codeMagasinDetecte) {
+    hintEl.textContent = `Code magasin détecté : ${state.codeMagasinDetecte} (toujours transmis, même si le nom ci-dessus est modifié)`
     hintEl.style.color = '#888780'
-  } else if (state.codeMagasinDetecte) {
-    hintEl.textContent = 'Code magasin non transmis — le nom a été modifié par rapport au fichier importé'
-    hintEl.style.color = '#CC1719'
   } else {
     hintEl.textContent = ''
   }
@@ -2334,10 +2335,11 @@ function generateReport() {
   setStatus('Analyse des données…')
   try {
     const nomMagasin   = document.getElementById('nom-magasin').value.trim() || 'Optical Center'
-    // Code magasin fiable uniquement si le champ nom n'a pas été modifié depuis la détection
-    // automatique (voir autoDetectMagasin/updateCodeMagasinHint) — jamais envoyé "au hasard".
-    const codeMagasin  = (state.codeMagasinDetecte && nomMagasin === state.codeMagasinNomDetecte)
-      ? state.codeMagasinDetecte : ''
+    // Le code vient du fichier "Positionnement mensuel" (colonne "Nom Magasin"),
+    // indépendamment du texte actuellement saisi dans le champ nom — toujours transmis
+    // dès qu'un seul magasin a été détecté dans le fichier, y compris si le nom a été
+    // corrigé/personnalisé ensuite (voir updateCodeMagasinHint, modifié le 21/08).
+    const codeMagasin  = state.codeMagasinDetecte || ''
     const joursEcoules = parseInt(document.getElementById('jours-ecoules').value) || 23
     const jourstotal   = parseInt(document.getElementById('jours-mois').value) || 25
     const joursRest    = Math.max(0, jourstotal - joursEcoules)
@@ -2669,7 +2671,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.08.21-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.08.21-2'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
