@@ -1898,6 +1898,67 @@ function skipObjIndiv() {
   document.getElementById('obj-indiv-zone').style.display = 'none';
 }
 
+// ── Import automatique depuis Cosium (bookmarklet, 05/09) ────────────────────
+// Le bookmarklet lancé depuis Cosium (session déjà authentifiée du magasin,
+// aucun identifiant ne transite jamais par nous) pousse les 6 fichiers vers
+// le Worker et ouvre cette page avec ?cosium=CODE. On récupère les fichiers
+// une seule fois (le code est à usage unique côté Worker) et on les fait
+// entrer dans exactement le même pipeline que si l'utilisateur les avait
+// déposés à la main (state.raw / state.files / checkReady) — aucune logique
+// de lecture ou d'agrégation dupliquée ici.
+async function tryImportFromCosium() {
+  const params = new URLSearchParams(location.search)
+  const code = params.get('cosium')
+  if (!code) return
+  // Nettoyer l'URL tout de suite : le code est déjà consommé côté Worker après
+  // ce premier appel, un rechargement accidentel de la page échouerait sinon.
+  history.replaceState({}, '', location.pathname)
+  setStatus('Récupération des fichiers depuis Cosium...', '')
+  try {
+    const res = await fetch(`${RELAY}/cosium-files?code=${encodeURIComponent(code)}`, {
+      headers: { 'X-Store-Token': STORE_TOKEN }
+    })
+    const data = await res.json()
+    if (!res.ok || !data.ok) throw new Error(data.error || `Échec (HTTP ${res.status})`)
+    const files = data.files || {}
+    const REQUIRED = ['pos', 'stats_opt', 'stats_audio', 'ca_audio', 'pm1']
+    const NAMES = { pos: 'Positionnement.csv', stats_opt: 'Stats_Optique.csv', stats_audio: 'Stats_Audio.csv', ca_audio: 'CA_Audio.csv', pm1: 'PM1.csv' }
+    for (const key of REQUIRED) {
+      if (!files[key]) continue
+      state.raw[key] = files[key]
+      state.files[key] = new File([files[key]], NAMES[key])
+    }
+    // Fichier optionnel (Objectifs individuels / "Positionnement Mois Par Vendeur") —
+    // même règle de validation que le dépôt manuel (voir loadObjIndiv) : ignoré si
+    // tous les objectifs sont à 0.
+    if (files.obj_indiv) {
+      const lines = files.obj_indiv.split('\n').filter(l => l.trim())
+      let hIdx = lines.findIndex(l => l.includes('Nom Vendeur'))
+      if (hIdx === -1) hIdx = 2
+      const dataLines = lines.slice(hIdx + 1)
+      const hasObj = dataLines.some(l => {
+        const parts = l.split(';')
+        const obj = parseFloat((parts[5] || '0').replace(',', '.'))
+        return obj > 0
+      })
+      if (hasObj) {
+        state.raw['obj_indiv'] = files.obj_indiv
+        document.getElementById('obj-indiv-msg').style.display = 'none'
+        const loaded = document.getElementById('obj-indiv-loaded')
+        loaded.style.display = 'flex'
+        document.getElementById('obj-indiv-name').textContent = '✓ Récupéré depuis Cosium'
+      }
+    }
+    renderFileList()
+    checkReady()
+    setStatus('Fichiers récupérés depuis Cosium — vérifiez avant de générer', 'ok')
+  } catch (e) {
+    console.error('Import Cosium échoué:', e)
+    setStatus('Échec de la récupération Cosium : ' + e.message, 'err')
+  }
+}
+document.addEventListener('DOMContentLoaded', tryImportFromCosium)
+
 function checkReady() {
   const allLoaded = ['pos','stats_opt','stats_audio','ca_audio','pm1'].every(k => state.raw[k])
   document.getElementById('btn-generate').disabled = !allLoaded
@@ -2663,7 +2724,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.08.21-3'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.09.05-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
