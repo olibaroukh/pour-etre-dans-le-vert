@@ -1927,14 +1927,20 @@ function autoDetectMagasin() {
       champ.placeholder = 'Détecté automatiquement — modifiable'
       state.codeMagasinDetecte = paires[0][1] || ''
       state.codeMagasinNomDetecte = noms[0]
+      state.multiMagasinDetecte = false
     } else if (noms.length > 1) {
       // Plusieurs magasins (mode réseau) : on laisse le champ en saisie libre, pas d'auto-remplissage fiable
       champ.placeholder = `${noms.length} magasins détectés — saisie libre (ex : Réseau Sud Paris)`
       state.codeMagasinDetecte = ''
       state.codeMagasinNomDetecte = ''
+      // Utilisé en aval (voir generateReport) pour bloquer l'envoi vers store_stats
+      // même quand isNetworkMode (basé sur l'en-tête "Code Magasin") ne l'a pas détecté —
+      // les deux détections peuvent diverger sur un fichier multi-magasins mal formé.
+      state.multiMagasinDetecte = true
     } else {
       state.codeMagasinDetecte = ''
       state.codeMagasinNomDetecte = ''
+      state.multiMagasinDetecte = false
     }
     updateCodeMagasinHint()
   } catch(e) { console.warn('autoDetectMagasin échouée:', e) }
@@ -2587,8 +2593,13 @@ function generateReport() {
     // Envoi automatique vers la base centrale (vignettes + cartes d'action déjà
     // calculées par le rapport) — jamais bloquant, jamais visible pour l'utilisateur.
     // Uniquement en mode magasin unique (le mode réseau agrège plusieurs magasins,
-    // pas pertinent pour une ligne store_stats).
-    if (!isNetworkMode && reportWin) {
+    // pas pertinent pour une ligne store_stats). Double condition volontaire :
+    // isNetworkMode (en-tête "Code Magasin") et state.multiMagasinDetecte
+    // (plusieurs "Libelle Magasin" distincts vus par autoDetectMagasin) peuvent
+    // diverger sur un fichier multi-magasins mal formé — voir le cas des noms
+    // non reconnus type "la MELO"/"NIEL" du 05/09, où un fichier réseau sans
+    // en-tête "Code Magasin" avait quand même déclenché l'envoi.
+    if (!isNetworkMode && !state.multiMagasinDetecte && reportWin) {
       // Statut vert/orange/rouge calculé ici, avec les seuils réellement configurés
       // au moment du calcul (mêmes seuils que les vignettes/cartes prio affichées à
       // l'écran) — jamais recalculé côté Worker, pour ne pas risquer une divergence.
@@ -2663,7 +2674,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.09.05-2'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.09.05-3'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
