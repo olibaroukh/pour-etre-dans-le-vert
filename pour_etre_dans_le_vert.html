@@ -2517,6 +2517,11 @@ function generateReport() {
                    : allOpt.reduce((s, r) => s + toNum(r['CA Généré Opt']), 0) / 1000
     const avgPm    = totalOptRow ? Math.round(toNum(totalOptRow['Panier Moyen']))
                    : (opts.length ? Math.round(opts.reduce((s, r) => s + r.pm, 0) / opts.length) : 0)
+    // Vrai nombre de ventes optique du magasin (ligne TOTAL du fichier Cosium,
+    // jamais recalculé nous-mêmes) — sert de poids pour les moyennes pondérées
+    // par magasin côté dashboard réseau (suggestion d'Olivier, 06/09).
+    const totNbVenteOpt = totalOptRow ? toNum(totalOptRow['Nb Vente Opt'])
+                   : opts.reduce((s, r) => s + (r.nb || 0), 0)
     const avgTc    = totalOptRow ? toNum(totalOptRow['% TC']).toFixed(0)
                    : (opts.length ? (opts.reduce((s, r) => s + r.tc, 0) / opts.length).toFixed(0) : '0')
     const avgSop   = totalOptRow ? toNum(totalOptRow['% Garantie']).toFixed(0)
@@ -2631,6 +2636,7 @@ function generateReport() {
         dateExtraction: dateLabel,
         caTotal: totCa, caOpt: totCaOpt, caAudio: totCaAud,
         panierMoyen: avgPm, tauxTc: Number(avgTc), tauxSop: Number(avgSop), tauxMdc: Number(avgMdc),
+        nbVenteOpt: totNbVenteOpt,
         prothesesVendues: totProth, tauxEssai: Number(avgTxe),
         objectif: objTotal, raf: rafTotal,
         tauxTestAuditif: taVal, tauxVenteAddAudio: tvaVal,
@@ -2674,7 +2680,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.09.05-3'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.09.06-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
