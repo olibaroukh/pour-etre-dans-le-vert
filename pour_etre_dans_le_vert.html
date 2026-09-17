@@ -2663,6 +2663,73 @@ function generateReport() {
       setTimeout(tryCapture, 150)
     }
 
+    // Capture des stats individuelles (16/09, pour Suivi Managers) — jamais
+    // bloquant, jamais visible en cas d'échec. Réutilise les lignes déjà
+    // parsées ci-dessus (optRows, audRows, caAudRows, pm1Rows) plutôt que
+    // de reparser state.raw, et les mêmes noms de colonnes que le reste de
+    // ce fichier (parseCSV renvoie des objets par en-tête, pas par position).
+    // Union des matricules sur les 4 sources : un audioprothésiste sans
+    // vente optique ce mois-ci doit quand même remonter avec ses stats audio.
+    if (!isNetworkMode && !state.multiMagasinDetecte) {
+      try {
+        const periode = extractDateObj.getFullYear() + '-' + String(extractDateObj.getMonth() + 1).padStart(2, '0')
+
+        const optByMatricule = {}
+        optRows.forEach(r => {
+          const mat = String(r['Matricule Vendeur'] || '').trim()
+          if (!mat || mat.includes('TOTAL')) return
+          optByMatricule[mat] = {
+            nomVendeur: String(r['Nom Vendeur'] || '').trim(),
+            pmOpt: toNum(r['Panier Moyen']), mdc: toNum(r['% Marque Excl. et Intemp.']),
+            nbVenteOpt: toNum(r['Nb Vente Opt']), sop: toNum(r['% Garantie']), txConcretOpt: toNum(r['% TC']),
+            packConfortPct: toNum(r['% Pack Confort']), packConfortPm: toNum(r['PM Pack Confort']),
+          }
+        })
+        const audioByMatricule = {}
+        audRows.forEach(r => {
+          const mat = String(r['Matricule Vendeur'] || '').trim()
+          if (!mat || mat.includes('TOTAL')) return
+          audioByMatricule[mat] = {
+            nomVendeur: String(r['Nom Vendeur'] || '').trim(),
+            pmAudio: toNum(r['Panier Moyen vente']), txConcretAudio: toNum(r['Tx de concrétisation audio']),
+            ap4: toNum(r['% Assur Audio Prev 4 ans']), pctTestAuditif: toNum(r['% Test auditif']),
+          }
+        })
+        const caAudioByMatricule = {}
+        caAudRows.forEach(r => {
+          const mat = String(r['Matricule'] || '').trim()
+          if (!mat || mat.includes('TOTAL')) return
+          caAudioByMatricule[mat] = { caAudio: toNum(r['CA Généré Audio']), caAccessoiresPct: toNum(r['% Vente Additionnelle']) }
+        })
+        const pm1ByMatricule = {}
+        pm1Rows.forEach(r => {
+          const mat = String(r['Matricule Vendeur'] || '').trim()
+          if (mat && mat !== 'null') pm1ByMatricule[mat] = { pm1erePaire: toNum(r['Prix de vente moyen']) }
+        })
+
+        const matricules = new Set([
+          ...Object.keys(optByMatricule), ...Object.keys(audioByMatricule),
+          ...Object.keys(caAudioByMatricule), ...Object.keys(pm1ByMatricule),
+        ])
+        const collabRows = [...matricules].map(mat => ({
+          matricule: mat,
+          nomVendeur: (optByMatricule[mat] || audioByMatricule[mat] || {}).nomVendeur || '',
+          ...(optByMatricule[mat] || {}), ...(audioByMatricule[mat] || {}),
+          ...(caAudioByMatricule[mat] || {}), ...(pm1ByMatricule[mat] || {}),
+        })).filter(r => r.matricule)
+
+        if (collabRows.length) {
+          fetch(RELAY + '/collab-stats-capture', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Store-Token': STORE_TOKEN },
+            body: JSON.stringify({ periode, rows: collabRows })
+          }).catch(e => console.warn('collab-stats-capture échouée:', e))
+        }
+      } catch (e) {
+        console.warn('Capture stats collaborateur échouée:', e)
+      }
+    }
+
   } catch(e) {
     setStatus('Erreur : ' + e.message, 'err')
     console.error(e)
@@ -2680,7 +2747,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.09.06-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.09.16-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
