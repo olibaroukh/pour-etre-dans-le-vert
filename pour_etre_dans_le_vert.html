@@ -2641,6 +2641,12 @@ function generateReport() {
         objectif: objTotal, raf: rafTotal,
         tauxTestAuditif: taVal, tauxVenteAddAudio: tvaVal,
         tauxPackConfort: Number(avgPack), pmPackConfort: avgPmpc,
+        // Jours ouvrés du mois (18/09) — même champ que celui utilisé pour la
+        // proration des objectifs affichée dans ce rapport (lun-ven du mois,
+        // modifiable dans les réglages) : sert désormais aussi de dénominateur
+        // au taux de lancement de journée dans Suivi Managers, plutôt qu'une
+        // estimation dérivée des données RH.
+        joursOuvresMois: jourstotal,
         indicateurs,
       }
       let tries = 0
@@ -2747,7 +2753,7 @@ function norm(s) {
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
 // ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.09.16-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+const APP_VERSION = '2026.09.18-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
