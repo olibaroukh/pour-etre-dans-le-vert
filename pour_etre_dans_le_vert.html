@@ -487,6 +487,18 @@
   <button onclick="applyUpdate()" style="background:#CC1719;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;font-family:'Barlow',sans-serif;cursor:pointer;white-space:nowrap">Mettre à jour</button>
 </div>
 
+<div id="version-lock" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(13,13,13,0.97);align-items:center;justify-content:center;font-family:'Barlow',sans-serif;padding:24px">
+  <div style="max-width:420px;text-align:center;background:#0D0D0D;border:2px solid #CC1719;border-radius:16px;padding:32px 24px;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
+    <div style="font-size:40px;margin-bottom:12px">🔒</div>
+    <div style="color:#F0EDE6;font-size:18px;font-weight:700;margin-bottom:10px">Application obsolète</div>
+    <div style="color:#F0EDE6;font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:22px">
+      Ce poste utilise une ancienne version de l'application.<br>
+      Elle n'est plus utilisable en l'état — merci de mettre à jour pour continuer.
+    </div>
+    <button onclick="applyUpdate()" id="version-lock-btn" style="background:#CC1719;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:15px;font-weight:700;font-family:'Barlow',sans-serif;cursor:pointer">Mettre à jour maintenant</button>
+  </div>
+</div>
+
 
   <!-- LOGO -->
   <div class="logo-wrap">
@@ -2752,8 +2764,18 @@ function norm(s) {
 
 // ── Report HTML builder ───────────────────────────────────────────────────────
 
-// ── Détection de mise à jour (même mécanisme que bilan-passage / observations-terrain) ──
-const APP_VERSION = '2026.09.18-1'; // à bumper avec SW_VERSION dans sw.js à chaque déploiement
+// ── Détection de mise à jour ────────────────────────────────────────────────
+// Deux niveaux :
+// 1) Bandeau souple (mécanisme existant, inchangé) : détecte un changement de
+//    version après un rechargement naturel de la page (comparaison locale).
+// 2) Blocage dur (nouveau) : interroge periodiquement version.json (toujours
+//    en réseau, jamais depuis le cache navigateur) pour détecter un poste
+//    resté bloqué sur une ancienne version mise en cache par le navigateur —
+//    cas où le poste ne recharge jamais spontanément l'index.html à jour.
+//    Si la version installée est obsolète, l'application devient inutilisable
+//    (écran de blocage plein écran, sans possibilité de le fermer).
+const APP_VERSION = '2026.09.19-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
   const updatePending = localStorage.getItem('pedlv_update_pending');
@@ -2773,8 +2795,32 @@ function checkForUpdate() {
   }
 }
 
+function lockAppForUpdate() {
+  const lock = document.getElementById('version-lock');
+  if (lock) lock.style.display = 'flex';
+  const banner = document.getElementById('update-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+async function checkLatestVersionOnServer() {
+  try {
+    // cache:'no-store' + paramètre anti-cache : garantit une vraie requête
+    // réseau même si le navigateur (ou un CDN intermédiaire) tente de servir
+    // une copie en cache de ce fichier.
+    const res = await fetch('version.json?_=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return; // panne réseau/serveur : on ne bloque jamais sur un doute
+    const data = await res.json();
+    if (data && data.version && data.version !== APP_VERSION) {
+      lockAppForUpdate();
+    }
+  } catch (e) {
+    // Pas de réseau ou requête échouée : on ne bloque pas une version peut-être
+    // encore bonne — nouvelle tentative au prochain cycle.
+  }
+}
+
 async function applyUpdate() {
-  const btn = document.querySelector('#update-banner button');
+  const btn = document.getElementById('version-lock-btn') || document.querySelector('#update-banner button');
   if (btn) { btn.textContent = '⏳ Mise à jour...'; btn.disabled = true; }
 
   // Marquer qu'une mise à jour vient d'être appliquée, pour ne pas réafficher
@@ -2828,6 +2874,15 @@ function registerServiceWorker() {
 window.addEventListener('load', async () => {
   registerServiceWorker();
   checkForUpdate();
+  checkLatestVersionOnServer();
+  setInterval(checkLatestVersionOnServer, VERSION_CHECK_INTERVAL_MS);
+});
+
+// Revérifier dès que l'onglet redevient actif (poste resté ouvert, mis en veille, etc.)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    checkLatestVersionOnServer();
+  }
 });
 
 </script>
