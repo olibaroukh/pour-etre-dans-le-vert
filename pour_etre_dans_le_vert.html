@@ -209,6 +209,19 @@
     width: 100%;
   }
   .config-field input:focus { border-color: var(--red); }
+  .config-field select {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    border-radius: 9px;
+    padding: 10px 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; color: var(--white);
+    outline: none; width: 100%; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .config-field select:focus { border-color: var(--red); }
+  .config-field select option { background: #0D0D0D; color: #F0EDE6; }
+  .config-field select.a-choisir { border-color: var(--red); }
   .config-field input::placeholder { color: rgba(255,255,255,0.2); }
 
   .config-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -576,6 +589,7 @@
 
       <div class="config-field">
         <label>Nom du magasin ou groupe</label>
+        <select id="choix-magasin" style="display:none" onchange="onChoixMagasin()"></select>
         <input type="text" id="nom-magasin" placeholder="ex : Réseau Sud Paris" value="" oninput="onNomMagasinInput()">
         <div id="code-magasin-hint" style="font-size:10px;color:#888780;margin-top:4px"></div>
       </div>
@@ -1933,6 +1947,12 @@ function autoDetectMagasin() {
     )]
     const noms = paires.map(([nom]) => nom)
     const champ = document.getElementById('nom-magasin')
+    const select = document.getElementById('choix-magasin')
+    state.magasinsDetectes = paires
+    state.magasinChoisi = null
+    // Par défaut : pas de menu déroulant, champ texte visible (rétabli à chaque rechargement)
+    if (select) { select.style.display = 'none'; select.innerHTML = ''; select.classList.remove('a-choisir') }
+    champ.style.display = ''
     if (noms.length === 1) {
       // Un seul magasin détecté dans le CSV : on préremplit (l'utilisateur garde la main pour corriger)
       champ.value = noms[0]
@@ -1949,6 +1969,26 @@ function autoDetectMagasin() {
       // même quand isNetworkMode (basé sur l'en-tête "Code Magasin") ne l'a pas détecté —
       // les deux détections peuvent diverger sur un fichier multi-magasins mal formé.
       state.multiMagasinDetecte = true
+      // 23/09 — Menu déroulant : le manager choisit le magasin concerné parmi ceux
+      // du fichier Positionnement, au lieu de taper le nom à la main (saisies
+      // approximatives qui ne remontaient pas dans les dashboards / mails).
+      // En mode réseau (stats_opt avec "Code Magasin"), l'option "Tous les magasins"
+      // est proposée et présélectionnée ; en mode magasin, le choix est obligatoire.
+      if (select) {
+        const optHeaders = ((state.raw['stats_opt'] || '').split('\n')[2] || '').split(';')
+        const reseau = String(optHeaders[0] || '').trim() === 'Code Magasin'
+        const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')
+        let html = reseau ? '' : '<option value="">— Choisir le magasin concerné —</option>'
+        if (reseau) html += `<option value="__all__">Tous les magasins (vue réseau — ${noms.length})</option>`
+        paires.forEach(([nom, code], i) => {
+          html += `<option value="${i}">${esc(nom)}${code ? ' (' + esc(code) + ')' : ''}</option>`
+        })
+        select.innerHTML = html
+        select.value = reseau ? '__all__' : ''
+        select.style.display = ''
+        onChoixMagasin()
+        return
+      }
     } else {
       state.codeMagasinDetecte = ''
       state.codeMagasinNomDetecte = ''
@@ -1969,12 +2009,56 @@ function autoDetectMagasin() {
 // dans exactement les cas où on en avait le plus besoin.
 function onNomMagasinInput() { updateCodeMagasinHint() }
 
+// Choix dans le menu déroulant (fichier Positionnement multi-magasins).
+// Un magasin choisi = même comportement qu'un fichier mono-magasin : nom + code
+// transmis, stats filtrées sur ce magasin, envoi store_stats autorisé.
+function onChoixMagasin() {
+  const select = document.getElementById('choix-magasin')
+  const champ = document.getElementById('nom-magasin')
+  if (!select || !champ) return
+  const v = select.value
+  const paires = state.magasinsDetectes || []
+  if (v !== '' && v !== '__all__' && paires[+v]) {
+    const [nom, code] = paires[+v]
+    champ.value = nom
+    champ.style.display = 'none'
+    state.magasinChoisi = nom
+    state.codeMagasinDetecte = code || ''
+    state.codeMagasinNomDetecte = nom
+    state.multiMagasinDetecte = false
+    select.classList.remove('a-choisir')
+  } else {
+    state.magasinChoisi = null
+    state.codeMagasinDetecte = ''
+    state.codeMagasinNomDetecte = ''
+    state.multiMagasinDetecte = true
+    if (v === '__all__') {
+      // Vue réseau : nom libre (ex : "Réseau Sud Paris")
+      champ.style.display = ''
+      if (paires.some(([n]) => n === champ.value)) champ.value = ''
+      champ.placeholder = `${paires.length} magasins — nom du groupe (ex : Réseau Sud Paris)`
+      select.classList.remove('a-choisir')
+    } else {
+      champ.style.display = 'none'
+      champ.value = ''
+      select.classList.add('a-choisir')
+    }
+  }
+  updateCodeMagasinHint()
+}
+
 function updateCodeMagasinHint() {
   const hintEl = document.getElementById('code-magasin-hint')
   if (!hintEl) return
-  if (state.codeMagasinDetecte) {
+  if (state.codeMagasinDetecte && state.magasinChoisi) {
+    hintEl.textContent = `Code magasin : ${state.codeMagasinDetecte} — seul ce magasin est pris en compte (stats, dashboards, mails)`
+    hintEl.style.color = '#888780'
+  } else if (state.codeMagasinDetecte) {
     hintEl.textContent = `Code magasin détecté : ${state.codeMagasinDetecte} (toujours transmis, même si le nom ci-dessus est modifié)`
     hintEl.style.color = '#888780'
+  } else if (state.multiMagasinDetecte && document.getElementById('choix-magasin')?.value === '') {
+    hintEl.textContent = 'Plusieurs magasins dans le fichier Positionnement : choisissez celui à prendre en compte.'
+    hintEl.style.color = '#CC1719'
   } else {
     hintEl.textContent = ''
   }
@@ -2050,6 +2134,13 @@ function showTauxOrGenerate() {
   const optRaw = state.raw['stats_opt'] || ''
   const headers = (optRaw.split('\n')[2] || '').split(';')
   const networkMode = headers[0] === 'Code Magasin'
+  const _sel = document.getElementById('choix-magasin')
+  if (!networkMode && _sel && _sel.style.display !== 'none' && _sel.value === '') {
+    setStatus('Plusieurs magasins dans le fichier Positionnement — choisissez le magasin concerné', 'err')
+    _sel.classList.add('a-choisir')
+    _sel.focus()
+    return
+  }
   if (networkMode) {
     showEffectifsPanel()
   } else {
@@ -2193,7 +2284,8 @@ function showTauxPanel() {
     // Générer suggestion pour le placeholder
     try {
       const _posRows = parseCSV(state.raw['pos'] || '')
-      const _posRow = _posRows.find(r => r['Positionnement']) || _posRows[0] || {}
+      const _posRow = (state.magasinChoisi && _posRows.find(r => cap(String(r['Libelle Magasin'] || '').trim()) === state.magasinChoisi))
+        || _posRows.find(r => r['Positionnement']) || _posRows[0] || {}
       const _pos = parseFloat((_posRow['Positionnement']||'0').replace(',','.')) || 0
       const _jours = parseInt(document.getElementById('jours-ecoules')?.value||5)
       const _mois = parseInt(document.getElementById('jours-mois')?.value||23)
@@ -2372,7 +2464,7 @@ function generateReport() {
     const dateMatch = firstLine.match(/(\d{2}\/\d{2}\/\d{4})/)
     const extractDate = dateMatch ? dateMatch[1] : new Date().toLocaleDateString('fr-FR')
 
-    const magasins = posRows
+    let magasins = posRows
       .filter(r => r['Libelle Magasin'] && String(r['Libelle Magasin']).trim() !== '' && !String(r['Libelle Magasin']).includes('TOTAL'))
       .map(r => {
         // CA généré = colonne index 9 (CA Généré (Factures - Avoirs)) — accès par nom ET par index pour robustesse encodage
@@ -2387,11 +2479,18 @@ function generateReport() {
           get raf() { return joursRest > 0 ? Math.max(0, (this.obj - this.ca) / joursRest) : 0 }
         }
       })
+    // Magasin choisi dans le menu déroulant (fichier multi-magasins, 23/09) :
+    // positionnement, objectif et RAF calculés sur ce seul magasin.
+    let _filtreMagasin = false
+    if (state.magasinChoisi) {
+      const _f = magasins.filter(m => m.nom === state.magasinChoisi)
+      if (_f.length) { magasins = _f; _filtreMagasin = true }
+    }
     // Ligne TOTAL pour objTotal uniquement
     const allPosRows = state.raw['pos'].split('\n')
     const totalLineRaw = allPosRows.find(l => l.includes('TOTAL'))
     let objTotal = 0
-    if (totalLineRaw) {
+    if (totalLineRaw && !_filtreMagasin) {
       const parts = totalLineRaw.trim().replace(/;$/, '').split(';')
       objTotal = parseFloat((parts[5] || '0').replace(',', '.')) || 0
     }
@@ -2774,7 +2873,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.09.19-2'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.09.23-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
