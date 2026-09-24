@@ -1,0 +1,21 @@
+{
+  "_info": "Objectifs réseau. Servent de valeurs par défaut dans Pour être dans le vert ET de grille unique pour le score santé (pm, tc, sop, mdc, pack, pmpc, ta, tva). Nombres uniquement, sans % ni €.",
+  "obj_ca": 20,
+  "nb": 50,
+  "pm": 450,
+  "pm1": 120,
+  "sop": 40,
+  "tc": 95,
+  "pack": 50,
+  "mdc": 66,
+  "luk": 12,
+  "pmpc": 80,
+  "proth": 30,
+  "txc": 95,
+  "txe": 95,
+  "assur": 70,
+  "ta": 30,
+  "tva": 12,
+  "pm_aud": 2350,
+  "pm_app": 1250
+}

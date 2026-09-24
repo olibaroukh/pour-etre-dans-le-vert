@@ -1644,12 +1644,28 @@ var DEFAULTS = { lang:'fr', currency:'€',
   cols_opt: ['pm','tc','sop','mdc'],
   cols_aud: ['txe','assur'],
   obj_ca:20, raf_seuil:0, nb:50, pm:450, sop:40, tc:95, pack:50, mdc:66, luk:12, pmpc:80, pm1:120,
-  proth:30, txc:95, txe:95, assur:70, ta:30, tva:50, pm_aud:2350, pm_app:1250,
+  proth:30, txc:95, txe:95, assur:70, ta:30, tva:12, pm_aud:2350, pm_app:1250,
   p_obj_ca:1, p_nb:1, p_pm:2, p_pm1:2, p_tva:3, p_sop:2, p_tc:2, p_pack:2, p_mdc:2, p_luk:2, p_pmpc:2,
   p_proth:3, p_txc:3, p_txe:3, p_assur:3, p_ta:2, p_pm_aud:2, p_pm_app:2,
   max_prio:9,
   dark_mode:false
 }
+// Valeurs par défaut des objectifs (24/09) : lues depuis objectifs-reseau.json
+// (dépôt pour-etre-dans-le-vert), modifiable directement sur GitHub par Olivier.
+// Ce même fichier sert de grille réseau au Worker pour le score santé.
+// S'applique à qui n'a jamais enregistré ses Paramètres, et après
+// « Réinitialiser » ; les valeurs déjà enregistrées dans un navigateur restent.
+fetch('objectifs-reseau.json?_=' + Date.now(), { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : null)
+  .then(data => {
+    if (!data) return
+    Object.keys(data).forEach(k => {
+      const v = Number(data[k])
+      if (k in DEFAULTS && typeof DEFAULTS[k] === 'number' && isFinite(v) && v > 0) DEFAULTS[k] = v
+    })
+  })
+  .catch(() => {})
+
 function loadSettings() {
   try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('oc_settings')||'{}')) }
   catch(e) { return {...DEFAULTS} }
