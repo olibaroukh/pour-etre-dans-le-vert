@@ -2750,6 +2750,10 @@ function generateReport() {
         nbVenteOpt: totNbVenteOpt,
         prothesesVendues: totProth, tauxEssai: Number(avgTxe),
         objectif: objTotal, raf: rafTotal,
+        // Positionnement mensuel (24/09) : la valeur du KPI affiché ici (projection
+        // fin de mois). Le Worker la reprend telle quelle pour Suivi Managers et la
+        // fiche magasin, au lieu de la déduire de raf (qui est un RAF par jour).
+        positionnement: Number(avgPos),
         tauxTestAuditif: taVal, tauxVenteAddAudio: tvaVal,
         tauxPackConfort: Number(avgPack), pmPackConfort: avgPmpc,
         // Jours ouvrés du mois (18/09) — même champ que celui utilisé pour la
@@ -2873,7 +2877,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.09.23-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.09.24-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
