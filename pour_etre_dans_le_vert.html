@@ -870,6 +870,8 @@ var TRANSLATIONS = {
     'banner_last_report': 'Dernier rapport généré il y a',
     'banner_days': 'jours — pensez à actualiser !',
     'kpi_pos': 'Positionnement mensuel',
+    'kpi_nbv': 'Nb ventes magasin',
+    'kpi_nbv_sub': 'devis validés optique',
     'kpi_pos_sub': 'moy. 1 magasin',
     'kpi_pm': 'Panier moyen Opt',
     'kpi_pm_sub': 'moy. magasin',
@@ -1061,6 +1063,8 @@ var TRANSLATIONS = {
     'banner_last_report': 'Last report generated',
     'banner_days': 'days ago — remember to update!',
     'kpi_pos': 'Monthly positioning',
+    'kpi_nbv': 'Store sales',
+    'kpi_nbv_sub': 'validated optical quotes',
     'kpi_pos_sub': 'store avg.',
     'kpi_pm': 'Avg. basket Opt.',
     'kpi_pm_sub': 'store avg.',
@@ -1252,6 +1256,8 @@ var TRANSLATIONS = {
     'banner_last_report': 'Último informe generado hace',
     'banner_days': 'días — ¡recuerda actualizar!',
     'kpi_pos': 'Posicionamiento mensual',
+    'kpi_nbv': 'Ventas tienda',
+    'kpi_nbv_sub': 'presupuestos ópticos validados',
     'kpi_pos_sub': 'prom. tienda',
     'kpi_pm': 'PM óptica',
     'kpi_pm_sub': 'prom. tienda',
@@ -1443,6 +1449,8 @@ var TRANSLATIONS = {
     'banner_last_report': 'הדוח האחרון נוצר לפני',
     'banner_days': 'ימים — זכור לעדכן!',
     'kpi_pos': 'מיצוב חודשי',
+    'kpi_nbv': 'מכירות בחנות',
+    'kpi_nbv_sub': 'הצעות מחיר אופטיקה מאושרות',
     'kpi_pos_sub': 'ממוצע חנות',
     'kpi_pm': 'סל ממוצע אופטיקה',
     'kpi_pm_sub': 'ממוצע חנות',
@@ -2524,6 +2532,8 @@ function generateReport() {
           pos: joursEcoules > 0 ? (ca * jourstotal / joursEcoules) / obj * 100 : toNum(r['Positionnement']),
           obj,
           ca,
+          // Nb ventes magasin (26/09) : colonne "Nb Ventes (Devis validés Optique)" du Positionnement mensuel
+          nbVentes: toNum(r['Nb Ventes (Devis validés Optique)'] ?? r[Object.keys(r)[12]] ?? 0),
           get raf() { return joursRest > 0 ? Math.max(0, (this.obj - this.ca) / joursRest) : 0 }
         }
       })
@@ -2546,6 +2556,7 @@ function generateReport() {
     // RAF global = somme des RAF calculés par magasin
     const rafTotal = magasins.reduce((s, r) => s + r.raf, 0)
     const avgPos   = (magasins.reduce((s, r) => s + r.pos, 0) / magasins.length).toFixed(1)
+    const totNbVentes = magasins.reduce((s, r) => s + (r.nbVentes || 0), 0)
 
     // ── Détection mode réseau vs mode magasin ────────────────────────────
     // Mode réseau : stats_opt a "Code Magasin" en première colonne (pas "Nom Vendeur")
@@ -2725,7 +2736,7 @@ function generateReport() {
     const html = buildReportHTML({
       nomMagasin,
       moisLabel, dateLabel, joursEcoules, jourstotal, joursRest,
-      OBJ, magasins, avgPos, objTotal, rafTotal,
+      OBJ, magasins, totNbVentes, avgPos, objTotal, rafTotal,
       rafSeuil: _s.raf_seuil > 0 ? _s.raf_seuil : (objTotal / jourstotal),
       opts, anoms, auds,
       totCa, totCaOpt, totCaAud, avgPm, avgTc, avgSop, avgMdc, totProth, avgTxe,
@@ -2925,7 +2936,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.09.26-3'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.09.26-4'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
@@ -3249,6 +3260,7 @@ function buildReportHTML(d) {
   const avgTvaDisp = d.tvaTot !== null ? d.tvaTot.toFixed(2) : '–'
   const kpis = [
     { label: tr('kpi_pos'), value: `${d.avgPos}%`, sub: tr('kpi_pos_n', {n: magasins.length, s: magasins.length > 1 ? 's' : ''}) },
+    { label: tr('kpi_nbv'), value: `${d.totNbVentes ?? '–'}`, sub: tr('kpi_nbv_sub') },
     { label: tr('kpi_pm'), value: `${d.avgPm}${d.currency}`, sub: tr('kpi_pm_sub') },
     { label: tr('kpi_tc'), value: `${d.avgTc}%`, sub: tr('kpi_tc_sub') },
     { label: tr('kpi_sop'), value: `${d.avgSop}%`, sub: tr('kpi_pm_sub') },
@@ -3675,7 +3687,7 @@ function buildReportHTML(d) {
   .chip{font-size:10px;font-weight:600;color:#E2231A;background:#FDF0F0;border:1px solid #EDCECE;border-radius:5px;padding:2px 8px;white-space:nowrap}
   .divider{height:0.5px;background:#D3D1C7;margin:10px 0}
   /* KPI strip */
-  .kpi-strip{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-bottom:4px}
+  .kpi-strip{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:4px}
   .kpi-card{background:#2C2C2A;border-radius:5px;padding:4px 6px 5px}
   .kpi-label{font-size:7.5px;font-weight:500;color:#888780;margin-bottom:1px;line-height:1.2}
   .kpi-value{font-size:14px;font-weight:600;color:#fff;line-height:1}
