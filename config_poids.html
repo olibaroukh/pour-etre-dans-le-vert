@@ -7,14 +7,14 @@
 <title>Config Podium — Optical Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --red: #CC1719;
-    --red-dark: #A01215;
-    --red-glow: rgba(204,23,25,0.25);
+    --red: #E2231A;
+    --red-dark: #B5141A;
+    --red-glow: rgba(226,35,26,0.25);
     --white: #FFFFFF;
-    --off-white: #F0EDE6;
+    --off-white: #F5F5F5;
     --muted: #888884;
     --border: rgba(255,255,255,0.08);
     --surface: rgba(255,255,255,0.04);
@@ -24,7 +24,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     min-height: 100vh;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     color: var(--white);
     overflow-x: hidden;
     background: linear-gradient(160deg, #1A1210 0%, #0D0D0D 40%, #111010 70%, #0A0A0A 100%);
@@ -48,9 +48,9 @@
     width: 100%; height: 100%; object-fit: contain;
   }
   h1 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 28px; font-weight: 700;
-    letter-spacing: 0.04em; text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px; font-weight: 800;
+    letter-spacing: 0; text-transform: uppercase;
     color: var(--white); line-height: 1; margin-bottom: 4px;
   }
   h1 span { color: var(--red); }
@@ -60,11 +60,11 @@
   }
   .badge {
     display: inline-block;
-    background: linear-gradient(135deg, #CC1719, #A01215);
+    background: linear-gradient(135deg, #E2231A, #B5141A);
     color: #fff; font-size: 9px; font-weight: 700;
     letter-spacing: .1em; text-transform: uppercase;
     padding: 2px 8px; border-radius: 4px; margin-left: 8px;
-    vertical-align: middle; font-family: 'Barlow', sans-serif;
+    vertical-align: middle; font-family: 'Montserrat', sans-serif;
   }
 
   /* ── CARDS ── */
@@ -78,7 +78,7 @@
     backdrop-filter: blur(4px);
   }
   .group-label {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 11px; font-weight: 700; color: var(--muted);
     letter-spacing: .12em; text-transform: uppercase;
     margin-bottom: 14px; padding-bottom: 8px;
@@ -103,12 +103,12 @@
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
     width: 16px; height: 16px; border-radius: 50%;
-    background: linear-gradient(135deg, #CC1719, #A01215);
+    background: linear-gradient(135deg, #E2231A, #B5141A);
     cursor: pointer;
     box-shadow: 0 0 6px var(--red-glow);
   }
   .val {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 15px; font-weight: 700; color: var(--red);
     width: 18px; text-align: right; flex-shrink: 0;
   }
@@ -121,7 +121,7 @@
   .btn {
     flex: 1; padding: 13px 16px;
     border-radius: 8px; border: none;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 13px; font-weight: 700;
     cursor: pointer; transition: opacity .15s, transform .1s;
     letter-spacing: 0.02em;
@@ -129,7 +129,7 @@
   .btn:hover { opacity: .88; transform: translateY(-1px); }
   .btn:active { transform: scale(0.98); }
   .btn.primary {
-    background: linear-gradient(135deg, #CC1719, #A01215);
+    background: linear-gradient(135deg, #E2231A, #B5141A);
     color: #fff;
     box-shadow: 0 4px 16px var(--red-glow);
   }
@@ -149,6 +149,7 @@
   }
   .status.ok { color: #4CAF7D; }
   .status.err { color: var(--red); }
+select,input,textarea,button{font-family:inherit}
 </style>
 </head>
 <body>
