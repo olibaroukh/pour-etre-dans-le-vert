@@ -9,16 +9,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Optical Center — Générateur de synthèse v3.1</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --red: #CC1719;
-    --red-dark: #A01215;
-    --red-glow: rgba(204,23,25,0.25);
+    --red: #E2231A;
+    --red-dark: #B5141A;
+    --red-glow: rgba(226,35,26,0.25);
     --white: #FFFFFF;
-    --off-white: #F0EDE6;
+    --off-white: #F5F5F5;
     --muted: #888884;
     --border: rgba(255,255,255,0.08);
     --border2: rgba(255,255,255,0.15);
@@ -28,15 +28,15 @@
 
   html, body {
     min-height: 100vh;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     color: var(--white);
     overflow-x: hidden;
   }
 
   body {
     background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(204,23,25,0.18) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(204,23,25,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(226,35,26,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(226,35,26,0.08) 0%, transparent 50%),
       linear-gradient(160deg, #1A1210 0%, #0D0D0D 40%, #111010 70%, #0A0A0A 100%);
     display: flex;
     flex-direction: column;
@@ -65,13 +65,13 @@
     margin-bottom: 40px;
   }
   .title-block h1 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: 0;
     text-transform: uppercase;
     color: var(--white);
-    line-height: 1;
+    line-height: 1.1;
     margin-bottom: 8px;
   }
   .title-block h1 span { color: var(--red); }
@@ -118,15 +118,15 @@
   }
   .dropzone:hover, .dropzone.drag-over {
     border-color: var(--red);
-    background: rgba(204,23,25,0.06);
+    background: rgba(226,35,26,0.06);
   }
   .dropzone input[type=file] {
     position: absolute; inset: 0; opacity: 0; cursor: pointer;
   }
   .drop-icon {
     width: 48px; height: 48px; margin: 0 auto 14px;
-    background: rgba(204,23,25,0.15);
-    border: 1px solid rgba(204,23,25,0.3);
+    background: rgba(226,35,26,0.15);
+    border: 1px solid rgba(226,35,26,0.3);
     border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
   }
@@ -171,7 +171,7 @@
   .file-name { flex: 1; color: var(--off-white); font-size: 12px; font-family: monospace; }
   .file-tag {
     font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
-    background: rgba(204,23,25,0.15); color: var(--red);
+    background: rgba(226,35,26,0.15); color: var(--red);
     text-transform: uppercase; letter-spacing: .05em;
   }
   .file-tag.unknown { background: rgba(255,255,255,0.06); color: var(--muted); }
@@ -202,7 +202,7 @@
     border: 1px solid var(--border2);
     border-radius: 9px;
     padding: 10px 14px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 14px; color: var(--white);
     outline: none;
     transition: border-color .15s;
@@ -214,13 +214,13 @@
     border: 1px solid var(--border2);
     border-radius: 9px;
     padding: 10px 14px;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 14px; color: var(--white);
     outline: none; width: 100%; cursor: pointer;
     transition: border-color .15s;
   }
   .config-field select:focus { border-color: var(--red); }
-  .config-field select option { background: #0D0D0D; color: #F0EDE6; }
+  .config-field select option { background: #0D0D0D; color: #F5F5F5; }
   .config-field select.a-choisir { border-color: var(--red); }
   .config-field input::placeholder { color: rgba(255,255,255,0.2); }
 
@@ -231,7 +231,7 @@
     gap: 6px; font-size: 12px; color: var(--muted); margin-top: 2px;
   }
   .days-pill {
-    background: rgba(204,23,25,0.15); color: var(--red);
+    background: rgba(226,35,26,0.15); color: var(--red);
     border-radius: 4px; padding: 2px 8px;
     font-size: 12px; font-weight: 600;
   }
@@ -295,12 +295,12 @@
   }
   .pcm-row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
   .pcm-label { font-size:11px; color:#B0AEA6; width:120px; flex-shrink:0; }
-  .pcm-slider { flex:1; accent-color:#CC1719; cursor:pointer; }
-  .pcm-val { font-size:12px; font-weight:700; color:#CC1719; width:16px; text-align:right; }
+  .pcm-slider { flex:1; accent-color:#E2231A; cursor:pointer; }
+  .pcm-val { font-size:12px; font-weight:700; color:#E2231A; width:16px; text-align:right; }
   .pcm-actions { display:flex; gap:8px; margin-top:18px; justify-content:flex-end; }
   .pcm-btn { padding:8px 18px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:opacity .15s; }
   .pcm-btn:hover { opacity:0.85; }
-  .pcm-btn.export { background:#CC1719; color:#fff; }
+  .pcm-btn.export { background:#E2231A; color:#fff; }
   .pcm-btn.reset { background:#2C2C2A; color:#888780; }
   .pcm-btn.close-btn { background:#2C2C2A; color:#D3D1C7; }
 
@@ -311,7 +311,7 @@
   .settings-group { margin-bottom: 18px; }
   .settings-group-title {
     font-size: 10px; font-weight: 600; letter-spacing: .08em;
-    text-transform: uppercase; color: #CC1719; margin-bottom: 10px;
+    text-transform: uppercase; color: #E2231A; margin-bottom: 10px;
   }
   .settings-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
@@ -326,7 +326,7 @@
     padding: 5px 0;
   }
   .col-check input[type=checkbox] {
-    width: 14px; height: 14px; accent-color: #CC1719; cursor: pointer; flex-shrink: 0;
+    width: 14px; height: 14px; accent-color: #E2231A; cursor: pointer; flex-shrink: 0;
   }
   .col-check:hover { color: #D3D1C7; }
 
@@ -336,7 +336,7 @@
     padding: 7px 4px; font-family: inherit; width: 46px;
     flex-shrink: 0; text-align: center; cursor: pointer;
   }
-  .prio-select:focus { outline: none; border-color: #CC1719; }
+  .prio-select:focus { outline: none; border-color: #E2231A; }
   .prio-select option { background: #2C2C2A; }
   .settings-field label {
     display: block; font-size: 11px; color: #888780; margin-bottom: 4px;
@@ -347,11 +347,11 @@
     padding: 7px 10px; font-family: inherit; box-sizing: border-box;
   }
   .settings-field input:focus, .settings-field select:focus {
-    outline: none; border-color: #CC1719;
+    outline: none; border-color: #E2231A;
   }
   .settings-field select option { background: #2C2C2A; }
   .btn-save {
-    background: linear-gradient(135deg, #CC1719, #A01215);
+    background: linear-gradient(135deg, #E2231A, #B5141A);
     color: #fff; border: none; border-radius: 9px;
     padding: 9px 20px; font-size: 13px; font-weight: 600;
     cursor: pointer; font-family: inherit;
@@ -395,7 +395,7 @@
     border-radius:6px; color:#D3D1C7; font-size:12px; font-weight:600;
     padding:4px 6px; text-align:center; font-family:inherit;
   }
-  .taux-input:focus { outline:none; border-color:#CC1719; }
+  .taux-input:focus { outline:none; border-color:#E2231A; }
   .taux-pct { font-size:11px; color:#5F5E5A; }
   /* Panneau effectifs réseau */
   .effectif-grid { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:14px; }
@@ -412,7 +412,7 @@
     padding:5px 7px; text-align:center; font-family:inherit; width:100%;
     box-sizing:border-box;
   }
-  .effectif-input:focus { outline:none; border-color:#CC1719; }
+  .effectif-input:focus { outline:none; border-color:#E2231A; }
   /* ── PANNEAU EFFECTIFS RÉSEAU ── */
   #effectif-panel {
     display:none; margin-top:16px; background:#1C1C1A;
@@ -433,7 +433,7 @@
     border-radius:6px; color:#D3D1C7; font-size:12px; font-weight:600;
     padding:4px 6px; text-align:center; font-family:inherit;
   }
-  .effectif-input:focus { outline:none; border-color:#CC1719; }
+  .effectif-input:focus { outline:none; border-color:#E2231A; }
   .effectif-col { display:flex; flex-direction:column; align-items:center; }
 
   /* ── EFFECTIFS RÉSEAU ── */
@@ -450,10 +450,10 @@
     border-radius:6px; color:#D3D1C7; font-size:12px; font-weight:600;
     padding:4px 6px; text-align:center; font-family:inherit;
   }
-  .effectif-input:focus { outline:none; border-color:#CC1719; }
+  .effectif-input:focus { outline:none; border-color:#E2231A; }
 
   .taux-check {
-    width:16px; height:16px; accent-color:#CC1719; cursor:pointer; flex-shrink:0;
+    width:16px; height:16px; accent-color:#E2231A; cursor:pointer; flex-shrink:0;
   }
   .taux-row.excluded { opacity:0.4; }
   .taux-row.excluded .taux-nom { text-decoration:line-through; }
@@ -465,14 +465,14 @@
     color: #fff;
     border: none; border-radius: 12px;
     padding: 15px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: 16px; font-weight: 700;
     letter-spacing: .08em; text-transform: uppercase;
     cursor: pointer;
     transition: opacity .15s, transform .1s, box-shadow .2s;
-    box-shadow: 0 4px 20px rgba(204,23,25,0.3);
+    box-shadow: 0 4px 20px rgba(226,35,26,0.3);
   }
-  .btn-generate:hover { opacity: 0.92; box-shadow: 0 6px 28px rgba(204,23,25,0.45); }
+  .btn-generate:hover { opacity: 0.92; box-shadow: 0 6px 28px rgba(226,35,26,0.45); }
   .btn-generate:active { transform: scale(0.99); }
   .btn-generate:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
 
@@ -491,24 +491,25 @@
     #report-container { display: block !important; position: fixed; inset: 0; }
     #report-container iframe { width: 100%; height: 100%; border: none; }
   }
+select,input,textarea,button{font-family:inherit}
 </style>
 </head>
 <body>
 
-<div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#0D0D0D;border-bottom:2px solid #CC1719;padding:10px 16px;align-items:center;gap:10px;font-family:'Barlow',sans-serif">
-  <span style="flex:1;color:#F0EDE6;font-size:13px">🔄 Nouvelle version de l'application disponible</span>
-  <button onclick="applyUpdate()" style="background:#CC1719;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;font-family:'Barlow',sans-serif;cursor:pointer;white-space:nowrap">Mettre à jour</button>
+<div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#0D0D0D;border-bottom:2px solid #E2231A;padding:10px 16px;align-items:center;gap:10px;font-family:'Montserrat',sans-serif">
+  <span style="flex:1;color:#F5F5F5;font-size:13px">🔄 Nouvelle version de l'application disponible</span>
+  <button onclick="applyUpdate()" style="background:#E2231A;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif;cursor:pointer;white-space:nowrap">Mettre à jour</button>
 </div>
 
-<div id="version-lock" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(13,13,13,0.97);align-items:center;justify-content:center;font-family:'Barlow',sans-serif;padding:24px">
-  <div style="max-width:420px;text-align:center;background:#0D0D0D;border:2px solid #CC1719;border-radius:16px;padding:32px 24px;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
+<div id="version-lock" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(13,13,13,0.97);align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;padding:24px">
+  <div style="max-width:420px;text-align:center;background:#0D0D0D;border:2px solid #E2231A;border-radius:16px;padding:32px 24px;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
     <div style="font-size:40px;margin-bottom:12px">🔒</div>
-    <div style="color:#F0EDE6;font-size:18px;font-weight:700;margin-bottom:10px">Application obsolète</div>
-    <div style="color:#F0EDE6;font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:22px">
+    <div style="color:#F5F5F5;font-size:18px;font-weight:700;margin-bottom:10px">Application obsolète</div>
+    <div style="color:#F5F5F5;font-size:14px;opacity:0.85;line-height:1.5;margin-bottom:22px">
       Ce poste utilise une ancienne version de l'application.<br>
       Elle n'est plus utilisable en l'état — merci de mettre à jour pour continuer.
     </div>
-    <button onclick="applyUpdate()" id="version-lock-btn" style="background:#CC1719;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:15px;font-weight:700;font-family:'Barlow',sans-serif;cursor:pointer">Mettre à jour maintenant</button>
+    <button onclick="applyUpdate()" id="version-lock-btn" style="background:#E2231A;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer">Mettre à jour maintenant</button>
   </div>
 </div>
 
@@ -714,9 +715,9 @@
           <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07)">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <span style="font-size:12px;color:#888780">Nb max d'actions prioritaires</span>
-              <span id="max-prio-val" style="font-size:15px;font-weight:700;color:#CC1719">9</span>
+              <span id="max-prio-val" style="font-size:15px;font-weight:700;color:#E2231A">9</span>
             </div>
-            <input type="range" id="s-max-prio" min="3" max="9" step="1" value="9" oninput="document.getElementById('max-prio-val').textContent=this.value" style="width:100%;accent-color:#CC1719">
+            <input type="range" id="s-max-prio" min="3" max="9" step="1" value="9" oninput="document.getElementById('max-prio-val').textContent=this.value" style="width:100%;accent-color:#E2231A">
             <div style="display:flex;justify-content:space-between;font-size:10px;color:#3a3937;margin-top:3px"><span>3</span><span>6</span><span>9</span></div>
           </div>
           <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:center">
@@ -724,7 +725,7 @@
             <div style="display:flex;align-items:center;gap:8px">
               <span style="font-size:11px;color:#5F5E5A" id="dark-mode-label">Clair</span>
               <label style="position:relative;display:inline-block;width:40px;height:22px;cursor:pointer">
-                <input type="checkbox" id="s-dark-mode" style="opacity:0;width:0;height:0" onchange="document.getElementById('dark-mode-label').textContent=this.checked?'Sombre':'Clair';var k=document.getElementById('dark-toggle-knob');var bg=document.getElementById('dark-toggle-bg');if(k){k.style.transform=this.checked?'translateX(18px)':'';k.style.background=this.checked?'#CC1719':'#888780';}if(bg){bg.style.background=this.checked?'rgba(204,23,25,0.2)':'#2C2C2A';}">
+                <input type="checkbox" id="s-dark-mode" style="opacity:0;width:0;height:0" onchange="document.getElementById('dark-mode-label').textContent=this.checked?'Sombre':'Clair';var k=document.getElementById('dark-toggle-knob');var bg=document.getElementById('dark-toggle-bg');if(k){k.style.transform=this.checked?'translateX(18px)':'';k.style.background=this.checked?'#E2231A':'#888780';}if(bg){bg.style.background=this.checked?'rgba(226,35,26,0.2)':'#2C2C2A';}">
                 <span id="dark-toggle-bg" style="position:absolute;inset:0;background:#2C2C2A;border-radius:22px;transition:.3s;border:1px solid #3C3C3A"></span>
                 <span id="dark-toggle-knob" style="position:absolute;height:16px;width:16px;left:3px;top:3px;background:#888780;border-radius:50%;transition:.3s"></span>
               </label>
@@ -1677,7 +1678,7 @@ function openSettings() {
   document.getElementById('s-obj-ca').value   = s.obj_ca
   document.getElementById('s-raf-seuil').value = s.raf_seuil || ''
   const mpEl = document.getElementById('s-max-prio'); if(mpEl){ mpEl.value = s.max_prio || 9; document.getElementById('max-prio-val').textContent = s.max_prio || 9; }
-  const dmEl = document.getElementById('s-dark-mode'); if(dmEl){ dmEl.checked = !!s.dark_mode; document.getElementById('dark-mode-label').textContent = s.dark_mode ? 'Sombre' : 'Clair'; var k=document.getElementById('dark-toggle-knob'); if(k){k.style.transform=s.dark_mode?'translateX(18px)':'';k.style.background=s.dark_mode?'#CC1719':'#888780';} }
+  const dmEl = document.getElementById('s-dark-mode'); if(dmEl){ dmEl.checked = !!s.dark_mode; document.getElementById('dark-mode-label').textContent = s.dark_mode ? 'Sombre' : 'Clair'; var k=document.getElementById('dark-toggle-knob'); if(k){k.style.transform=s.dark_mode?'translateX(18px)':'';k.style.background=s.dark_mode?'#E2231A':'#888780';} }
   // Synchro jours (depuis la page d'accueil)
   const je = parseInt(document.getElementById('jours-ecoules').value) || s.jours_ecoules
   const jm = parseInt(document.getElementById('jours-mois').value)    || s.jours_mois
@@ -2075,7 +2076,7 @@ function updateCodeMagasinHint() {
     hintEl.style.color = '#888780'
   } else if (state.multiMagasinDetecte && document.getElementById('choix-magasin')?.value === '') {
     hintEl.textContent = 'Plusieurs magasins dans le fichier Positionnement : choisissez celui à prendre en compte.'
-    hintEl.style.color = '#CC1719'
+    hintEl.style.color = '#E2231A'
   } else {
     hintEl.textContent = ''
   }
@@ -2924,7 +2925,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.09.26-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.09.26-2'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
@@ -4681,7 +4682,7 @@ window.addEventListener('resize',scaleWrapper2);
     <div class="pcm-title">⚖️ Coefficients du podium</div>
     <div class="pcm-sub">
       Ajustez l'importance de chaque indicateur (0 = ignoré, 10 = maximum).<br>
-      <strong style="color:#CC1719">Générer le fichier</strong> télécharge le HTML mis à jour à pousser sur GitHub.
+      <strong style="color:#E2231A">Générer le fichier</strong> télécharge le HTML mis à jour à pousser sur GitHub.
     </div>
     <div class="pcm-group">
       <div class="pcm-group-label">Commun</div>
