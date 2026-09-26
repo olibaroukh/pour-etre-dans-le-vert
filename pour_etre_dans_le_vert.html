@@ -1945,8 +1945,8 @@ function checkReady() {
   document.getElementById('btn-generate').disabled = !allLoaded
   if (allLoaded) {
     setStatus('5 fichiers chargés — cliquez pour configurer et générer', 'ok')
-    autoDetectJours()
     autoDetectMagasin()
+    autoDetectJours() // après autoDetectMagasin : le code magasin sert à la règle Alsace-Moselle
   }
 }
 
@@ -2043,6 +2043,7 @@ function onChoixMagasin() {
     state.codeMagasinNomDetecte = nom
     state.multiMagasinDetecte = false
     select.classList.remove('a-choisir')
+    autoDetectJours() // 26/09 : recalcule avec la règle Alsace-Moselle du magasin choisi
   } else {
     state.magasinChoisi = null
     state.codeMagasinDetecte = ''
@@ -2080,6 +2081,38 @@ function updateCodeMagasinHint() {
   }
 }
 
+// Jours ouvrés (26/09) — calendrier réseau commun, identique au dénominateur
+// du taux de lancement de journée côté Worker : jours du mois − dimanches −
+// fériés fermés (tous sauf lundi de Pentecôte) − fermetures réseau (Kippour…),
+// + Vendredi saint / 26 déc. pour l'Alsace-Moselle. Calcul local immédiat
+// (sans fermetures réseau ni Alsace-Moselle), puis affiné par le Worker
+// (/jours-ouvres) une fois le code magasin connu. Les champs restent
+// modifiables : une saisie manuelle n'est jamais écrasée par la réponse.
+function _isoUTC(y, m0, d) { return new Date(Date.UTC(y, m0, d)).toISOString().slice(0, 10) }
+function _paques(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3)
+  const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4
+  const l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const mo = Math.floor((h + l - 7 * m + 114) / 31), jo = ((h + l - 7 * m + 114) % 31) + 1
+  return new Date(Date.UTC(y, mo - 1, jo))
+}
+function _joursAttendusLocal(year, month0, jusquAuJour) {
+  const p = _paques(year)
+  const decale = n => { const x = new Date(p); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10) }
+  const feries = new Set([`${year}-01-01`, decale(1), `${year}-05-01`, `${year}-05-08`, decale(39),
+    `${year}-07-14`, `${year}-08-15`, `${year}-11-01`, `${year}-11-11`, `${year}-12-25`])
+  const nb = new Date(Date.UTC(year, month0 + 1, 0)).getUTCDate()
+  let n = 0
+  for (let d = 1; d <= nb; d++) {
+    if (jusquAuJour && d > jusquAuJour) break
+    if (new Date(Date.UTC(year, month0, d)).getUTCDay() === 0) continue
+    if (feries.has(_isoUTC(year, month0, d))) continue
+    n++
+  }
+  return n
+}
+
 function autoDetectJours() {
   try {
     // Lire la date d'extraction depuis la ligne 0 du CSV pos
@@ -2087,25 +2120,9 @@ function autoDetectJours() {
     const m = firstLine.match(/(\d{2})\/(\d{2})\/(\d{4})/)
     if (!m) return
     const day = parseInt(m[1]), month = parseInt(m[2])-1, year = parseInt(m[3])
-    const extractDate = new Date(year, month, day)
 
-    // Calculer jours ouvrés écoulés (lundi-vendredi)
-    let joursEcoules = 0
-    const cur = new Date(year, month, 1)
-    while (cur <= extractDate) {
-      const dow = cur.getDay()
-      if (dow >= 1 && dow <= 5) joursEcoules++
-      cur.setDate(cur.getDate() + 1)
-    }
-
-    // Calculer jours ouvrés totaux du mois
-    let joursMois = 0
-    const d = new Date(year, month, 1)
-    while (d.getMonth() === month) {
-      const dow = d.getDay()
-      if (dow >= 1 && dow <= 5) joursMois++
-      d.setDate(d.getDate() + 1)
-    }
+    const joursEcoules = _joursAttendusLocal(year, month, day)
+    const joursMois = _joursAttendusLocal(year, month)
 
     const elE = document.getElementById('jours-ecoules')
     const elM = document.getElementById('jours-mois')
@@ -2113,6 +2130,20 @@ function autoDetectJours() {
     if (elM) elM.value = joursMois
     // Déclencher le recalcul de jours restants
     elE && elE.dispatchEvent(new Event('input'))
+
+    // Affinage Worker : fermetures réseau + Alsace-Moselle du magasin détecté
+    const mois = `${year}-${String(month + 1).padStart(2, '0')}`
+    const date = `${mois}-${String(day).padStart(2, '0')}`
+    const code = state.codeMagasinDetecte || ''
+    fetch(`${RELAY}/jours-ouvres?mois=${mois}&date=${date}&code=${encodeURIComponent(code)}`, {
+      headers: { 'X-Store-Token': STORE_TOKEN }
+    }).then(r => r.ok ? r.json() : null).then(data => {
+      if (!data || !data.ok) return
+      // Ne rien écraser si l'utilisateur a modifié les champs entre-temps
+      if (elE && parseInt(elE.value) === joursEcoules && data.joursEcoules != null) elE.value = data.joursEcoules
+      if (elM && parseInt(elM.value) === joursMois && data.joursMois != null) elM.value = data.joursMois
+      elE && elE.dispatchEvent(new Event('input'))
+    }).catch(() => {})
   } catch(e) {}
 }
 
@@ -2893,7 +2924,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.09.24-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.09.26-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
