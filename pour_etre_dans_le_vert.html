@@ -2936,7 +2936,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.09.26-4'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.10.01-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
@@ -3292,7 +3292,12 @@ function buildReportHTML(d) {
   }
 
   let objRows = ''
-  opts.filter(r => d.isNetworkMode || !auds.find(a => a.nom === r.nom)).forEach(r => {
+  // Vendeurs mixtes (01/10) : un collaborateur présent dans les deux fichiers
+  // avec des ventes optique apparaît aussi dans le tableau optique (en plus de
+  // l'audio). Comme avant pour les audios, pas d'objectif de volume optique
+  // (isAud → vNb = 0) : seuls les indicateurs qualitatifs comptent.
+  const estMixte = r => r.nb > 0 && !!auds.find(a => a.nom === r.nom)
+  opts.filter(r => d.isNetworkMode || !auds.find(a => a.nom === r.nom) || estMixte(r)).forEach(r => {
     // Objectifs proratisés par taux de travail
     const oNb   = objPro(r.nom, OBJ.nb, false)
     // Objectifs qualitatifs déjà atteints ?
@@ -3458,21 +3463,25 @@ function buildReportHTML(d) {
   let totalProthActuel = 0, totalProthFinal = 0
 
   // Vendeurs optique (hors audio)
-  opts.filter(r => d.isNetworkMode || !audNomSet.has(r.nom)).forEach(r => {
+  // Vendeurs mixtes : une seule ligne optique + audio, comme en mode réseau.
+  const nomsFusionnesVert = new Set()
+  opts.filter(r => d.isNetworkMode || !audNomSet.has(r.nom) || estMixte(r)).forEach(r => {
     // Recalculer vTotal comme dans objRows (facteur limitant)
     function vNeededG(cp,op,n){if(cp>=op)return 0;var d=1-op/100;if(d<=0)return 999;return Math.max(0,(op/100*n-cp/100*n)/d);}
     var vSopG  = vNeededG(r.sop,  OBJ.sop,  r.nb)
     var vPackG = vNeededG(r.pack, OBJ.pack, r.nb)
     var vMdcG  = vNeededG(r.mdc,  OBJ.mdc,  r.nb)
-    var vNbG   = Math.max(0, objPro(r.nom, OBJ.nb, false) - r.nb)
+    var vNbG   = (!isNetworkMode && audNomSet.has(r.nom)) ? 0 : Math.max(0, objPro(r.nom, OBJ.nb, false) - r.nb)
     var vTotalG = Math.ceil(Math.max(vSopG, vPackG, vMdcG, vNbG, 0))
     const vFinal  = r.nb + vTotalG
     const pmEff   = r.nb > 0 ? Math.max(r.ca_opt / r.nb, OBJ.pm) : OBJ.pm
     const caProj  = Math.round(vFinal * pmEff / 1000 * 10) / 10
-    const caAct   = Math.round(r.ca / 1000 * 10) / 10
-
-    // En mode réseau, si ce magasin a aussi de l'audio → fusionner
-    const audEntry = isNetworkMode ? auds.find(a => a.nom === r.nom) : null
+    // En mode réseau (magasin avec audio) ou vendeur mixte → fusionner
+    const audEntry = auds.find(a => a.nom === r.nom) || null
+    if (audEntry) nomsFusionnesVert.add(audEntry.nom)
+    // CA actuel = optique + audio quand la ligne est fusionnée (sinon l'audio
+    // n'était compté nulle part dans le CA actuel)
+    const caAct   = Math.round((r.ca + (audEntry ? audEntry.ca : 0)) / 1000 * 10) / 10
     let prothActuel = 0, prothFinalMix = 0, caProjAudio = 0
     if (audEntry) {
       const objProthMix = objPro(audEntry.nom, OBJ.proth, true)
@@ -3501,7 +3510,7 @@ function buildReportHTML(d) {
   })
 
   // Audioprothésistes — en mode réseau, exclure ceux déjà dans le tableau optique
-  auds.filter(a => !isNetworkMode || !opts.find(r => r.nom === a.nom)).forEach(a => {
+  auds.filter(a => !nomsFusionnesVert.has(a.nom)).forEach(a => {
     const objProthA  = objPro(a.nom, OBJ.proth, true)
     const prothFinal = Math.max(a.proth, objProthA)
     const pmAppEff   = Math.max(a.pm_app, OBJ.pm_app)  // PM par prothèse
