@@ -492,6 +492,25 @@
     #report-container iframe { width: 100%; height: 100%; border: none; }
   }
 select,input,textarea,button{font-family:inherit}
+/* ── RAPPORTS PRÉCÉDENTS (archives, 11/10) ── */
+#archives-card{margin-top:20px}
+.arch-hint{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+.arch-form{display:flex;flex-direction:column;gap:8px}
+.arch-form input,.arch-filter{width:100%;background:#2C2C2A;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#F5F5F5;font-size:13px;padding:10px 12px}
+.arch-btn{background:#E2231A;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.arch-btn:disabled{opacity:.5;cursor:default}
+.arch-btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.15);color:#D3D1C7;font-weight:500}
+.arch-err{font-size:12px;color:var(--red);margin-top:4px}
+.arch-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.arch-bar .arch-filter{flex:1}
+.arch-list{display:flex;flex-direction:column;gap:8px}
+.arch-item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px}
+.arch-item-info{flex:1;min-width:0}
+.arch-item-title{font-size:13px;font-weight:600;color:#F5F5F5}
+.arch-item-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.arch-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:11px;color:var(--muted)}
+.arch-foot a{color:var(--muted);cursor:pointer;text-decoration:underline}
+@media (max-width:520px){#archives-card{padding:24px 18px}}
 </style>
 </head>
 <body>
@@ -655,6 +674,12 @@ select,input,textarea,button{font-family:inherit}
     </button>
     <div class="status" id="status"></div>
 
+  </div>
+
+  <!-- RAPPORTS PRÉCÉDENTS (archives, 11/10) -->
+  <div class="card" id="archives-card">
+    <div class="section-title">Rapports précédents</div>
+    <div id="arch-body"></div>
   </div>
 
   <div style="text-align:center;padding:16px 0 6px;display:flex;flex-direction:column;align-items:center;gap:8px;">
@@ -2839,6 +2864,12 @@ function generateReport() {
           headers: { 'Content-Type': 'application/json', 'X-Store-Token': STORE_TOKEN },
           body: JSON.stringify(statsPayload)
         }).catch(e => console.warn('store-stats échouée:', e))
+        // Archivage du rapport tel qu'affiché (11/10) — jamais bloquant.
+        archiverRapportPedlv(reportWin, {
+          magasin: nomMagasin, codeMagasin: codeMagasin || null,
+          periode: moisLabel, dateExtraction: dateLabel,
+          animateur: _s.animateur || '', lang: _s.lang || 'fr',
+        })
       }
       setTimeout(tryCapture, 150)
     }
@@ -2916,6 +2947,193 @@ function generateReport() {
   }
 }
 
+// ── RAPPORTS PRÉCÉDENTS (archives, 11/10) ─────────────────────────────────────
+// Chaque rapport MAGASIN généré (jamais le mode réseau) est archivé dans la base
+// « rapports-archives » via le Worker : instantané du rapport tel qu'affiché
+// (cartes prioritaires comprises), scripts retirés pour qu'une réouverture ne
+// recalcule rien ni n'écrase l'historique d'actions du mois en cours.
+// Consultation réservée aux AR connectés (chacun ses magasins, Olivier tout).
+// La session est partagée avec Bilan de Passage (même origine
+// olibaroukh.github.io) : un AR déjà connecté là-bas l'est aussi ici.
+const ARCH_SESSION_KEY = 'bilan_ar_session'
+const ARCH_SCALE_SCRIPT = "function _arSc(id){var w=document.getElementById(id);if(!w)return;var s=Math.min(window.innerWidth/1122,1);w.style.transform='scale('+s+')';w.style.transformOrigin='top center';w.style.marginBottom=((w.offsetHeight*s)-w.offsetHeight)+'px';}function _arScAll(){_arSc('wrapper');_arSc('wrapper2');}_arScAll();window.addEventListener('resize',_arScAll);"
+let archState = { rows: null, error: null, loading: false, filtre: '' }
+
+function archEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]))
+}
+
+function archSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(ARCH_SESSION_KEY) || 'null')
+    if (s && s.token && s.exp > Date.now()) return s
+  } catch(e) {}
+  return null
+}
+
+async function archGzipB64(str) {
+  const buf = await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()
+  const bytes = new Uint8Array(buf)
+  let bin = ''
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000))
+  return btoa(bin)
+}
+
+async function archiverRapportPedlv(reportWin, meta) {
+  try {
+    const doc = reportWin && reportWin.document
+    if (!doc || !doc.documentElement) return
+    const clone = doc.documentElement.cloneNode(true)
+    clone.querySelectorAll('script').forEach(s => s.remove())
+    ;['wrapper', 'wrapper2'].forEach(id => {
+      const w = clone.querySelector('#' + id)
+      if (w) { w.style.transform = ''; w.style.transformOrigin = ''; w.style.marginBottom = '' }
+    })
+    const bar = clone.querySelector('#print-bar')
+    if (bar) {
+      const tag = doc.createElement('span')
+      tag.textContent = '📁 Rapport archivé le ' + new Date().toLocaleDateString('fr-FR')
+      bar.insertBefore(tag, bar.firstChild)
+    }
+    const body = clone.querySelector('body')
+    if (body) {
+      const sc = doc.createElement('script')
+      sc.textContent = ARCH_SCALE_SCRIPT
+      body.appendChild(sc)
+    }
+    const html = '<!DOCTYPE html>\n' + clone.outerHTML
+    let encodage = 'html', contenu = html
+    if (typeof CompressionStream !== 'undefined') {
+      try { contenu = await archGzipB64(html); encodage = 'gzip-b64' } catch(e) { contenu = html; encodage = 'html' }
+    }
+    const resp = await fetch(RELAY + '/pedlv-archive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Store-Token': STORE_TOKEN },
+      body: JSON.stringify({ ...meta, encodage, contenu, tailleHtml: html.length })
+    })
+    if (resp.ok && archSession()) setTimeout(() => archLoad(), 500)
+  } catch(e) {
+    console.warn('Archivage du rapport échoué :', e)
+  }
+}
+
+async function archLoad() {
+  const s = archSession()
+  if (!s) { archState = { rows: null, error: null, loading: false, filtre: archState.filtre }; archRender(); return }
+  archState.loading = true; archState.error = null; archRender()
+  try {
+    const resp = await fetch(RELAY + '/pedlv-archives', { headers: { 'X-Store-Token': STORE_TOKEN, 'X-AR-Session': s.token } })
+    const data = await resp.json().catch(() => ({}))
+    if (resp.status === 401) { localStorage.removeItem(ARCH_SESSION_KEY); archState.rows = null; archState.error = 'Session expirée, reconnecte-toi.' }
+    else if (!resp.ok || data.error) { archState.rows = null; archState.error = data.error || ('Erreur ' + resp.status) }
+    else archState.rows = data.results || []
+  } catch(e) {
+    archState.rows = null; archState.error = 'Base injoignable (' + e.message + ')'
+  }
+  archState.loading = false
+  archRender()
+}
+
+async function archLogin() {
+  const user = (document.getElementById('arch-user')?.value || '').trim()
+  const pass = document.getElementById('arch-pass')?.value || ''
+  const errEl = document.getElementById('arch-login-err')
+  const btn = document.getElementById('arch-login-btn')
+  if (!user || !pass) { errEl.textContent = 'Adresse mail et mot de passe requis'; return }
+  btn.disabled = true; errEl.textContent = ''
+  try {
+    const resp = await fetch(RELAY + '/ar-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Store-Token': STORE_TOKEN },
+      body: JSON.stringify({ zimbraUser: user, zimbraPass: pass })
+    })
+    const data = await resp.json().catch(() => ({}))
+    if (!resp.ok || data.error) throw new Error(data.error || ('Erreur ' + resp.status))
+    localStorage.setItem(ARCH_SESSION_KEY, JSON.stringify({ token: data.sessionToken, ar: data.ar, exp: Date.now() + data.expiresInMs }))
+    archState.error = null
+    archLoad()
+  } catch(e) {
+    errEl.textContent = e.message
+    btn.disabled = false
+  }
+}
+
+function archLogout() {
+  if (!confirm('Se déconnecter ? (cela te déconnecte aussi de Bilan de Passage sur cet appareil)')) return
+  localStorage.removeItem(ARCH_SESSION_KEY)
+  archState = { rows: null, error: null, loading: false, filtre: '' }
+  archRender()
+}
+
+async function archOpen(id) {
+  const s = archSession()
+  if (!s) { archLoad(); return }
+  // Fenêtre ouverte tout de suite (sinon bloquée par Safari après l'attente réseau)
+  const w = window.open('', '_blank')
+  if (w) w.document.write('<p style="font-family:Montserrat,sans-serif;padding:24px;color:#555">Chargement du rapport…</p>')
+  try {
+    const resp = await fetch(RELAY + '/pedlv-archive-get?id=' + encodeURIComponent(id), { headers: { 'X-Store-Token': STORE_TOKEN, 'X-AR-Session': s.token } })
+    const data = await resp.json().catch(() => ({}))
+    if (!resp.ok || !data.html) throw new Error(data.error || ('Erreur ' + resp.status))
+    if (w) { w.document.open(); w.document.write(data.html); w.document.close() }
+    else {
+      const url = URL.createObjectURL(new Blob([data.html], { type: 'text/html;charset=utf-8' }))
+      const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.click()
+    }
+  } catch(e) {
+    if (w) w.close()
+    alert('Impossible d\'ouvrir ce rapport : ' + e.message)
+  }
+}
+
+function archRender() {
+  const el = document.getElementById('arch-body')
+  if (!el) return
+  const s = archSession()
+  if (!s) {
+    el.innerHTML = `
+      <div class="arch-hint">${archState.error ? archEsc(archState.error) + '<br>' : ''}Retrouve les rapports déjà générés sur tes magasins, prêts à réimprimer en PDF. Connecte-toi avec ton adresse mail Optical Center.</div>
+      <div class="arch-form">
+        <input type="email" id="arch-user" placeholder="prenom.nom@optical-center.com" autocomplete="username">
+        <input type="password" id="arch-pass" placeholder="Mot de passe Zimbra" autocomplete="current-password" onkeydown="if(event.key==='Enter')archLogin()">
+        <button class="arch-btn" id="arch-login-btn" onclick="archLogin()">Se connecter</button>
+        <div class="arch-err" id="arch-login-err"></div>
+      </div>`
+    return
+  }
+  if (archState.loading && !archState.rows) { el.innerHTML = '<div class="arch-hint">⏳ Chargement des rapports…</div>'; return }
+  if (archState.error) {
+    el.innerHTML = `<div class="arch-hint">⚠️ ${archEsc(archState.error)}</div><button class="arch-btn ghost" onclick="archLoad()">↻ Réessayer</button>`
+    return
+  }
+  const rows = archState.rows || []
+  const magasins = [...new Set(rows.map(r => r.magasin))].sort((a, b) => a.localeCompare(b))
+  if (archState.filtre && !magasins.includes(archState.filtre)) archState.filtre = ''
+  const visibles = rows.filter(r => !archState.filtre || r.magasin === archState.filtre)
+  const fmtGen = iso => {
+    const d = new Date(String(iso).replace(' ', 'T') + 'Z')
+    return isNaN(d) ? '' : d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  }
+  const items = visibles.slice(0, 80).map(r => `
+    <div class="arch-item">
+      <div class="arch-item-info">
+        <div class="arch-item-title">${archEsc(r.magasin)}</div>
+        <div class="arch-item-meta">${archEsc(r.periode || '')}${r.date_extraction ? ' · données au ' + archEsc(r.date_extraction) : ''} · généré le ${archEsc(fmtGen(r.created_at))}</div>
+      </div>
+      <button class="arch-btn ghost" onclick="archOpen(${Number(r.id)})">Ouvrir</button>
+    </div>`).join('')
+  el.innerHTML = `
+    ${magasins.length > 1 ? `<div class="arch-bar"><select class="arch-filter" onchange="archState.filtre=this.value;archRender()">
+      <option value="">Tous les magasins (${rows.length})</option>
+      ${magasins.map(m => `<option value="${archEsc(m)}"${m === archState.filtre ? ' selected' : ''}>${archEsc(m)}</option>`).join('')}
+    </select></div>` : ''}
+    <div class="arch-list">${items || '<div class="arch-hint">Aucun rapport archivé pour l\'instant. Chaque rapport magasin généré à partir de maintenant apparaîtra ici.</div>'}</div>
+    ${visibles.length > 80 ? '<div class="arch-hint" style="margin-top:8px">80 rapports les plus récents affichés — filtre par magasin pour voir les plus anciens.</div>' : ''}
+    <div class="arch-foot"><span>Connecté : ${archEsc(s.ar === 'ALL' ? 'tout le réseau' : s.ar)}</span><span><a onclick="archLoad()">Actualiser</a> · <a onclick="archLogout()">Se déconnecter</a></span></div>`
+}
+
+document.addEventListener('DOMContentLoaded', () => { archRender(); if (archSession()) archLoad() })
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function cap(s) {
   return String(s).toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).trim()
@@ -2936,7 +3154,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.10.01-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.10.11-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
