@@ -2837,6 +2837,18 @@ function generateReport() {
       const pm1Collabs = opts.filter(r => r.pm1 > 0 && r.nb > 0)
       const pm1Poids = pm1Collabs.reduce((s, r) => s + r.nb, 0)
       const pm1Magasin = pm1Poids > 0 ? Math.round(pm1Collabs.reduce((s, r) => s + r.pm1 * r.nb, 0) / pm1Poids) : null
+      // Audio magasin (13/10) — PM prothèse (prix moyen appareil), PM vente audio
+      // et % assurance (SAP) : ligne TOTAL du fichier audio, sinon moyenne des
+      // audios pondérée par leur nombre de prothèses vendues.
+      const audMagasin = (col, champ) => {
+        if (totalAudRow) { const v = toNum(totalAudRow[col]); return v > 0 ? v : null }
+        const base = auds.filter(r => r[champ] > 0 && r.proth > 0)
+        const poids = base.reduce((s, r) => s + r.proth, 0)
+        return poids > 0 ? base.reduce((s, r) => s + r[champ] * r.proth, 0) / poids : null
+      }
+      const pmProtheseMag = audMagasin('Prix moy App Auditif', 'pm_app')
+      const pmVenteAudioMag = audMagasin('Panier Moyen vente', 'pm_aud')
+      const assurAudioMag = audMagasin('% Assur Audio Prev 4 ans', 'assur')
       const statsPayload = {
         magasin: nomMagasin,
         codeMagasin: codeMagasin || null,
@@ -2853,6 +2865,9 @@ function generateReport() {
         positionnement: Number(avgPos),
         tauxTestAuditif: taVal, tauxVenteAddAudio: tvaVal,
         tauxPackConfort: Number(avgPack), pmPackConfort: avgPmpc,
+        pmProthese: pmProtheseMag !== null ? Math.round(pmProtheseMag) : null,
+        pmVenteAudio: pmVenteAudioMag !== null ? Math.round(pmVenteAudioMag) : null,
+        tauxAssurAudio: assurAudioMag !== null ? Math.round(assurAudioMag * 10) / 10 : null,
         pmPaire1: pm1Magasin, tauxLukkas: (lukMagasin !== null && isFinite(lukMagasin)) ? Math.round(lukMagasin * 10) / 10 : null,
         // Jours ouvrés du mois (18/09) — même champ que celui utilisé pour la
         // proration des objectifs affichée dans ce rapport (lun-ven du mois,
@@ -3168,7 +3183,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.10.13-2'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.10.13-3'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
