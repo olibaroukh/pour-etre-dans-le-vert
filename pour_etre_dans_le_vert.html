@@ -2828,6 +2828,15 @@ function generateReport() {
         ta:   { valeur: taVal,          objectif: OBJ.ta,   statut: statusFor(taVal, OBJ.ta),                 categorie: 'audio' },
         tva:  { valeur: tvaVal,         objectif: OBJ.tva,  statut: statusFor(tvaVal, OBJ.tva),               categorie: 'audio' },
       }
+      // PM 1ère paire + % Lukkas du magasin (13/10) — pour pré-remplir les
+      // indicateurs de Bilan de Passage. Lukkas : ligne TOTAL du fichier Cosium,
+      // comme les autres taux. PM 1ère paire : le fichier est par vendeur, donc
+      // moyenne des vendeurs pondérée par leur nombre de ventes optique.
+      const lukMagasin = totalOptRow ? toNum(totalOptRow['% LUKKAS'])
+                       : (opts.length ? opts.reduce((s, r) => s + (r.luk || 0), 0) / opts.length : null)
+      const pm1Collabs = opts.filter(r => r.pm1 > 0 && r.nb > 0)
+      const pm1Poids = pm1Collabs.reduce((s, r) => s + r.nb, 0)
+      const pm1Magasin = pm1Poids > 0 ? Math.round(pm1Collabs.reduce((s, r) => s + r.pm1 * r.nb, 0) / pm1Poids) : null
       const statsPayload = {
         magasin: nomMagasin,
         codeMagasin: codeMagasin || null,
@@ -2844,6 +2853,7 @@ function generateReport() {
         positionnement: Number(avgPos),
         tauxTestAuditif: taVal, tauxVenteAddAudio: tvaVal,
         tauxPackConfort: Number(avgPack), pmPackConfort: avgPmpc,
+        pmPaire1: pm1Magasin, tauxLukkas: (lukMagasin !== null && isFinite(lukMagasin)) ? Math.round(lukMagasin * 10) / 10 : null,
         // Jours ouvrés du mois (18/09) — même champ que celui utilisé pour la
         // proration des objectifs affichée dans ce rapport (lun-ven du mois,
         // modifiable dans les réglages) : sert désormais aussi de dénominateur
@@ -3158,7 +3168,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.10.13-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.10.13-2'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
