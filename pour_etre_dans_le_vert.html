@@ -977,6 +977,7 @@ var TRANSLATIONS = {
     'obj_atteints': 'OBJECTIFS ATTEINTS',
     'projection': 'PROJECTION',
     'tous_obj_atteints': 'Tous objectifs atteints',
+    'bravo_tout_vert': 'Bravo, continue à conserver ce niveau de performance sur tes prochaines ventes.',
     'ventes_a_realiser': 'Ventes à réaliser',
     'col_nb_ventes_real': 'Nb ventes réalisées',
     'col_pm_actuel': 'PM actuel {currency}/vente',
@@ -1170,6 +1171,7 @@ var TRANSLATIONS = {
     'obj_atteints': 'TARGETS MET',
     'projection': 'PROJECTION',
     'tous_obj_atteints': 'All targets met',
+    'bravo_tout_vert': 'Well done, keep up this level of performance on your next sales.',
     'ventes_a_realiser': 'Sales to achieve',
     'col_nb_ventes_real': 'Sales achieved',
     'col_pm_actuel': 'Current avg. {currency}/sale',
@@ -1363,6 +1365,7 @@ var TRANSLATIONS = {
     'obj_atteints': 'OBJETIVOS ALCANZADOS',
     'projection': 'PROYECCIÓN',
     'tous_obj_atteints': 'Todos los objetivos alcanzados',
+    'bravo_tout_vert': 'Enhorabuena, sigue manteniendo este nivel de rendimiento en tus próximas ventas.',
     'ventes_a_realiser': 'Ventas a realizar',
     'col_nb_ventes_real': 'Ventas realizadas',
     'col_pm_actuel': 'PM actual {currency}/venta',
@@ -1556,6 +1559,7 @@ var TRANSLATIONS = {
     'obj_atteints': 'יעדים הושגו',
     'projection': 'תחזית',
     'tous_obj_atteints': 'כל היעדים הושגו',
+    'bravo_tout_vert': 'כל הכבוד, המשך לשמור על רמת הביצועים הזו במכירות הבאות שלך.',
     'ventes_a_realiser': 'מכירות לביצוע',
     'col_nb_ventes_real': 'מכירות בוצעו',
     'col_pm_actuel': 'ממוצע נוכחי {currency}/מכירה',
@@ -3154,7 +3158,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.10.11-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.10.13-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
@@ -3532,7 +3536,7 @@ function buildReportHTML(d) {
         <td>${r.nom}</td>
         <td class="td-act" style="font-weight:600">${r.nb}</td>
         <td class="td-act">${Math.round(r.pm)}${d.currency}</td>
-        <td class="td-todo" colspan="5" style="text-align:center;color:#3B6D11;font-weight:600;font-size:8px;letter-spacing:.03em">🎉 &nbsp;${tr('tous_obj_atteints')}</td>
+        <td class="td-todo" colspan="5" style="text-align:center;color:#3B6D11;font-weight:600;font-size:8px;letter-spacing:.03em">🎉 &nbsp;${tr('bravo_tout_vert')}</td>
         <td class="td-res">–</td>
         <td class="td-res"><span class="badge-ok">${tr("tous_obj_atteints").substring(0,4)}</span></td>
       </tr>`
@@ -3607,7 +3611,7 @@ function buildReportHTML(d) {
         + '<td class="atd-act">' + a.proth + '</td>'
         + '<td class="atd-act">' + (a.pm_aud > 0 ? Math.round(a.pm_aud)+d.currency : '–') + '</td>'
         + '<td class="atd-act">' + (a.pm_app > 0 ? Math.round(a.pm_app)+d.currency : '–') + '</td>'
-        + '<td class="atd-todo" colspan="4" style="text-align:center;font-style:italic;font-size:10px;color:#3B6D11">'+tr('tous_obj_atteints')+'</td>'
+        + '<td class="atd-todo" colspan="4" style="text-align:center;font-style:italic;font-size:10px;color:#3B6D11">'+tr('bravo_tout_vert')+'</td>'
         + '<td class="atd-res">–</td>'
         + '<td class="atd-res"><span class="badge-aud-ok">'+tr('tous_obj_atteints').substring(0,2)+'</span></td>'
         + '</tr>'
