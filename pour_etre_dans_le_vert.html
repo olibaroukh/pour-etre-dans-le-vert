@@ -1859,6 +1859,43 @@ dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'))
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(e.dataTransfer.files) })
 document.getElementById('file-input').addEventListener('change', e => handleFiles(e.target.files))
 
+// ── Import automatique depuis l'extension Chrome « Envoyer à PEDLV » (29/10/2026) ──
+// L'extension dépose les 5 CSV Cosium sur le Worker et ouvre PEDLV avec ?cosium=<id>.
+// On reconstruit des fichiers avec des noms reconnus par FILE_TYPES, puis on passe par
+// handleFiles : exactement le même traitement qu'un glisser-déposer manuel.
+const COSIUM_FILENAMES = {
+  pos:         'Positionnement_mensuel.csv',
+  stats_opt:   'Synthese_statistiques_de_ventes_Opt.csv',
+  stats_audio: 'Synthese_statistiques_de_ventes_Audio.csv',
+  ca_audio:    'Synthese_CA_Audio.csv',
+  pm1:         'Prix_de_Vente_Moyen_1ere_Monture.csv',
+}
+async function chargerImportCosium() {
+  const id = new URLSearchParams(location.search).get('cosium')
+  if (!id) return
+  history.replaceState(null, '', location.pathname + location.hash)
+  setStatus('Récupération des fichiers Cosium…', '')
+  try {
+    const r = await fetch(RELAY + '/cosium-import-get', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Store-Token': STORE_TOKEN },
+      body: JSON.stringify({ id })
+    })
+    const d = await r.json().catch(() => ({}))
+    if (!r.ok) throw new Error(d.error || ('erreur ' + r.status))
+    const fichiers = Object.entries(COSIUM_FILENAMES)
+      .filter(([t]) => d.files && d.files[t])
+      .map(([t, nom]) => new File([d.files[t]], nom, { type: 'text/csv' }))
+    if (fichiers.length < 5) throw new Error('fichiers incomplets')
+    handleFiles(fichiers)
+    const btn = document.getElementById('btn-generate')
+    if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  } catch (e) {
+    setStatus('Import Cosium impossible : ' + e.message + ' — glissez les fichiers à la main', 'err')
+  }
+}
+document.addEventListener('DOMContentLoaded', chargerImportCosium)
+
 function removeFile(type) {
   delete state.files[type]
   delete state.raw[type]
@@ -3183,7 +3220,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.10.13-3'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.10.29-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
