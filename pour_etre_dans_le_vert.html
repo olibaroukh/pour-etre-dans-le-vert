@@ -1887,6 +1887,16 @@ async function chargerImportCosium() {
       .filter(([t]) => d.files && d.files[t])
       .map(([t, nom]) => new File([d.files[t]], nom, { type: 'text/csv' }))
     if (fichiers.length < 5) throw new Error('fichiers incomplets')
+    // Les jours écoulés sont calculés à partir de la date de la 1re ligne du fichier
+    // Positionnement (date d'édition). On la remplace par la date de fin choisie dans
+    // l'extension, pour que les jours écoulés correspondent à la période des données.
+    const au = d.periode && d.periode.au
+    if (au && /^\d{2}\/\d{2}\/\d{4}$/.test(au)) {
+      const iPos = Object.keys(COSIUM_FILENAMES).indexOf('pos')
+      const lignes = d.files.pos.split('\n')
+      lignes[0] = lignes[0].replace(/\d{2}\/\d{2}\/\d{4}/, au)
+      fichiers[iPos] = new File([lignes.join('\n')], COSIUM_FILENAMES.pos, { type: 'text/csv' })
+    }
     handleFiles(fichiers)
     const btn = document.getElementById('btn-generate')
     if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' })
