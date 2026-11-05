@@ -3230,7 +3230,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.11.05-3'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.11.05-4'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
@@ -5150,7 +5150,7 @@ function handleEasterEgg() {
 </script>
 
 
-<!-- Poste magasin (05/11/2026) : code magasin + code PIN saisis une fois par poste ; la session accompagne ensuite
+<!-- Poste magasin (05/11/2026) : code magasin + code PIN saisis une fois par poste (ou poste d'animateur après connexion Zimbra, 90 jours) ; la session accompagne ensuite
      chaque appel à zimbra-relay (en-tête X-Magasin-Session). « Plus tard » laisse l'appli fonctionner comme avant. -->
 <style>
 #oc-poste{position:fixed;inset:0;z-index:99999;background:rgba(10,10,10,.82);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit}
@@ -5167,7 +5167,8 @@ function handleEasterEgg() {
 </style>
 <script>
 (function () {
-  var RELAIS = 'https://zimbra-relay.oli-baroukh.workers.dev', CLE = 'oc_magasin_session', TARD = 'oc_magasin_plus_tard';
+  var RELAIS = 'https://zimbra-relay.oli-baroukh.workers.dev', CLE = 'oc_magasin_session', TARD = 'oc_magasin_plus_tard', ANIM = 'oc_animateur_session';
+  function lireAnim() { try { var a = JSON.parse(localStorage.getItem(ANIM) || 'null'); return a && a.exp > Date.now() ? a : null; } catch (e) { return null; } }
   function lire() { try { return JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { return null; } }
   // Chaque appel à zimbra-relay porte la session du poste quand elle existe
   var f0 = window.fetch.bind(window);
@@ -5175,15 +5176,17 @@ function handleEasterEgg() {
     try {
       var url = typeof u === 'string' ? u : (u && u.url) || '';
       var s = lire();
-      if (s && s.token && url.indexOf(RELAIS) === 0) { o = o || {}; var h = new Headers(o.headers || {}); h.set('X-Magasin-Session', s.token); o = Object.assign({}, o, { headers: h }); }
+      var a = lireAnim();
+      if (url.indexOf(RELAIS) === 0 && ((s && s.token) || a)) { o = o || {}; var h = new Headers(o.headers || {}); if (s && s.token) h.set('X-Magasin-Session', s.token); if (a) h.set('X-Animateur-Session', a.token); o = Object.assign({}, o, { headers: h }); }
     } catch (e) {}
     return f0(u, o);
   };
   function badge(s) {
     var b = document.getElementById('oc-poste-badge'); if (!b) { b = document.createElement('div'); b.id = 'oc-poste-badge'; document.body.appendChild(b); }
-    b.textContent = s ? '🔒 Poste : ' + (s.libelle || s.code) : 'Poste non enregistré';
+    var a = lireAnim();
+    b.textContent = a ? '🔓 Animateur : ' + (a.ar === 'ALL' ? 'Siège' : a.ar) : s ? '🔒 Poste : ' + (s.libelle || s.code) : 'Poste non enregistré';
     b.title = s ? 'Poste enregistré pour ce magasin' : 'Enregistrer ce poste avec le code PIN du magasin';
-    b.onclick = function () { if (!s || confirm('Changer le magasin de ce poste ?')) ouvrir(); };
+    b.onclick = function () { if (a) { if (confirm('Déconnecter ce poste de votre compte animateur ?')) { localStorage.removeItem(ANIM); badge(lire()); } return; } if (!s || confirm('Changer le magasin de ce poste ?')) ouvrir(); };
   }
   function ouvrir() {
     if (document.getElementById('oc-poste')) return;
@@ -5191,8 +5194,28 @@ function handleEasterEgg() {
     d.innerHTML = '<div class="b"><h2>Enregistrer ce poste</h2><p>Saisissez le code du magasin et le code PIN reçu par mail sur la boîte du magasin. À faire une seule fois sur ce poste.</p>'
       + '<input id="oc-p-code" inputmode="numeric" placeholder="Code magasin (ex. 1001)" autocomplete="off">'
       + '<input id="oc-p-pin" class="pin" inputmode="numeric" maxlength="6" placeholder="Code PIN" autocomplete="one-time-code">'
-      + '<div class="err" id="oc-p-err"></div><button class="ok" id="oc-p-ok">Enregistrer ce poste</button><button class="tard" id="oc-p-tard">Plus tard</button></div>';
+      + '<div class="err" id="oc-p-err"></div><button class="ok" id="oc-p-ok">Enregistrer ce poste</button><button class="tard" id="oc-p-tard">Plus tard</button>'
+      + '<div style="border-top:1px solid #eee;margin-top:12px;padding-top:10px"><button class="tard" id="oc-p-anim" style="color:#231F20">Animateur réseau ou Siège ? Connexion Zimbra</button>'
+      + '<div id="oc-p-animf" style="display:none"><input id="oc-p-mail" type="email" placeholder="prenom.nom@optical-center.com" autocomplete="username"><input id="oc-p-mdp" type="password" placeholder="Mot de passe Zimbra" autocomplete="current-password"><button class="ok" id="oc-p-animok" style="background:#231F20">Enregistrer ce poste à mon nom (90 jours)</button></div></div></div>';
     document.body.appendChild(d);
+    document.getElementById('oc-p-anim').onclick = function () { document.getElementById('oc-p-animf').style.display = 'block'; };
+    document.getElementById('oc-p-animok').onclick = function () {
+      var u = document.getElementById('oc-p-mail').value.trim(), m = document.getElementById('oc-p-mdp').value, err = document.getElementById('oc-p-err');
+      err.textContent = ''; if (!u || !m) { err.textContent = 'Adresse et mot de passe Zimbra requis.'; return; }
+      f0(RELAIS + '/ar-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ zimbraUser: u, zimbraPass: m }) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j.sessionToken) { err.textContent = j.error || 'Connexion refusée.'; return null; }
+          // Session AR du jour également posée pour les fonctions « animateur » de l'appli (historique…)
+          try { var e12 = Date.now() + (j.expiresInMs || 0); localStorage.setItem('bilan_ar_session', JSON.stringify({ token: j.sessionToken, ar: j.ar, exp: e12 })); localStorage.setItem('kaizen_ar_session', JSON.stringify({ sessionToken: j.sessionToken, ar: j.ar, exp: e12 })); } catch (e) {}
+          return f0(RELAIS + '/poste-animateur', { method: 'POST', headers: { 'X-AR-Session': j.sessionToken } }).then(function (r) { return r.json(); });
+        })
+        .then(function (k) {
+          if (!k) return; if (!k.ok) { err.textContent = k.error || 'Enregistrement refusé.'; return; }
+          localStorage.setItem(ANIM, JSON.stringify({ token: k.token, ar: k.ar, exp: Date.now() + k.expiresInMs })); localStorage.removeItem(TARD); d.remove(); badge(lire());
+        })
+        .catch(function () { err.textContent = 'Connexion impossible : vérifiez le réseau.'; });
+    };
     document.getElementById('oc-p-tard').onclick = function () { localStorage.setItem(TARD, String(Date.now())); d.remove(); badge(lire()); };
     document.getElementById('oc-p-ok').onclick = function () {
       var code = document.getElementById('oc-p-code').value.trim(), pin = document.getElementById('oc-p-pin').value.trim(), err = document.getElementById('oc-p-err');
@@ -5211,7 +5234,7 @@ function handleEasterEgg() {
   function demarrer() {
     var s = lire(); badge(s);
     var t = +localStorage.getItem(TARD) || 0;
-    if (!s && Date.now() - t > 3 * 24 * 3600 * 1000) ouvrir(); // « plus tard » : redemandé au bout de 3 jours
+    if (!s && !lireAnim() && Date.now() - t > 3 * 24 * 3600 * 1000) ouvrir(); // « plus tard » : redemandé au bout de 3 jours
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();
 })();
