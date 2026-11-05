@@ -2824,6 +2824,8 @@ function generateReport() {
       obj_indiv_map: parseObjIndiv(),
       dark_mode: !!_s.dark_mode,
       lang: _s.lang || 'fr',
+      codeMagasin: _isNetworkMode ? '' : (state.codeMagasinDetecte || ''),
+      relais: RELAY,
       note: _isNetworkMode ? noteReseau : note,
       animateur: _s.animateur || '',
       isNetworkMode,
@@ -3230,7 +3232,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.11.05-4'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.11.05-5'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
@@ -4277,7 +4279,42 @@ function buildReportHTML(d) {
 <div id="print-bar">
   <span>${d.animateur ? '✍ '+d.animateur : tr('rapport_pret')||'Rapport prêt'}</span>
   <button onclick="window.print()">🖨 ${tr('btn_generate').includes('Generate') ? 'Print / Save PDF' : 'Imprimer / Enregistrer PDF'}</button>
+  ${!d.isNetworkMode && d.codeMagasin ? `<button id="btn-ecran" onclick="envoyerEcran()">📺 Envoyer sur l’écran du magasin</button><span id="ecran-statut" style="margin-left:8px;font-size:12px"></span>` : ''}
 </div>
+${!d.isNetworkMode && d.codeMagasin ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+<script>
+// Envoi du rapport sur l'écran IDdigital du magasin (catégorie « Statistiques mensuelles ») — 05/11/2026
+async function envoyerEcran() {
+  const st = document.getElementById('ecran-statut'), bt = document.getElementById('btn-ecran');
+  const lire = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  const h = { 'Content-Type': 'application/json' };
+  const mg = lire('oc_magasin_session'), an = lire('oc_animateur_session'), ar = lire('bilan_ar_session');
+  if (mg && mg.token) h['X-Magasin-Session'] = mg.token;
+  if (an && an.token && an.exp > Date.now()) h['X-Animateur-Session'] = an.token;
+  if (ar && ar.token && ar.exp > Date.now()) h['X-AR-Session'] = ar.token;
+  if (!h['X-Magasin-Session'] && !h['X-Animateur-Session'] && !h['X-AR-Session']) { st.textContent = 'Enregistrez d’abord ce poste (code PIN du magasin ou connexion animateur).'; return; }
+  if (!confirm('Envoyer ce rapport sur l’écran du magasin (Statistiques mensuelles) ?')) return;
+  bt.disabled = true; st.textContent = 'Préparation du PDF…';
+  try {
+    const { jsPDF } = window.jspdf, doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+    const barre = document.getElementById('print-bar'); barre.style.display = 'none';
+    const p2 = document.getElementById('page2'), wrap = document.getElementById('wrapper');
+    const pages = [];
+    if (p2) { p2.style.display = 'none'; pages.push(await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff', logging: false })); p2.style.display = '';
+      pages.push(await html2canvas(p2, { scale: 2, backgroundColor: '#ffffff', logging: false })); }
+    else pages.push(await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff', logging: false }));
+    barre.style.display = '';
+    pages.forEach((c, i) => { if (i) doc.addPage(); const W = 297, H = 210, r = Math.min(W / c.width, H / c.height);
+      doc.addImage(c.toDataURL('image/jpeg', 0.9), 'JPEG', (W - c.width * r) / 2, 0, c.width * r, c.height * r); });
+    const b64 = doc.output('datauristring').split(',')[1];
+    st.textContent = 'Envoi…';
+    const r = await fetch('${d.relais}/iddigital/envoyer', { method: 'POST', headers: h, body: JSON.stringify({ code: '${d.codeMagasin}', type: 'month-stats', pdf: b64, nom: 'PEDLV-${d.codeMagasin}.pdf' }) });
+    const j = await r.json().catch(() => ({}));
+    st.textContent = j.ok ? '✓ Envoyé sur l’écran du magasin' : 'Échec : ' + (j.error || j.erreur || ('statut ' + (j.statut || r.status)));
+  } catch (e) { st.textContent = 'Erreur : ' + e.message; } finally { bt.disabled = false; }
+}
+<\/script>` : ''}
 
 <div id="wrapper">
 
