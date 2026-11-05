@@ -3230,7 +3230,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.10.29-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.11.05-3'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
@@ -5149,5 +5149,72 @@ function handleEasterEgg() {
 }
 </script>
 
+
+<!-- Poste magasin (05/11/2026) : code magasin + code PIN saisis une fois par poste ; la session accompagne ensuite
+     chaque appel à zimbra-relay (en-tête X-Magasin-Session). « Plus tard » laisse l'appli fonctionner comme avant. -->
+<style>
+#oc-poste{position:fixed;inset:0;z-index:99999;background:rgba(10,10,10,.82);display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit}
+#oc-poste .b{background:#fff;color:#231F20;border-radius:16px;max-width:380px;width:100%;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+#oc-poste h2{margin:0 0 6px;font-size:18px;color:#E22F2A}
+#oc-poste p{margin:0 0 12px;font-size:13px;color:#555;line-height:1.4}
+#oc-poste input{width:100%;box-sizing:border-box;font-size:18px;padding:10px 12px;margin:0 0 8px;border:1px solid #ccc;border-radius:10px;color:#231F20;background:#fff}
+#oc-poste .pin{letter-spacing:6px;text-align:center}
+#oc-poste button{width:100%;font-size:15px;padding:11px;border-radius:10px;border:0;margin-top:4px;cursor:pointer}
+#oc-poste .ok{background:#E22F2A;color:#fff;font-weight:700}
+#oc-poste .tard{background:transparent;color:#777;text-decoration:underline}
+#oc-poste .err{color:#C0392B;font-size:13px;min-height:18px;margin:0 0 4px}
+#oc-poste-badge{position:fixed;right:8px;bottom:8px;z-index:9999;font:11px/1.2 sans-serif;background:rgba(0,0,0,.55);color:#fff;padding:4px 8px;border-radius:8px;cursor:pointer}
+</style>
+<script>
+(function () {
+  var RELAIS = 'https://zimbra-relay.oli-baroukh.workers.dev', CLE = 'oc_magasin_session', TARD = 'oc_magasin_plus_tard';
+  function lire() { try { return JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { return null; } }
+  // Chaque appel à zimbra-relay porte la session du poste quand elle existe
+  var f0 = window.fetch.bind(window);
+  window.fetch = function (u, o) {
+    try {
+      var url = typeof u === 'string' ? u : (u && u.url) || '';
+      var s = lire();
+      if (s && s.token && url.indexOf(RELAIS) === 0) { o = o || {}; var h = new Headers(o.headers || {}); h.set('X-Magasin-Session', s.token); o = Object.assign({}, o, { headers: h }); }
+    } catch (e) {}
+    return f0(u, o);
+  };
+  function badge(s) {
+    var b = document.getElementById('oc-poste-badge'); if (!b) { b = document.createElement('div'); b.id = 'oc-poste-badge'; document.body.appendChild(b); }
+    b.textContent = s ? '🔒 Poste : ' + (s.libelle || s.code) : 'Poste non enregistré';
+    b.title = s ? 'Poste enregistré pour ce magasin' : 'Enregistrer ce poste avec le code PIN du magasin';
+    b.onclick = function () { if (!s || confirm('Changer le magasin de ce poste ?')) ouvrir(); };
+  }
+  function ouvrir() {
+    if (document.getElementById('oc-poste')) return;
+    var d = document.createElement('div'); d.id = 'oc-poste';
+    d.innerHTML = '<div class="b"><h2>Enregistrer ce poste</h2><p>Saisissez le code du magasin et le code PIN reçu par mail sur la boîte du magasin. À faire une seule fois sur ce poste.</p>'
+      + '<input id="oc-p-code" inputmode="numeric" placeholder="Code magasin (ex. 1001)" autocomplete="off">'
+      + '<input id="oc-p-pin" class="pin" inputmode="numeric" maxlength="6" placeholder="Code PIN" autocomplete="one-time-code">'
+      + '<div class="err" id="oc-p-err"></div><button class="ok" id="oc-p-ok">Enregistrer ce poste</button><button class="tard" id="oc-p-tard">Plus tard</button></div>';
+    document.body.appendChild(d);
+    document.getElementById('oc-p-tard').onclick = function () { localStorage.setItem(TARD, String(Date.now())); d.remove(); badge(lire()); };
+    document.getElementById('oc-p-ok').onclick = function () {
+      var code = document.getElementById('oc-p-code').value.trim(), pin = document.getElementById('oc-p-pin').value.trim(), err = document.getElementById('oc-p-err');
+      err.textContent = '';
+      if (!code || !/^\d{6}$/.test(pin)) { err.textContent = 'Code magasin et code PIN à 6 chiffres requis.'; return; }
+      f0(RELAIS + '/magasin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code, pin: pin }) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j.ok) { err.textContent = j.error || 'Connexion refusée.'; return; }
+          var s = { token: j.token, code: j.magasin.code, libelle: j.magasin.libelle, le: new Date().toISOString() };
+          localStorage.setItem(CLE, JSON.stringify(s)); localStorage.removeItem(TARD); d.remove(); badge(s);
+        })
+        .catch(function () { err.textContent = 'Connexion impossible : vérifiez le réseau.'; });
+    };
+  }
+  function demarrer() {
+    var s = lire(); badge(s);
+    var t = +localStorage.getItem(TARD) || 0;
+    if (!s && Date.now() - t > 3 * 24 * 3600 * 1000) ouvrir(); // « plus tard » : redemandé au bout de 3 jours
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer); else demarrer();
+})();
+</script>
 
 </body></html>
