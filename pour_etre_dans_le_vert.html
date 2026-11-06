@@ -658,6 +658,7 @@ select,input,textarea,button{font-family:inherit}
     <div id="taux-panel">
       <h3>⏱ Temps de travail des collaborateurs</h3>
       <p>Vérifiez et ajustez le taux pour chaque collaborateur actif ce mois. Les objectifs de volume (ventes, CA, prothèses) seront proratisés en conséquence.</p>
+      <div class="hint" id="taux-hint" style="font-size:11px;color:#888780;margin:-4px 0 8px"></div>
       <div class="taux-grid" id="taux-grid"></div>
       <div style="margin-top:12px;margin-bottom:12px">
         <label style="font-size:11px;color:#888780;display:block;margin-bottom:5px">📝 Note contextuelle (optionnel)</label>
@@ -2400,7 +2401,7 @@ function showTauxPanel() {
     const included = savedTaux['__incl_'+nom] !== false
     row.innerHTML = '<input class="taux-check" type="checkbox" '+(included?'checked':'')+'  data-incl="'+nom+'">'
       + '<span class="taux-nom" title="'+nom+'">'+nom+'</span>'
-      + '<input class="taux-input" type="number" min="10" max="100" step="5" value="'+taux+'" data-nom="'+nom+'">'
+      + '<input class="taux-input" type="number" min="5" max="100" step="5" value="'+taux+'" data-nom="'+nom+'">'
       + '<span class="taux-pct">%</span>'
     if (!included) row.classList.add('excluded')
     row.querySelector('.taux-check').addEventListener('change', function() {
@@ -2435,6 +2436,48 @@ function showTauxPanel() {
   }
   document.getElementById('btn-generate').style.display = 'none'
   document.getElementById('taux-panel').style.display = 'block'
+  prefillTauxAgenda(collabs)
+}
+
+// 06/11/2026 : temps de travail pré-rempli depuis le dernier « agenda validés » importé dans bilan-passage
+// (journées école, temps partiels, temps partiel thérapeutique). Lien par matricule vendeur ; toujours
+// modifiable ; silencieux si le poste n'est pas enregistré ou si le lien échoue.
+async function prefillTauxAgenda(collabs) {
+  const hint = document.getElementById('taux-hint')
+  if (hint) hint.textContent = ''
+  try {
+    const nett = m => String(m || '').trim().replace(/\.0+$/, '').replace(/^0+(?=\d)/, '')
+    const parMat = {}
+    ;['stats_opt', 'stats_audio'].forEach(k => {
+      if (!state.raw[k]) return
+      parseCSV(state.raw[k]).forEach(r => {
+        const nom = cap(String(r['Nom Vendeur'] || '').trim()), m = nett(r['Matricule Vendeur'])
+        if (nom && m && collabs.includes(nom)) parMat[m] = nom
+      })
+    })
+    const mats = Object.keys(parMat)
+    if (!mats.length) return
+    const lire = k => { try { return JSON.parse(localStorage.getItem(k) || 'null') } catch (e) { return null } }
+    const h = { 'X-Store-Token': STORE_TOKEN }
+    const ar = lire('bilan_ar_session')
+    if (ar && ar.token && ar.exp > Date.now()) h['X-AR-Session'] = ar.token
+    const r = await fetch(RELAY + '/rh-taux-collab?matricules=' + encodeURIComponent(mats.join(',')), { headers: h })
+    const d = await r.json().catch(() => null)
+    if (!r.ok || !d || !d.ok || !d.mois) return
+    let n = 0
+    for (const [m, coef] of Object.entries(d.taux || {})) {
+      const nom = parMat[nett(m)]
+      const inp = nom && [...document.querySelectorAll('#taux-grid .taux-input')].find(i => i.getAttribute('data-nom') === nom)
+      if (!inp) continue
+      inp.value = Math.min(100, Math.max(5, Math.round(Number(coef) * 20) * 5))
+      n++
+    }
+    if (hint && n) {
+      const [y, mo] = d.mois.split('-')
+      const lib = new Date(Date.UTC(+y, +mo - 1, 1)).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+      hint.textContent = 'Pré-rempli pour ' + n + ' collaborateur' + (n > 1 ? 's' : '') + ' avec l’agenda de ' + lib + ' (journées école, temps partiels) — modifiable.'
+    }
+  } catch (e) { /* pré-remplissage optionnel */ }
 }
 
 function getActiveCollabs() {
@@ -2478,7 +2521,7 @@ function getTauxMap() {
   const excluded = new Set()
   inputs.forEach(inp => {
     const nom = inp.getAttribute('data-nom')
-    const val = Math.min(100, Math.max(10, parseFloat(inp.value) || 100))
+    const val = Math.min(100, Math.max(5, parseFloat(inp.value) || 100))
     map[nom] = val
     saved[nom] = val
   })
@@ -3232,7 +3275,7 @@ function norm(s) {
 //    cas où le poste ne recharge jamais spontanément l'index.html à jour.
 //    Si la version installée est obsolète, l'application devient inutilisable
 //    (écran de blocage plein écran, sans possibilité de le fermer).
-const APP_VERSION = '2026.11.05-5'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
+const APP_VERSION = '2026.11.06-1'; // à bumper avec SW_VERSION (sw.js) ET version.json à chaque déploiement
 const VERSION_CHECK_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes
 
 function checkForUpdate() {
