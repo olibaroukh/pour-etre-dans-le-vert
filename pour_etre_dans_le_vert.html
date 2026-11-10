@@ -1882,6 +1882,22 @@ async function chargerImportCosium() {
       body: JSON.stringify({ id })
     })
     const d = await r.json().catch(() => ({}))
+    // 10/11/2026 : poste pas encore enregistré (code PIN) → on garde l'import et on le recharge dès que le poste est enregistré
+    if (r.status === 401 && d.code === 'POSTE_REQUIS' && !chargerImportCosium.attente) {
+      chargerImportCosium.attente = true
+      setStatus('Enregistrez ce poste (code PIN du magasin) : les fichiers Cosium se chargeront automatiquement juste après.', '')
+      const debut = Date.now()
+      const minuteur = setInterval(() => {
+        let ok = false
+        try { ok = !!JSON.parse(localStorage.getItem('oc_magasin_session') || 'null') || ((JSON.parse(localStorage.getItem('oc_animateur_session') || 'null') || {}).exp > Date.now()) } catch (e) {}
+        if (ok || Date.now() - debut > 15 * 60 * 1000) {
+          clearInterval(minuteur)
+          if (ok) { history.replaceState(null, '', location.pathname + '?cosium=' + encodeURIComponent(id) + location.hash); chargerImportCosium() }
+          else setStatus('Import Cosium en attente : poste non enregistré — relancez « Envoyer à PEDLV » après avoir saisi le code PIN', 'err')
+        }
+      }, 1000)
+      return
+    }
     if (!r.ok) throw new Error(d.error || ('erreur ' + r.status))
     const fichiers = Object.entries(COSIUM_FILENAMES)
       .filter(([t]) => d.files && d.files[t])
